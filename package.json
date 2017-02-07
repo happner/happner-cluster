@@ -1,0 +1,25 @@
+{
+  "name": "happner-cluster",
+  "version": "1.0.0",
+  "description": "Extends happner with clustering capabilities",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test",
+    "test-cover": "istanbul cover _mocha -- test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/happner/happner-cluster.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/happner/happner-cluster/issues"
+  },
+  "homepage": "https://github.com/happner/happner-cluster#readme",
+  "devDependencies": {
+    "coveralls": "^2.11.16",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.2.0"
+  }
+}
