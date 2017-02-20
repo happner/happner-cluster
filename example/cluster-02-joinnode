@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
+// NODE_PATH=./example/node_modules example/cluster-02-joinnode
+
 var path = require('path');
 var seq = parseInt(path.basename(__filename).split('-')[1]);
 
 require('./lib/create-cluster-member')(seq);
+
