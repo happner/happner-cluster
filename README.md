@@ -28,6 +28,30 @@ var config = {
     services: {
       data: {
         // see data sub-config in happn-cluster docs
+        config: {
+          datastores: [
+            // defaulted by happn-cluster
+            //{
+            //  name: 'mongo',
+            //  provider: 'happn-service-mongo-2',
+            //  isDefault: true,
+            //  settings: {
+            //    collection: 'happn-cluster',
+            //    database: 'happn-cluster',
+            //    url: 'mongodb://127.0.0.1:27017'
+            //  }
+            //},
+            
+            // defaulted by happner-cluster to prevent description overwrites in shared db
+            //{
+            //  name: 'nedb',
+            //  settings: {},
+            //  patterns: [
+            //    '/mesh/schema/*'
+            //  ]
+            //}
+          ]
+      }
       }
       membership: {
         // see membership sub-config in happn-cluster docs
