@@ -10,6 +10,10 @@ module.exports = function (seq) {
     //   logLevel: process.env.LOG_LEVEL || 'error'
     // },
     happn: {
+      cluster: {
+        requestTimeout: 2 * 1000,
+        responseTimeout: 2 * 1000
+      },
       services: {
         membership: {
           config: {
@@ -54,8 +58,8 @@ module.exports = function (seq) {
     };
     config.components = {
       'remote-component': {
-        // startMethod: 'start',
-        // stopMethod: 'stop'
+        startMethod: 'start',
+        stopMethod: 'stop'
       }
     };
   }

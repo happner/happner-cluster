@@ -156,7 +156,10 @@ describe('02 - func - components', function () {
         if (e) return done(e);
 
         try {
-          expect(result).to.eql('xxx');
+          expect(result).to.eql({
+            '/_events/DOMAIN_NAME/remoteComponent3/testevent/MESH_3': 1,
+            '/_events/DOMAIN_NAME/remoteComponent3/testevent/MESH_2': 1
+          });
           done();
         } catch (e) {
           done(e);
