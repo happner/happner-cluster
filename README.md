@@ -89,7 +89,13 @@ Given a clusternode with component1...
 ```javascript
 config = {
   modules: {
-    'component1': {...}
+    'component1': {
+      // using most complex example of module which defines multiple component classes
+      path: 'node-module-name',
+      construct: {
+        name: 'Component1'
+      }
+    }
   },
   components: {
     'component1': {...}
@@ -117,12 +123,12 @@ Component1.prototype.method = function ($happner, callback) {
 ```javascript
 // package.json expressed as js
 {
-  name: 'library',
+  name: 'node-module-name',
   version: '1.0.0',
   happner: {
     dependencies: {
-      'component1': { // the component name which has the following dependencies
-                      // (allows one node_module to define more than one mesh component)
+      'component1': { // the component name which has the dependencies
+                      // (allows 1 node_module to define more than 1 mesh component class)
         'remote-component': {
           version: '^1.0.0', // will only use matching versions from 
                              // elsewhefre in the cluster
