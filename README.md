@@ -149,4 +149,6 @@ Component1.prototype.method = function ($happner, callback) {
 
 __Note:__
 
-If a component is defined locally and remotely then local is preferred and remote never used.
+* If a component is defined locally and remotely then local is preferred and remote never used.
+* If the component is defunied on multiple remote nodes, a round-robin is performed on the method calls.
+
