@@ -102,8 +102,8 @@ config = {
 ```javascript
 Component1.prototype.method = function ($happner, callback) {
   // $happner aka $happn
-  // call remote component node defined locally
-  $happner.exchange['remote-component'].method(function (e, result) {
+  // call remote component not defined locally
+  $happner.exchange['remote-component'].method1(function (e, result) {
     callback(e, result);
   });
   
@@ -141,3 +141,6 @@ Component1.prototype.method = function ($happner, callback) {
 }
 ```
 
+__Note:__
+
+If a component is defined locally and remotely then local is preferred and remote never used.
