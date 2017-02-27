@@ -28,7 +28,7 @@
   "dependencies": {
     "bluebird": "^3.4.7",
     "happner-client": "happner/happner-client#master",
-    "happn-cluster": "2.2.3",
+    "happn-cluster": "2.2.4",
     "happner-2": "happner/happner-2#cluster-support"
   }
 }

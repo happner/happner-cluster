@@ -138,7 +138,7 @@ describe('02 - func - components', function () {
 
       localInstance.exchange.localComponent1.callDependency('remoteComponent0', 'method1', function (e, result) {
         try {
-          expect(e.message).to.be('Not implemented');
+          expect(e.message).to.be('Not implemented remoteComponent0:^1.0.0:method1');
           done();
         } catch (e) {
           done(e);
