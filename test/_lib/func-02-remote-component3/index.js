@@ -5,7 +5,7 @@ function Component() {}
 Component.prototype.start = function ($happn, callback) {
   this.interval = setInterval(function () {
     $happn.emit('testevent/' + $happn.info.mesh.name);
-  }, 100);
+  }, 500);
 
   callback();
 };

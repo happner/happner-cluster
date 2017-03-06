@@ -27,7 +27,7 @@ Component.prototype.listTestEvents = function ($happn, callback) {
         callback(null, events);
       });
 
-    }, 500);
+    }, 600);
 
   });
 };
