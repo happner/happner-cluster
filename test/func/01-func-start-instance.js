@@ -4,6 +4,8 @@ describe('01 - func - start instance', function () {
 
   it('starts', function (done) {
 
+    this.timeout(4000);
+
     HappnerCluster.create({
       domain: 'DOMAIN_NAME',
       util: {
