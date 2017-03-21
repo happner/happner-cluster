@@ -1,4 +1,4 @@
-module.exports = function (seq) {
+module.exports = function (seq, minPeers) {
   return {
     name: 'MESH_' + seq,
     domain: 'DOMAIN_NAME',
@@ -24,7 +24,7 @@ module.exports = function (seq) {
         },
         orchestrator: {
           config: {
-            minimumPeers: 3
+            minimumPeers: minPeers || 3
           }
         }
       }
