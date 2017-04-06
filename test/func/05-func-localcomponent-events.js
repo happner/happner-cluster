@@ -75,7 +75,6 @@ describe('05 - func - localcomponent events', function () {
   it('can subscribe to event from local components', function (done) {
     server.exchange.component2.awaitEvent(function (e, result) {
       if (e) return done (e);
-      console.log(result);
       done();
     })
   });

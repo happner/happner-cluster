@@ -6,6 +6,10 @@ module.exports = function (seq, minPeers) {
     util: {
       logLevel: process.env.LOG_LEVEL || 'error'
     },
+    cluster: {
+      requestTimeout: 10 * 1000,
+      responseTimeout: 20 * 1000
+    },
     happn: {
       services: {
         membership: {
