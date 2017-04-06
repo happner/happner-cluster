@@ -1,0 +1,13 @@
+{
+  "name": "component2",
+  "version": "1.0.0",
+  "happner": {
+    "dependencies": {
+      "component2": {
+        "component1": {
+          "version": "^1.0.0"
+        }
+      }
+    }
+  }
+}

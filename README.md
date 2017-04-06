@@ -24,11 +24,12 @@ var config = {
   // name: 'UNIQUE_NAME', // allow default uniqie name
   domain: 'DOMAIN_NAME', // same as other cluster nodes
   
-  happn: { // was "datalayer"
-    // cluster: {
-    //  requestTimeout: 20 * 1000,
+  cluster: {
+    //  requestTimeout: 20 * 1000, // exchange timeouts
     //  responseTimeout: 30 * 1000
-    },
+  },
+  
+  happn: { // was "datalayer"
     services: {
       data: {
         // see data sub-config in happn-cluster docs
