@@ -9,3 +9,7 @@
   - onward release of happn-cluster
   - onward release of happner-2
   - onward release of happner-client
+  
+1.4.2 2017-04-19
+----------------
+  - onward release of happner-2
