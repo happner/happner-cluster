@@ -1,6 +1,23 @@
 var HappnerCluster = require('../..');
+var Happner = require('happner-2');
 
 describe('01 - func - start instance', function () {
+
+  var server, client;
+
+  after('stop server', function (done) {
+
+    if (!server) return done();
+    server.stop({reconnect: false}, done);
+
+  });
+
+  after('stop client', function (done) {
+
+    if (!client) return done();
+    client.disconnect(done);
+
+  });
 
   it('starts', function (done) {
 
@@ -27,9 +44,22 @@ describe('01 - func - start instance', function () {
       }
     })
 
-      .then(function (server) {
+      .then(function (_server) {
 
-        server.stop(done);
+        server = _server;
+
+      })
+
+      .then(function () {
+
+        client = new Happner.MeshClient({});
+        return client.login(); // ensures proxy (default 55000) is running
+
+      })
+
+      .then(function () {
+
+        done();
 
       })
 

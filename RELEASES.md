@@ -13,3 +13,7 @@
 1.4.2 2017-04-19
 ----------------
   - onward release of happner-2
+
+1.5.0 2017-05-20
+----------------
+  - start happn-cluster proxy (through which client access cluster) after component startMethods are run
