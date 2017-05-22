@@ -17,7 +17,19 @@ describe('01 - unit - cluster create', function () {
 
   it('switches the datalayer definition', function (done) {
     Happner.create = function () {
-      return Promise.resolve();
+      return Promise.resolve({
+        _mesh: {
+          happn: {
+            server: {
+              services: {
+                proxy: {
+                  start: function () {}
+                }
+              }
+            }
+          }
+        }
+      });
     };
 
     HappnerCluster.create({});
@@ -28,8 +40,21 @@ describe('01 - unit - cluster create', function () {
 
   it('calls happner create', function (done) {
     Happner.create = function () {
-      done();
-      return Promise.resolve();
+      return Promise.resolve({
+        _mesh: {
+          happn: {
+            server: {
+              services: {
+                proxy: {
+                  start: function () {
+                    done();
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
     };
 
     HappnerCluster.create({});
@@ -40,8 +65,21 @@ describe('01 - unit - cluster create', function () {
       expect(config.happn.services.orchestrator.config.replicate).to.eql([
         '/_events/*'
       ]);
-      done();
-      return Promise.resolve();
+      return Promise.resolve({
+        _mesh: {
+          happn: {
+            server: {
+              services: {
+                proxy: {
+                  start: function () {
+                    done();
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
     };
 
     HappnerCluster.create({});
