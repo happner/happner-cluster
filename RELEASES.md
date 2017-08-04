@@ -9,7 +9,7 @@
   - onward release of happn-cluster
   - onward release of happner-2
   - onward release of happner-client
-  
+
 1.4.2 2017-04-19
 ----------------
   - onward release of happner-2
@@ -18,3 +18,7 @@
 ----------------
   - updated happner-2 to 3.0.0
   - start happn-cluster proxy (through which client access cluster) after component startMethods are run
+
+2.0.1 2017-08-04
+----------------
+  - add `/_SYSTEM/_NETWORK/_SETTINGS/NAME` and `/_SYSTEM/_SECURITY/_SETTINGS/KEYPAIR` to local storage (nedb, non-shared)

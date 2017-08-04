@@ -85,4 +85,78 @@ describe('01 - unit - cluster create', function () {
     HappnerCluster.create({});
   });
 
+  it('assigns private nedb datastore config if missing', function (done) {
+    Happner.create = function (config) {
+      expect(config.happn.services.data.config.datastores).to.eql([{
+        name: 'nedb-own-schema',
+        settings: {},
+        patterns: ['/mesh/schema/*',
+          '/_SYSTEM/_NETWORK/_SETTINGS/NAME',
+          '/_SYSTEM/_SECURITY/_SETTINGS/KEYPAIR'
+        ]
+      }]);
+      return Promise.resolve({
+        _mesh: {
+          happn: {
+            server: {
+              services: {
+                proxy: {
+                  start: function () {
+                    done();
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+    };
+
+    HappnerCluster.create({});
+  });
+
+  it('it ammends private nedb datastore config if missing entries', function (done) {
+    Happner.create = function (config) {
+      expect(config.happn.services.data.config.datastores).to.eql([{
+        name: 'alternative-name',
+        settings: {},
+        patterns: ['/mesh/schema/*',
+          '/_SYSTEM/_NETWORK/_SETTINGS/NAME',
+          '/_SYSTEM/_SECURITY/_SETTINGS/KEYPAIR'
+        ]
+      }]);
+      return Promise.resolve({
+        _mesh: {
+          happn: {
+            server: {
+              services: {
+                proxy: {
+                  start: function () {
+                    done();
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+    };
+
+    HappnerCluster.create({
+      happn: {
+        services: {
+          data: {
+            config: {
+              datastores: [{
+                name: 'alternative-name',
+                settings: {},
+                patterns: ['/mesh/schema/*']
+              }]
+            }
+          }
+        }
+      }
+    })
+  })
+
 });

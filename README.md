@@ -48,12 +48,15 @@ var config = {
             //  }
             //},
             
-            // defaulted by happner-cluster to prevent description overwrites in shared db
+            // defaulted by happner-cluster to prevent overwrites in shared db
+            // where each cluster server requires unique data at certain paths
             //{
             //  name: 'nedb-own-schema',
             //  settings: {},
             //  patterns: [
-            //    '/mesh/schema/*'
+            //    '/mesh/schema/*',
+            //    '/_SYSTEM/_NETWORK/_SETTINGS/NAME',
+            //    '/_SYSTEM/_SECURITY/_SETTINGS/KEYPAIR'
             //  ]
             //}
           ]
