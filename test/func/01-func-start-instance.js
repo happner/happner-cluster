@@ -25,10 +25,8 @@ describe('01 - func - start instance', function () {
 
     HappnerCluster.create({
       domain: 'DOMAIN_NAME',
-      util: {
-        logLevel: process.env.LOG_LEVEL || 'error'
-      },
       happn: {
+        secure: false,
         cluster: {
           requestTimeout: 20 * 1000,
           responseTimeout: 30 * 1000
