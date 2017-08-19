@@ -3,14 +3,12 @@ module.exports = function (seq, minPeers) {
     name: 'MESH_' + seq,
     domain: 'DOMAIN_NAME',
     port: 57000 + seq,
-    util: {
-      logLevel: process.env.LOG_LEVEL || 'error'
-    },
     cluster: {
       requestTimeout: 10 * 1000,
       responseTimeout: 20 * 1000
     },
     happn: {
+      secure: false,
       services: {
         membership: {
           config: {

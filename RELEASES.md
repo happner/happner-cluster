@@ -22,3 +22,7 @@
 2.0.1 2017-08-04
 ----------------
   - add `/_SYSTEM/_NETWORK/_SETTINGS/NAME` and `/_SYSTEM/_SECURITY/_SETTINGS/KEYPAIR` to local storage (nedb, non-shared)
+
+3.0.0 2017-08-19
+----------------
+  - bump to happn-cluster ^3.0.0
