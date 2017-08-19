@@ -26,3 +26,7 @@
 3.0.0 2017-08-19
 ----------------
   - bump to happn-cluster ^3.0.0
+
+3.0.1 2017-08.19
+----------------
+  - bumped to happner-client ^2.0.0 (circular)
