@@ -7,7 +7,7 @@ var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 
-describe('02 - func - components', function () {
+describe('02 - integration - components', function () {
 
   var servers, localInstance;
 
@@ -15,13 +15,13 @@ describe('02 - func - components', function () {
     var config = baseConfig(seq);
     config.modules = {
       'localComponent1': {
-        path: libDir + 'func-02-local-component1'
+        path: libDir + 'integration-02-local-component1'
       },
       'localComponent2': {
-        path: libDir + 'func-02-local-component2'
+        path: libDir + 'integration-02-local-component2'
       },
       'remoteComponent4': {
-        path: libDir + 'func-02-remote-component4-v1'
+        path: libDir + 'integration-02-remote-component4-v1'
       }
     };
     config.components = {
@@ -45,10 +45,10 @@ describe('02 - func - components', function () {
     var config = baseConfig(seq);
     config.modules = {
       'remoteComponent3': {
-        path: libDir + 'func-02-remote-component3'
+        path: libDir + 'integration-02-remote-component3'
       },
       'remoteComponent4': {
-        path: libDir + 'func-02-remote-component4-v2'
+        path: libDir + 'integration-02-remote-component4-v2'
       }
     };
     config.components = {

@@ -2,7 +2,7 @@ var HappnerCluster = require('../..');
 var Promise = require('bluebird');
 var expect = require('expect.js');
 
-describe('05 - func - localcomponent events', function () {
+describe('05 - integration - localcomponent events', function () {
 
   var server;
 

@@ -1,7 +1,7 @@
 var HappnerCluster = require('../..');
 var Happner = require('happner-2');
 
-describe('01 - func - start instance', function () {
+describe('01 - integration - start instance', function () {
 
   var server, client;
 

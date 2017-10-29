@@ -8,7 +8,7 @@ var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 var minPeers = 1;
 
-describe('04 - func - create and destroy components', function () {
+describe('04 - integration - create and destroy components', function () {
 
   var servers, localInstance;
 
@@ -19,7 +19,7 @@ describe('04 - func - create and destroy components', function () {
         instance: {}
       },
       'component': {
-        path: libDir + 'func-04-component'
+        path: libDir + 'integration-04-component'
       }
     };
     config.components = {

@@ -8,7 +8,7 @@ var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 
-describe('03 - func - peers', function () {
+describe('03 - integration - peers', function () {
 
   var servers, localInstance;
 
@@ -16,7 +16,7 @@ describe('03 - func - peers', function () {
     var config = baseConfig(seq);
     config.modules = {
       'localComponent1': {
-        path: libDir + 'func-03-local-component1'
+        path: libDir + 'integration-03-local-component1'
       }
     };
     config.components = {
@@ -29,10 +29,10 @@ describe('03 - func - peers', function () {
     var config = baseConfig(seq);
     config.modules = {
       'remoteComponent2': {
-        path: libDir + 'func-03-remote-component2'
+        path: libDir + 'integration-03-remote-component2'
       },
       'remoteComponent3': {
-        path: libDir + 'func-03-remote-component3'
+        path: libDir + 'integration-03-remote-component3'
       }
     };
     config.components = {

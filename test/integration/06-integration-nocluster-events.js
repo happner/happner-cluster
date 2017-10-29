@@ -6,7 +6,7 @@ var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 
-describe('06 - func - nocluster events', function () {
+describe('06 - integration - nocluster events', function () {
 
   var servers, localInstance, remoteInstance;
 
@@ -14,7 +14,7 @@ describe('06 - func - nocluster events', function () {
     var config = baseConfig(seq, 2);
     config.modules = {
       'component1': {
-        path: libDir + 'func-06-component1'
+        path: libDir + 'integration-06-component1'
       }
     };
     config.components = {
@@ -30,7 +30,7 @@ describe('06 - func - nocluster events', function () {
     var config = baseConfig(seq, 2);
     config.modules = {
       'component2': {
-        path: libDir + 'func-06-component2'
+        path: libDir + 'integration-06-component2'
       }
     };
     config.components = {

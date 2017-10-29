@@ -4,8 +4,8 @@
   "description": "Extends happner with clustering capabilities",
   "main": "index.js",
   "scripts": {
-    "test": "LOG_LEVEL=warn mocha test/unit test/func",
-    "test-cover": "LOG_LEVEL=warn istanbul cover _mocha -- test/unit test/func"
+    "test": "LOG_LEVEL=warn mocha test/unit test/integration",
+    "test-cover": "LOG_LEVEL=warn istanbul cover _mocha -- test/unit test/integration"
   },
   "repository": {
     "type": "git",
