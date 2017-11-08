@@ -41,7 +41,7 @@ describe('02 - integration - components', function () {
     return config;
   }
 
-  function remoteInstanceConfig(seq) {
+  function remoteInstance1Config(seq) {
     var config = baseConfig(seq);
     config.modules = {
       'remoteComponent3': {
@@ -49,6 +49,9 @@ describe('02 - integration - components', function () {
       },
       'remoteComponent4': {
         path: libDir + 'integration-02-remote-component4-v2'
+      },
+      'remoteComponent5': {
+        path: libDir + 'integration-02-remote-component5-v1'
       }
     };
     config.components = {
@@ -57,6 +60,40 @@ describe('02 - integration - components', function () {
         stopMethod: 'stop'
       },
       'remoteComponent4': {
+        startMethod: 'start',
+        stopMethod: 'stop'
+      },
+      'remoteComponent5': {
+        startMethod: 'start',
+        stopMethod: 'stop'
+      }
+    };
+    return config;
+  }
+
+  function remoteInstance2Config(seq) {
+    var config = baseConfig(seq);
+    config.modules = {
+      'remoteComponent3': {
+        path: libDir + 'integration-02-remote-component3'
+      },
+      'remoteComponent4': {
+        path: libDir + 'integration-02-remote-component4-v2'
+      },
+      'remoteComponent5': {
+        path: libDir + 'integration-02-remote-component5-v2'
+      }
+    };
+    config.components = {
+      'remoteComponent3': {
+        startMethod: 'start',
+        stopMethod: 'stop'
+      },
+      'remoteComponent4': {
+        startMethod: 'start',
+        stopMethod: 'stop'
+      },
+      'remoteComponent5': {
         startMethod: 'start',
         stopMethod: 'stop'
       }
@@ -68,10 +105,10 @@ describe('02 - integration - components', function () {
     this.timeout(4000);
 
     Promise.all([
-      HappnerCluster.create(localInstanceConfig(1)),
-      HappnerCluster.create(remoteInstanceConfig(2)),
-      HappnerCluster.create(remoteInstanceConfig(3))
-    ])
+        HappnerCluster.create(localInstanceConfig(1)),
+        HappnerCluster.create(remoteInstance1Config(2)),
+        HappnerCluster.create(remoteInstance2Config(3))
+      ])
       .then(function (_servers) {
         servers = _servers;
         localInstance = servers[0];
@@ -110,8 +147,7 @@ describe('02 - integration - components', function () {
               'MESH_3:component3:method1': 1
             });
             done();
-          }
-          catch (e) {
+          } catch (e) {
             done(e);
           }
 
@@ -129,8 +165,7 @@ describe('02 - integration - components', function () {
           done();
         } catch (e) {
           done(e);
-        }
-        ;
+        };
       });
     });
 
@@ -167,7 +202,23 @@ describe('02 - integration - components', function () {
       });
     });
 
+    it('does not receive events from incompatible component versions', function (done) {
+
+      localInstance.exchange.localComponent2.listTestCompatibleEvents(function (e, result) {
+        if (e) return done(e);
+
+        try {
+          expect(result).to.eql({
+            '/_events/DOMAIN_NAME/remoteComponent5/testevent/v2/MESH_3': 1
+          });
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
+
+    });
+
   });
 
-})
-;
+});
