@@ -30,3 +30,8 @@
 3.0.1 2017-08.19
 ----------------
   - bumped to happner-client ^2.0.0 (circular)
+
+4.0.0 2017-11-27
+----------------
+  - integrated happn subscription format fix
+  - updated happn and happner

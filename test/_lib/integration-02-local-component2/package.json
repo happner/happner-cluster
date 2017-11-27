@@ -10,6 +10,9 @@
             "method1": {},
             "method2": {}
           }
+        },
+        "remoteComponent5": {
+          "version": "^2.0.0"
         }
       }
     }
