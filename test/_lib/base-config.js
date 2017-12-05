@@ -36,6 +36,7 @@ module.exports = function (seq, minPeers, secure) {
   if (secure) {
     config.happn.services.security = {
       config: {
+        securityDirectoryChangedCheckInterval: 400,
         adminUser: {
           username: '_ADMIN',
           password: 'happn'

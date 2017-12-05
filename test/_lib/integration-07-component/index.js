@@ -3,8 +3,8 @@ module.exports = Component;
 function Component() {}
 
 Component.prototype.emitEvents = function ($happn, callback) {
-  $happn.emit('event1');
-  $happn.emit('event2');
+  $happn.emit('event1', 'event1');
+  $happn.emit('event2', 'event2');
   callback();
 }
 

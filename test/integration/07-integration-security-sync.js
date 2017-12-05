@@ -72,7 +72,7 @@ describe('07 - integration - security sync', function () {
   });
 
   it('handles security sync for methods', function (done) {
-    this.timeout(10 * 1000);
+    this.timeout(20 * 1000);
 
     Promise.all([
         client.callMethod(1, client1, 'component1', 'method1'),
@@ -98,7 +98,7 @@ describe('07 - integration - security sync', function () {
 
       .then(function () {
         // await sync
-        return Promise.delay(2000);
+        return Promise.delay(1000);
       })
 
       .then(function () {
@@ -119,11 +119,155 @@ describe('07 - integration - security sync', function () {
         ])
       })
 
+      .then(function () {
+        return Promise.all([
+          users.denyMethod(servers[0], 'username', 'component1', 'method1'),
+          // users.allowMethod(servers[0], 'username', 'component1', 'method2')
+        ])
+      })
+
+      .then(function () {
+        // await sync
+        return Promise.delay(1000);
+      })
+
+      .then(function () {
+        return Promise.all([
+          client.callMethod(1, client1, 'component1', 'method1'),
+          client.callMethod(2, client1, 'component1', 'method2'),
+          client.callMethod(3, client2, 'component1', 'method1'),
+          client.callMethod(4, client2, 'component1', 'method2')
+        ]);
+      })
+
+      .then(function (results) {
+        expect(results).to.eql([
+          { seq: 1, error: 'unauthorized' },
+          { seq: 2, error: 'unauthorized' },
+          { seq: 3, error: 'unauthorized' },
+          { seq: 4, error: 'unauthorized' }
+        ]);
+      })
+
       .then(function (results) {
         done();
       })
+
       .catch(done);
 
   });
+
+  it('handles security sync for events', function (done) {
+    this.timeout(20 * 1000);
+
+    var events = {}
+
+    function createHandler(seq) {
+      return function (data) {
+        events[seq] = data.value;
+      }
+    }
+
+    Promise.all([
+      client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
+      client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
+      client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
+      client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
+    ])
+
+      .then(function (results) {
+        expect(results).to.eql([
+          { seq: 1, error: 'unauthorized' },
+          { seq: 2, error: 'unauthorized' },
+          { seq: 3, error: 'unauthorized' },
+          { seq: 4, error: 'unauthorized' }
+        ]);
+      })
+
+      .then(function () {
+        return Promise.all([
+          users.allowEvent(servers[0], 'username', 'component1', 'event1'),
+          users.allowEvent(servers[0], 'username', 'component1', 'event2')
+        ]);
+      })
+
+      .then(function () {
+        // await sync
+        return Promise.delay(1000);
+      })
+
+      .then(function () {
+        return Promise.all([
+          client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
+          client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
+          client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
+          client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
+        ]);
+      })
+
+      .then(function (results) {
+        expect(results).to.eql([
+          { seq: 1, result: true },
+          { seq: 2, result: true },
+          { seq: 3, result: true },
+          { seq: 4, result: true }
+        ]);
+      })
+
+      .then(function () {
+        return servers[0].exchange.component1.emitEvents();
+      })
+
+      .then(function () {
+        // await emit
+        return Promise.delay(200);
+      })
+
+      .then(function () {
+        expect(events).to.eql({
+          1: 'event1',
+          2: 'event2',
+          3: 'event1',
+          4: 'event2'
+        });
+      })
+
+      .then(function () {
+        return Promise.all([
+          users.denyEvent(servers[0], 'username', 'component1', 'event1'),
+        ]);
+      })
+
+      .then(function () {
+        // await sync
+        return Promise.delay(1000);
+      })
+
+      .then(function () {
+        events = {};
+        return servers[0].exchange.component1.emitEvents();
+      })
+
+      .then(function () {
+        // await emit
+        return Promise.delay(200);
+      })
+
+      .then(function () {
+        expect(events).to.eql({
+          // 1: 'event1',
+          2: 'event2',
+          // 3: 'event1',
+          4: 'event2'
+        });
+      })
+
+      .then(function () {
+        done();
+      })
+
+      .catch(done);
+
+  })
 
 });
