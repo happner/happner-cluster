@@ -1,5 +1,5 @@
-module.exports = function (seq, minPeers) {
-  return {
+module.exports = function (seq, minPeers, secure) {
+  var config = {
     name: 'MESH_' + seq,
     domain: 'DOMAIN_NAME',
     port: 57000 + seq,
@@ -8,7 +8,7 @@ module.exports = function (seq, minPeers) {
       responseTimeout: 20 * 1000
     },
     happn: {
-      secure: false,
+      secure: typeof secure == 'boolean' ? secure : false,
       services: {
         membership: {
           config: {
@@ -32,4 +32,17 @@ module.exports = function (seq, minPeers) {
       }
     }
   }
+
+  if (secure) {
+    config.happn.services.security = {
+      config: {
+        adminUser: {
+          username: '_ADMIN',
+          password: 'happn'
+        }
+      }
+    }
+  }
+
+  return config;
 };
