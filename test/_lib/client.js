@@ -7,6 +7,8 @@ module.exports.create = function (username, password, port, callback) {
     port: port
   });
 
+  client.username = username;
+
   client.login({
       username: username,
       password: password
@@ -24,10 +26,22 @@ module.exports.callMethod = function (seq, client, component, method) {
 
     client.exchange[component][method]()
       .then(function (result) {
-        resolve({ seq: seq, result: result });
+        resolve({
+          seq: seq,
+          user: client.username,
+          component: component,
+          method: method,
+          result: result
+        });
       })
       .catch(function (error) {
-        resolve({ seq: seq, error: error.message });
+        resolve({
+          seq: seq,
+          user: client.username,
+          component: component,
+          method: method,
+          error: error.message
+        });
       });
 
   });

@@ -83,10 +83,10 @@ describe('07 - integration - security sync', function () {
 
       .then(function (results) {
         expect(results).to.eql([
-          { seq: 1, error: 'unauthorized' },
-          { seq: 2, error: 'unauthorized' },
-          { seq: 3, error: 'unauthorized' },
-          { seq: 4, error: 'unauthorized' }
+          { seq: 1, user: 'username', component: 'component1', method: 'method1', error: 'unauthorized' },
+          { seq: 2, user: 'username', component: 'component1', method: 'method2', error: 'unauthorized' },
+          { seq: 3, user: 'username', component: 'component1', method: 'method1', error: 'unauthorized' },
+          { seq: 4, user: 'username', component: 'component1', method: 'method2', error: 'unauthorized' }
         ])
       })
 
@@ -98,7 +98,7 @@ describe('07 - integration - security sync', function () {
 
       .then(function () {
         // await sync
-        return Promise.delay(1000);
+        return Promise.delay(300);
       })
 
       .then(function () {
@@ -112,23 +112,23 @@ describe('07 - integration - security sync', function () {
 
       .then(function (results) {
         expect(results).to.eql([
-          { seq: 1, result: true },
-          { seq: 2, error: 'unauthorized' },
-          { seq: 3, result: true },
-          { seq: 4, error: 'unauthorized' }
+          { seq: 1, user: 'username', component: 'component1', method: 'method1', result: true },
+          { seq: 2, user: 'username', component: 'component1', method: 'method2', error: 'unauthorized' },
+          { seq: 3, user: 'username', component: 'component1', method: 'method1', result: true },
+          { seq: 4, user: 'username', component: 'component1', method: 'method2', error: 'unauthorized' }
         ])
       })
 
       .then(function () {
         return Promise.all([
           users.denyMethod(servers[0], 'username', 'component1', 'method1'),
-          // users.allowMethod(servers[0], 'username', 'component1', 'method2')
+          users.allowMethod(servers[0], 'username', 'component1', 'method2')
         ])
       })
 
       .then(function () {
         // await sync
-        return Promise.delay(1000);
+        return Promise.delay(300);
       })
 
       .then(function () {
@@ -142,10 +142,10 @@ describe('07 - integration - security sync', function () {
 
       .then(function (results) {
         expect(results).to.eql([
-          { seq: 1, error: 'unauthorized' },
-          { seq: 2, error: 'unauthorized' },
-          { seq: 3, error: 'unauthorized' },
-          { seq: 4, error: 'unauthorized' }
+          { seq: 1, user: 'username', component: 'component1', method: 'method1', error: 'unauthorized' },
+          { seq: 2, user: 'username', component: 'component1', method: 'method2', result: true },
+          { seq: 3, user: 'username', component: 'component1', method: 'method1', error: 'unauthorized' },
+          { seq: 4, user: 'username', component: 'component1', method: 'method2', result: true }
         ]);
       })
 
@@ -193,7 +193,7 @@ describe('07 - integration - security sync', function () {
 
       .then(function () {
         // await sync
-        return Promise.delay(1000);
+        return Promise.delay(300);
       })
 
       .then(function () {
@@ -240,7 +240,7 @@ describe('07 - integration - security sync', function () {
 
       .then(function () {
         // await sync
-        return Promise.delay(1000);
+        return Promise.delay(300);
       })
 
       .then(function () {
