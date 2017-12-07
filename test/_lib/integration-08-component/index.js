@@ -9,7 +9,7 @@ Component.prototype.emitEvents = function ($happn, callback) {
   $happn.emit('event4', { event: 'event4', component: $happn.name });
   $happn.emit('event5', { event: 'event5', component: $happn.name });
 
-  setTimeout(callback, 300); // wait for publishes
+  setTimeout(callback, 1000); // wait for publishes + cluster replication
 }
 
 Component.prototype.method1 = function (callback) {

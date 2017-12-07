@@ -130,9 +130,9 @@ describe('08 - integration - security sync load', function () {
       return function (data) {
         var event = data.event;
         var component = data.component;
-        events[username] = events[username] || {};
-        events[username][component] = events[username][component] || {};
-        events[username][component][event] = true;
+        eventResults[username] = eventResults[username] || {};
+        eventResults[username][component] = eventResults[username][component] || {};
+        eventResults[username][component][event] = true;
       }
     }
 
@@ -200,36 +200,117 @@ describe('08 - integration - security sync load', function () {
     var server = randomServer();
     var promises = [];
     for (var i = 0; i < 50; i++) {
-
+      // var server = randomServer();
       var username = randomUser();
       var component = randomComponent();
       var method = randomMethod();
       var event = randomEvent();
 
       promises.push(users.denyMethod(server, username, component, method));
-      delete userlist[username].allowedMethods[component][method];
+      userlist[username].allowedMethods[component][method] = false;
+      // console.log('deny method', username, component, method);
 
       promises.push(users.denyEvent(server, username, component, event));
-      delete userlist[username].allowedEvents[component][method];
-
+      userlist[username].allowedEvents[component][event] = false;
+      // console.log('deny event', username, component, event);
     }
-
     return Promise.all(promises);
   }
 
   function useMethodsAndEvents() {
-    return new Promise(function (resolve, reject) {
-      eventResults = {};
+    eventResults = {};
+    return Promise.resolve()
+      .then(function () {
+        // awiat security sync
+        return Promise.delay(700);
+      })
+      .then(function () {
+        var i, component;
+        var promises = [];
+        for (i = 1; i < 6; i++) {
+          component = 'component' + i;
+          promises.push(servers[0].exchange[component].emitEvents())
+        }
+        return Promise.all(promises)
+      })
+      .then(function () {
+        var i, j, user, component, method;
+        var promises = [];
 
-
-
-      resolve();
-    });
+        for (var username in userlist) {
+          user = userlist[username];
+          for (i = 1; i < 6; i++) {
+            component = 'component' + i;
+            for (j = 1; j < 6; j++) {
+              method = 'method' + j;
+              promises.push(client.callMethod(0, user.client, component, method));
+            }
+          }
+        }
+        return Promise.all(promises);
+      })
+      .then(function (results) {
+        methodResults = results;
+      });
   }
 
   function testResponses() {
     return new Promise(function (resolve, reject) {
-      console.log('testResponses');
+      var username, user, component, method, event, allowed, result;
+      for (username in userlist) {
+        user = userlist[username];
+        for (component in user.allowedEvents) {
+          for (event in user.allowedEvents[component]) {
+            allowed = user.allowedEvents[component][event];
+            // console.log('allowed', username, component, event, allowed);
+            try {
+              if (allowed) {
+                if (!eventResults[username][component][event]) {
+                  return reject(new Error('missing event ' +
+                    username + ' ' +
+                    component + ' ' + event));
+                } else {
+                  // console.log('ok', username, component, event);
+                }
+              }
+            } catch (e) {
+              return reject(new Error('missing event ' +
+                username + ' ' +
+                component + ' ' + event));
+            }
+            try {
+              if (!allowed) {
+                if (eventResults[username][component][event]) {
+                  return reject(new Error('should not have received event ' +
+                    username + ' ' +
+                    component + ' ' + event));
+                }
+              }
+            } catch (e) {
+              // no problem
+            }
+          }
+        }
+      }
+
+      for(var i = 0; i < methodResults.length; i++) {
+        result = methodResults[i];
+        username = result.user;
+        component = result.component;
+        method = result.method;
+        allowed = result.result ? true : false;
+
+        if (userlist[username].allowedMethods[component][method] !== allowed) {
+          if (allowed) {
+            return reject(new Error('should not have allowed ' + username +
+            ' ' + component + ' ' + method));
+          } else {
+            return reject(new Error('should not allowed ' + username +
+            ' ' + component + ' ' + method));
+          }
+        }
+      }
+
       resolve();
     });
   }
@@ -257,7 +338,6 @@ describe('08 - integration - security sync load', function () {
         })
         .catch(callback);
     }
-    callback();
   }, 1);
 
   function call(action) {
@@ -270,10 +350,11 @@ describe('08 - integration - security sync load', function () {
   }
 
   it('handles repetitive security syncronisations', function (done) {
-    this.timeout(20 * 1000);
+    this.timeout(100 * 1000);
+    var now = Date.now();
     var promises = [];
 
-    for (var i = 0; i < 1; i++) {
+    for (var i = 0; i < 5; i++) {
       promises.push(call('randomAdjustPermissions'));
       promises.push(call('useMethodsAndEvents'));
       promises.push(call('testResponses'));
