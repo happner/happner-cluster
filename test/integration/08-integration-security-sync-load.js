@@ -18,6 +18,7 @@ describe('08 - integration - security sync load', function () {
   var userlist = {};
   var eventResults;
   var methodResults;
+  var stop = false;
 
   function serverConfig(seq, minPeers) {
     var config = baseConfig(seq, minPeers, true);
@@ -317,6 +318,7 @@ describe('08 - integration - security sync load', function () {
 
   // one at a time
   var queue = async.queue(function (task, callback) {
+    if (stop) return callback();
     if (task.action == 'randomAdjustPermissions') {
       return randomAdjustPermissions()
         .then(function () {
@@ -364,7 +366,10 @@ describe('08 - integration - security sync load', function () {
       .then(function () {
         done();
       })
-      .catch(done);
+      .catch(function (error) {
+        stop = true;
+        done(error);
+      });
 
   });
 
