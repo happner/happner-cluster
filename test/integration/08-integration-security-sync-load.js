@@ -16,8 +16,8 @@ describe('08 - integration - security sync load', function () {
 
   var servers = [];
   var userlist = {};
-  var events = {};
-  var methods = {};
+  var eventResults;
+  var methodResults;
 
   function serverConfig(seq, minPeers) {
     var config = baseConfig(seq, minPeers, true);
@@ -180,32 +180,49 @@ describe('08 - integration - security sync load', function () {
     return usernames[random];
   }
 
+  function randomServer() {
+    return servers[Math.round(Math.random() * 4)]
+  }
+
+  function randomComponent() {
+    return 'component' + (Math.round(Math.random() * 4) + 1);
+  }
+
+  function randomMethod() {
+    return 'method' + (Math.round(Math.random() * 4) + 1);
+  }
+
+  function randomEvent() {
+    return 'event' + (Math.round(Math.random() * 4) + 1);
+  }
+
   function randomAdjustPermissions() {
+    var server = randomServer();
     var promises = [];
-    for (var i = 0; i < 25; i++) {
+    for (var i = 0; i < 50; i++) {
 
-      
+      var username = randomUser();
+      var component = randomComponent();
+      var method = randomMethod();
+      var event = randomEvent();
 
+      promises.push(users.denyMethod(server, username, component, method));
+      delete userlist[username].allowedMethods[component][method];
+
+      promises.push(users.denyEvent(server, username, component, event));
+      delete userlist[username].allowedEvents[component][method];
 
     }
 
-
-
-    // return new Promise(function (resolve, reject) {
-    //   console.log('randomAdjustPermissions');
-    //
-    //   var username = randomUser();
-    //
-    //   console.log(username);
-    //
-    //
-    //   resolve();
-    // });
+    return Promise.all(promises);
   }
 
   function useMethodsAndEvents() {
     return new Promise(function (resolve, reject) {
-      console.log('useMethodsAndEvents');
+      eventResults = {};
+
+
+
       resolve();
     });
   }
