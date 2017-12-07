@@ -20,6 +20,29 @@ module.exports.add = function (server, username, password, permissions) {
   });
 }
 
+module.exports.generatePermissions = function (user) {
+  var component, event, method, path;
+  var allowedEvents = user.allowedEvents;
+  var allowedMethods = user.allowedMethods;
+  var permissions = {
+    methods: {},
+    events: {}
+  }
+  for (component in allowedMethods) {
+    for (method in allowedMethods[component]) {
+      path = '/DOMAIN_NAME/' + component + '/' + method;
+      permissions.methods[path] = { authorized: true };
+    }
+  }
+  for (component in allowedEvents) {
+    for (event in allowedEvents[component]) {
+      path = '/DOMAIN_NAME/' + component + '/' + event;
+      permissions.events[path] = { authorized: true };
+    }
+  }
+  return permissions;
+}
+
 // can only process one permission change at a time
 var queue = async.queue(function (task, callback) {
   var server = task.server;

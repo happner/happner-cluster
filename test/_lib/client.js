@@ -1,24 +1,34 @@
 var Happner = require('happner-2');
 var Promise = require('bluebird');
 
-module.exports.create = function (username, password, port, callback) {
-  var client = new Happner.MeshClient({
-    hostname: 'localhost',
-    port: port
+module.exports.create = function (username, password, port) {
+  return new Promise(function (resolve, reject) {
+    var client = new Happner.MeshClient({
+      hostname: 'localhost',
+      port: port
+    });
+
+    client.username = username;
+
+    client.login({
+        username: username,
+        password: password
+      })
+      .then(function () {
+        resolve(client);
+      })
+      .catch(reject);
+
   });
+}
 
-  client.username = username;
-
-  client.login({
-      username: username,
-      password: password
-    })
-    .then(function () {
-      callback(null);
-    })
-    .catch(callback);
-
-  return client;
+module.exports.destroy = function (client) {
+  return new Promise(function (resolve, reject) {
+    client.disconnect(function (e) {
+      if (e) return reject(e);
+      resolve();
+    });
+  });
 }
 
 module.exports.callMethod = function (seq, client, component, method) {

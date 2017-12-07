@@ -2,7 +2,6 @@ var path = require('path');
 var HappnerCluster = require('../..');
 var Promise = require('bluebird');
 var expect = require('expect.js');
-var unique = require('array-unique');
 
 var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
@@ -51,11 +50,21 @@ describe('07 - integration - security sync', function () {
   });
 
   before('start client1', function (done) {
-    client1 = client.create('username', 'password', 55001, done);
+    client.create('username', 'password', 55001)
+      .then(function (client) {
+        client1 = client;
+        done();
+      })
+      .catch(done);
   });
 
   before('start client2', function (done) {
-    client2 = client.create('username', 'password', 55002, done);
+    client.create('username', 'password', 55002)
+      .then(function (client) {
+        client2 = client;
+        done();
+      })
+      .catch(done);
   });
 
   after('stop client 1', function (done) {
