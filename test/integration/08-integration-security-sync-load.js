@@ -223,7 +223,7 @@ describe('08 - integration - security sync load', function () {
     return Promise.resolve()
       .then(function () {
         // awiat security sync
-        return Promise.delay(700);
+        return Promise.delay(2000);
       })
       .then(function () {
         var i, component;
@@ -352,7 +352,7 @@ describe('08 - integration - security sync load', function () {
   }
 
   it('handles repetitive security syncronisations', function (done) {
-    this.timeout(100 * 1000);
+    this.timeout(200 * 1000);
     var now = Date.now();
     var promises = [];
 
