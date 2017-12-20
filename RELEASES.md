@@ -35,3 +35,8 @@
 ----------------
   - integrated happn subscription format fix
   - updated happn and happner
+
+5.0.0 2017-12-20
+----------------
+  - updated happner/happn
+  - added tests for security sync

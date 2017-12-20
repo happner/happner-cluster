@@ -1,6 +1,6 @@
 {
   "name": "happner-cluster",
-  "version": "5.0.0-prerelease.1",
+  "version": "5.0.0-prerelease5.2",
   "description": "Extends happner with clustering capabilities",
   "main": "index.js",
   "scripts": {
@@ -29,9 +29,9 @@
   },
   "dependencies": {
     "bluebird": "^3.5.0",
-    "happn-cluster": "5.0.0-prerelease.1",
-    "happner-2": "7.0.0-alpha.3",
-    "happner-client": "4.0.0-prerelease.1",
+    "happn-cluster": "prerelease5",
+    "happner-2": "prerelease",
+    "happner-client": "prerelease4",
     "semver": "^5.3.0"
   }
 }
