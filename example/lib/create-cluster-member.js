@@ -1,4 +1,5 @@
 var HappnerCluster = require('../..');
+var path = require('path');
 
 module.exports = function (seq) {
 
@@ -38,11 +39,11 @@ module.exports = function (seq) {
     }
   };
 
-  // see ../node_modules modules and components
-
   if (seq == 0) {
     config.modules = {
-      'local-component': {}
+      'local-component': {
+          path: path.resolve(__dirname, 'local-component')
+      }
     };
     config.components = {
       'local-component': {
@@ -54,7 +55,9 @@ module.exports = function (seq) {
 
   if (seq > 0) {
     config.modules = {
-      'remote-component': {}
+      'remote-component': {
+          path: path.resolve(__dirname, 'remote-component')
+      }
     };
     config.components = {
       'remote-component': {

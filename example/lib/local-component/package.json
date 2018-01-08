@@ -1,0 +1,17 @@
+{
+  "name": "local-component",
+  "version": "1.0.0",
+  "main": "index.js",
+  "happner": {
+    "dependencies": {
+      "local-component": {
+        "remote-component": {
+          "version": "^1.0.0",
+          "methods": {
+            "method1": {}
+          }
+        }
+      }
+    }
+  }
+}
