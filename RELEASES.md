@@ -35,3 +35,7 @@
 ----------------
   - integrated happn subscription format fix
   - updated happn and happner
+
+4.1.0 2018-01-09
+----------------
+  - updated to happn-cluster 4.2.0 and happner-client 3.0.1
