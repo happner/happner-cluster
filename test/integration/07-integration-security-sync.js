@@ -166,7 +166,7 @@ describe('07 - integration - security sync', function () {
 
   });
 
-  it('handles security sync for events', function (done) {
+  it.only('handles security sync for events', function (done) {
     this.timeout(20 * 1000);
 
     var events = {}
@@ -242,6 +242,7 @@ describe('07 - integration - security sync', function () {
       })
 
       .then(function () {
+        console.log('DENY');
         return Promise.all([
           users.denyEvent(servers[0], 'username', 'component1', 'event1'),
         ]);
