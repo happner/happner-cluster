@@ -102,7 +102,7 @@ describe('02 - integration - components', function () {
   }
 
   before('start cluster', function (done) {
-    this.timeout(4000);
+    this.timeout(20000);
 
     Promise.all([
         HappnerCluster.create(localInstanceConfig(1)),

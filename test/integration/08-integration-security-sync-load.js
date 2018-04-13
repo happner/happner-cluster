@@ -54,7 +54,7 @@ describe('08 - integration - security sync load', function () {
   });
 
   before('start cluster', function (done) {
-    this.timeout(8000);
+    this.timeout(20000);
     HappnerCluster.create(serverConfig(1, 1))
       .then(function (server) {
         servers.push(server);

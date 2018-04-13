@@ -30,7 +30,7 @@ describe('04 - integration - create and destroy components', function () {
   }
 
   beforeEach('start cluster', function (done) {
-    this.timeout(4000);
+    this.timeout(20000);
 
     Promise.all([
       HappnerCluster.create(localInstanceConfig(1))
