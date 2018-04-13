@@ -40,6 +40,7 @@
 ----------------
   - updated to happn-cluster 4.2.0 and happner-client 3.0.1
 
-5.0.0
+5.0.0 2018-04-13
 ----------------
+  - updated happn-cluster and happner-client and happner-2
   - added tests for security update replication into cluster

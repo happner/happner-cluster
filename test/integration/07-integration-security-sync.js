@@ -166,7 +166,7 @@ describe('07 - integration - security sync', function () {
 
   });
 
-  it.only('handles security sync for events', function (done) {
+  it('handles security sync for events', function (done) {
     this.timeout(20 * 1000);
 
     var events = {};
@@ -263,13 +263,12 @@ describe('07 - integration - security sync', function () {
       })
 
       .then(function () {
-        console.log('\n\n\nTODO: pending permission update to subscriptions\n\n');
-        // expect(events).to.eql({
-        //   // 1: 'event1',
-        //   2: 'event2',
-        //   // 3: 'event1',
-        //   4: 'event2'
-        // });
+        expect(events).to.eql({
+          // 1: 'event1',
+          2: 'event2',
+          // 3: 'event1',
+          4: 'event2'
+        });
       })
 
       .then(function () {
