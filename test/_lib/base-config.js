@@ -1,4 +1,4 @@
-module.exports = function (seq, minPeers) {
+module.exports = function (seq, minPeers, secure) {
   return {
     name: 'MESH_' + seq,
     domain: 'DOMAIN_NAME',
@@ -8,7 +8,7 @@ module.exports = function (seq, minPeers) {
       responseTimeout: 20 * 1000
     },
     happn: {
-      secure: false,
+      secure: secure,
       services: {
         membership: {
           config: {

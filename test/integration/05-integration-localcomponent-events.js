@@ -7,6 +7,7 @@ describe('05 - integration - localcomponent events', function () {
   var server;
 
   before('start server', function (done) {
+    this.timeout(20000);
     HappnerCluster.create({
       name: 'NODE-01',
       domain: 'DOMAIN_NAME',

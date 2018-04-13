@@ -21,7 +21,7 @@ describe('01 - integration - start instance', function () {
 
   it('starts', function (done) {
 
-    this.timeout(4000);
+    this.timeout(20000);
 
     HappnerCluster.create({
       domain: 'DOMAIN_NAME',

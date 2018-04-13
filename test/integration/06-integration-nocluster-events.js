@@ -40,7 +40,7 @@ describe('06 - integration - nocluster events', function () {
   }
 
   beforeEach('start cluster', function (done) {
-    this.timeout(4000);
+    this.timeout(20000);
 
     Promise.all([
       HappnerCluster.create(localInstanceConfig(1)),
