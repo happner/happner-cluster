@@ -1,4 +1,5 @@
 var path = require('path');
+var Happner = require('happner-2');
 var HappnerCluster = require('../..');
 var Promise = require('bluebird');
 var expect = require('expect.js');
@@ -178,11 +179,11 @@ describe('07 - integration - security sync', function () {
     }
 
     Promise.all([
-      client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
-      client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
-      client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
-      client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
-    ])
+        client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
+        client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
+        client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
+        client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
+      ])
 
       .then(function (results) {
         expect(results).to.eql([
@@ -295,6 +296,249 @@ describe('07 - integration - security sync', function () {
 
       .catch(done);
 
-  })
+  });
+
+  context('full spectum security operations', function () {
+
+    function performAction(port, username, component, method) {
+      return new Promise(function (resolve, reject) {
+        var result;
+        var client = new Happner.MeshClient({
+          hostname: 'localhost',
+          port: port
+        });
+
+        client.login({
+          username: username,
+          password: 'password'
+        })
+
+        .then(function () {
+          return client.exchange[component][method]();
+        })
+
+        .then(function (result) {
+          client.disconnect(function (e) {
+            if (e) console.log('disconnect error', e);
+          });
+          resolve();
+        })
+
+        .catch(function (e) {
+          client.disconnect(function (e) {
+            if (e) console.log('disconnect error', e);
+          });
+          reject(e);
+        });
+
+      });
+    }
+
+    it('handles sync for add user and group and link and add permission and unlink group', function (done) {
+
+      var user, group;
+
+      servers[0].exchange.security.upsertUser({
+          username: 'username1',
+          password: 'password'
+        })
+
+        .then(function (_user) {
+          user = _user;
+          return servers[0].exchange.security.upsertGroup({
+            name: 'group1'
+          });
+        })
+
+        .then(function (_group) {
+          group = _group;
+          return servers[0].exchange.security.linkGroup(group, user);
+        })
+
+        .then(function () {
+          return servers[0].exchange.security.addGroupPermissions('group1', {
+            methods: {
+              '/DOMAIN_NAME/component1/method1': { authorized: true }
+            }
+          });
+        })
+
+        .then(function () {
+          return Promise.delay(400);
+        })
+
+        .then(function () {
+          return performAction(55002, 'username1', 'component1', 'method1');
+        })
+
+        .then(function () {
+          return servers[0].exchange.security.unlinkGroup(group, user);
+        })
+
+        .then(function () {
+          return Promise.delay(400);
+        })
+
+        .then(function () {
+          return new Promise(function (resolve, reject) {
+            performAction(55002, 'username1', 'component1', 'method1')
+              .then(function () {
+                reject(new Error('missing AccessDeniedError 1'));
+              })
+              .catch(function (e) {
+                if (e.message == 'unauthorized' && e.name == 'AccessDenied') {
+                  return resolve();
+                }
+                reject(new Error('missing AccessDeniedError 2'));
+              });
+          });
+        })
+
+        .then(function () {
+          done();
+        })
+
+        .catch(done);
+
+    });
+
+    it('handles sync for delete group', function (done) {
+
+      var user, group;
+
+      servers[0].exchange.security.upsertUser({
+          username: 'username2',
+          password: 'password'
+        })
+
+        .then(function (_user) {
+          user = _user;
+          return servers[0].exchange.security.upsertGroup({
+            name: 'group2'
+          });
+        })
+
+        .then(function (_group) {
+          group = _group;
+          return servers[0].exchange.security.linkGroup(group, user);
+        })
+
+        .then(function () {
+          return servers[0].exchange.security.addGroupPermissions('group2', {
+            methods: {
+              '/DOMAIN_NAME/component1/method1': { authorized: true }
+            }
+          });
+        })
+
+        .then(function () {
+          return Promise.delay(400);
+        })
+
+        .then(function () {
+          return performAction(55002, 'username2', 'component1', 'method1');
+        })
+
+        .then(function () {
+          return servers[0].exchange.security.deleteGroup(group);
+        })
+
+        .then(function () {
+          return Promise.delay(400);
+        })
+
+        .then(function () {
+          return new Promise(function (resolve, reject) {
+            performAction(55002, 'username2', 'component1', 'method1')
+              .then(function () {
+                reject(new Error('missing AccessDeniedError 1'));
+              })
+              .catch(function (e) {
+                if (e.message == 'unauthorized' && e.name == 'AccessDenied') {
+                  return resolve();
+                }
+                reject(new Error('missing AccessDeniedError 2'));
+              });
+          });
+        })
+
+        .then(function () {
+          done();
+        })
+
+        .catch(done);
+
+    });
+
+    it('handles sync for delete user', function (done) {
+
+      var user, group;
+
+      servers[0].exchange.security.upsertUser({
+          username: 'username3',
+          password: 'password'
+        })
+
+        .then(function (_user) {
+          user = _user;
+          return servers[0].exchange.security.upsertGroup({
+            name: 'group3'
+          });
+        })
+
+        .then(function (_group) {
+          group = _group;
+          return servers[0].exchange.security.linkGroup(group, user);
+        })
+
+        .then(function () {
+          return servers[0].exchange.security.addGroupPermissions('group3', {
+            methods: {
+              '/DOMAIN_NAME/component1/method1': { authorized: true }
+            }
+          });
+        })
+
+        .then(function () {
+          return Promise.delay(400);
+        })
+
+        .then(function () {
+          return performAction(55002, 'username3', 'component1', 'method1');
+        })
+
+        .then(function () {
+          return servers[0].exchange.security.deleteUser(user);
+        })
+
+        .then(function () {
+          return Promise.delay(400);
+        })
+
+        .then(function () {
+          return new Promise(function (resolve, reject) {
+            performAction(55002, 'username3', 'component1', 'method1')
+              .then(function () {
+                reject(new Error('missing AccessDeniedError 1'));
+              })
+              .catch(function (e) {
+                if (e.message == 'Invalid credentials' && e.name == 'AccessDenied') {
+                  return resolve();
+                }
+                console.log('EEEE', e);
+                reject(new Error('missing AccessDeniedError 2'));
+              });
+          });
+        })
+
+        .then(function () {
+          done();
+        })
+
+        .catch(done);
+
+    });
+
+  });
 
 });
