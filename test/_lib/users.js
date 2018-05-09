@@ -52,10 +52,6 @@ var queue = async.queue(function (task, callback) {
   server.exchange.security[method](group, permissions, callback);
 }, 1);
 
-module.exports.createUser = function (server, username, password) {
-
-}
-
 module.exports.allowMethod = function (server, username, component, method) {
   var group = username + '_group';
   var path = '/DOMAIN_NAME/' + component + '/' + method;
