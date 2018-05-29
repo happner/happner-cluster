@@ -12,7 +12,7 @@ var clearMongoCollection = require('../_lib/clear-mongo-collection');
 var users = require('../_lib/users');
 var client = require('../_lib/client');
 
-describe('08 - integration - security sync load', function () {
+xdescribe('08 - integration - security sync load', function () {
 
   var servers = [];
   var userlist = {};

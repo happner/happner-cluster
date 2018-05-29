@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "LOG_LEVEL=warn mocha test/unit test/integration",
-    "test-cover": "LOG_LEVEL=warn istanbul cover _mocha -- test/unit test/integration"
+    "test-cover": "LOG_LEVEL=warn istanbul cover _mocha -- test/unit test/integration",
+    "test-trace": "LOG_LEVEL=trace _mocha -- test/unit test/integration",
+    "test-mocha": "LOG_LEVEL=warn _mocha -- test/unit test/integration"
   },
   "repository": {
     "type": "git",
@@ -30,9 +32,9 @@
   },
   "dependencies": {
     "bluebird": "^3.5.0",
-    "happn-cluster": "^6.0.0",
+    "happn-cluster": "debug",
     "happner-2": "^8.0.0",
-    "happner-client": "^5.0.0",
+    "happner-client": "debug",
     "semver": "^5.3.0"
   }
 }
