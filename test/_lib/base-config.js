@@ -10,6 +10,11 @@ module.exports = function (seq, minPeers, secure) {
     happn: {
       secure: secure,
       services: {
+        data:{
+          config:{
+            autoUpdateDBVersion:true
+          }
+        },
         membership: {
           config: {
             host: '127.0.0.1',

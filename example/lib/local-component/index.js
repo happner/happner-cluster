@@ -11,6 +11,9 @@ LocalComponent.prototype.start = function ($happn, callback) {
   var sequence = 0;
   this.interval = setInterval(function () {
     !function (seq) {
+
+      $happn.data.set('/something/here', {seq:seq});
+
       $happn.exchange['remote-component'].method1(seq)
         .then(function (result) {
           $happn.log.info('%d reply %s', seq, result);

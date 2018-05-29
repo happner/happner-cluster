@@ -44,3 +44,7 @@
 ----------------
   - updated happn-cluster and happner-client and happner-2
   - added tests for security update replication into cluster
+
+6.0.0 2018-05-24
+----------------
+  - updated happn-cluster and happner-client and happner-2
