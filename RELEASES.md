@@ -48,3 +48,7 @@
 6.0.0 2018-05-24
 ----------------
   - updated happn-cluster and happner-client and happner-2
+
+6.0.1 2018-05-29
+----------------
+  - updated package-lock
