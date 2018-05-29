@@ -34,7 +34,7 @@
     "bluebird": "^3.5.0",
     "happn-cluster": "^6.0.0",
     "happner-2": "^8.0.0",
-    "happner-client": "5.0.1-debug.0",
+    "happner-client": "5.0.1-debug.1",
     "semver": "^5.3.0"
   }
 }
