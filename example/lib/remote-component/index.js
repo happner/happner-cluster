@@ -17,6 +17,16 @@ RemoteComponent.prototype.stop = function ($happn, callback) {
   callback();
 };
 
+var timeout = 35000;
+
 RemoteComponent.prototype.method1 = function ($happn, seq, callback) {
-  callback(null, seq + ':' + $happn.info.mesh.name  + ':' + $happn.name + ':method1');
+
+  if (timeout > 1) timeout = timeout - 1000;
+
+  setTimeout(function(){
+
+    console.log('timeout is:::', timeout);
+
+    callback(null, seq + ':' + $happn.info.mesh.name  + ':' + $happn.name + ':method1');
+  }, timeout);
 };

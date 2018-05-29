@@ -32,6 +32,11 @@ describe('01 - integration - start instance', function () {
           responseTimeout: 30 * 1000
         },
         services: {
+          data:{
+            config:{
+              autoUpdateDBVersion:true
+            }
+          },
           membership: {
             config: {
               seed: true,
