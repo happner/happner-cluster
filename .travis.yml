@@ -12,6 +12,7 @@ node_js:
   - "6"
   - "8"
 
-script: "npm run-script test-cover"
+script:
+  - travis-retry npm run-script test-cover
 
 after_script: "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
