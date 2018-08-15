@@ -56,4 +56,3 @@
 6.1.0 2018-07-17
 
   - updated package-lock
-  - updated travis to retry
