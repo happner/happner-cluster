@@ -20,15 +20,15 @@ Happner-cluster and happner configs are almost identical excpet that cluster nod
 var HappnerCluster = require('happner-cluster');
 
 var config = {
-  
+
   // name: 'UNIQUE_NAME', // allow default uniqie name
   domain: 'DOMAIN_NAME', // same as other cluster nodes
-  
+
   cluster: {
     //  requestTimeout: 20 * 1000, // exchange timeouts
     //  responseTimeout: 30 * 1000
   },
-  
+
   happn: { // was "datalayer"
     services: {
       data: {
@@ -47,7 +47,7 @@ var config = {
             //    url: 'mongodb://username:password@127.0.0.1:27017,127.0.0.1:27018,127.0.0.1:27019/happn?replicaSet=test-set&ssl=true&authSource=admin'
             //  }
             //},
-            
+
             // defaulted by happner-cluster to prevent overwrites in shared db
             // where each cluster server requires unique data at certain paths
             //{
@@ -67,10 +67,10 @@ var config = {
       }
     }
   },
-    
+
   modules: {
   },
-    
+
   components: {
   }
 }
@@ -110,7 +110,7 @@ Component1.prototype.method = function ($happner, callback) {
   $happner.exchange['remote-component'].method1(function (e, result) {
     callback(e, result);
   });
-  
+
   // also
   // $happner.event['remote-component'].on() .off() .offPath()
 }
@@ -128,7 +128,7 @@ Component1.prototype.method = function ($happner, callback) {
       'component1': { // the component name which has the dependencies
                       // (allows 1 node_module to define more than 1 mesh component class)
         'remote-component': {
-          version: '^1.0.0', // will only use matching versions from 
+          version: '^1.0.0', // will only use matching versions from
                              // elsewhefre in the cluster
           methods: { // list of methods desired on the remote compnoent
             method1: {},
@@ -149,4 +149,3 @@ __Note:__
 
 * If a component is defined locally and remotely then local is preferred and remote never used.
 * If the component is defined on multiple remote nodes, a round-robin is performed on the method calls.
-

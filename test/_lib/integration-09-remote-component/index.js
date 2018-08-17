@@ -15,10 +15,10 @@ Component.prototype.stop = function ($happn, callback) {
   callback();
 };
 
-Component.prototype.method1 = function($happn, callback) {
-  callback(null, $happn.info.mesh.name + ':component3:method1');
+Component.prototype.brokeredMethod1 = function($happn, callback) {
+  callback(null, $happn.info.mesh.name + ':remoteComponent:brokeredMethod1');
 };
 
-Component.prototype.method2 = function($happn, callback) {
-  callback(null, $happn.info.mesh.name + ':component3:method2');
+Component.prototype.brokeredMethod2 = function($happn, callback) {
+  callback(null, $happn.info.mesh.name + ':remoteComponent:brokeredMethod2');
 };

@@ -1,5 +1,5 @@
 {
-  "name": "local-component1",
+  "name": "local-component",
   "version": "1.0.1",
   "happner": {
     "dependencies": {
