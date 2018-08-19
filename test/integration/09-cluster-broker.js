@@ -111,15 +111,10 @@ describe('09 - integration - broker', function() {
 
     xit('denies permissions to access the internal components methods and events for the user, connects a client to the local instance, and is unable to access the remote component via the broker', function(done) {
 
-      users.denyMethod(localInstance, 'username', 'remoteComponent3', 'method1').then(function() {
+    });
 
-        client.create('username', 'password', 55001)
-          .then(function(client) {
-            expect(client.exchange.remoteComponent3).to.be(undefined);
-            done();
-          })
-          .catch(done);
-      });
+    xit('denies permissions to access to a data path that is used by the internal component, the brokered method returns an Access Denied method because preserveOrigin is in effect', function(done) {
+
     });
   });
 

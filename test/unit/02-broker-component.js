@@ -4,22 +4,22 @@ var HappnCluster = require('happn-cluster');
 var Promise = require('bluebird');
 var expect = require('expect.js');
 
-describe('02 - unit - broker component', function() {
+describe('02 - unit - brokerage component', function() {
 
-  it('injects and detaches the broker component', function(done) {
+  it('injects and detaches the brokerage component', function(done) {
     //package, mesh, client
     var mockModels = {};
     var mockMesh = {};
     var mockClient = {};
 
-    var broker = require('../../lib/broker-component').create(mockModels, mockMesh, mockClient);
+    var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
 
-    broker.inject(function(e) {
+    brokerage.inject(function(e) {
       if (e) return done(e);
-      expect(broker.__models).to.be(mockModels);
-      expect(broker.__mesh).to.be(mockMesh);
-      expect(broker.__client).to.be(mockClient);
-      broker.detach(done);
+      expect(brokerage.__models).to.be(mockModels);
+      expect(brokerage.__mesh).to.be(mockMesh);
+      expect(brokerage.__client).to.be(mockClient);
+      brokerage.detach(done);
     });
   });
 
@@ -43,9 +43,9 @@ describe('02 - unit - broker component', function() {
 
     try {
 
-      var broker = require('../../lib/broker-component').create(mockModels, mockMesh, mockClient);
+      var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
 
-      broker.inject(function(){
+      brokerage.inject(function(){
         done(new Error('unexpected...'))
       });
     } catch (e) {
