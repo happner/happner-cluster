@@ -13,6 +13,8 @@ var clearMongoCollection = require('../_lib/clear-mongo-collection');
 
 describe('09 - integration - broker', function() {
 
+  this.timeout(15000);
+
   var servers = [],
     localInstance;
 
@@ -55,26 +57,78 @@ describe('09 - integration - broker', function() {
     return config;
   }
 
-  before('clear mongo collection', function(done) {
+  beforeEach('clear mongo collection', function(done) {
     clearMongoCollection('mongodb://localhost', 'happn-cluster', done);
   });
 
-  before('start cluster', function(done) {
-    this.timeout(20000);
-    HappnerCluster.create(remoteInstance1Config(1, 1))
-      .then(function(server) {
-        servers.push(server);
-        return HappnerCluster.create(localInstanceConfig(2, 2));
-      })
-      .then(function(server) {
-        servers.push(server);
-        localInstance = servers[1];
-        //server, username, password, permissions
-        users.add(localInstance, 'username', 'password').then(function() {
-          done();
-        }).catch(done);
-      })
-  });
+  function startInternal(id, clusterMin){
+    return HappnerCluster.create(remoteInstance1Config(id, clusterMin));
+  }
+
+  function startEdge(id, clusterMin){
+    return HappnerCluster.create(localInstanceConfig(id, clusterMin));
+  }
+
+  function startClusterInternalFirst(){
+
+    return new Promise(function(resolve, reject){
+      stopCluster(servers, function(e){
+        if (e) return reject(e);
+        servers = [];
+        startInternal(1,1)
+        .then(function(server){
+          servers.push(server);
+          localInstance = server;
+          return startEdge(2, 2);
+        })
+        .then(function(server){
+          servers.push(server);
+          return users.add(localInstance, 'username', 'password');
+        })
+        .then(resolve)
+        .catch(reject);
+      });
+    });
+  }
+
+  function startClusterEdgeFirst(){
+
+    return new Promise(function(resolve, reject){
+      stopCluster(servers, function(e){
+        if (e) return reject(e);
+        servers = [];
+        startEdge(1,1)
+        .then(function(server){
+          servers.push(server);
+          return startInternal(2, 2);
+        })
+        .then(function(server){
+          servers.push(server);
+          localInstance = server;
+          return users.add(localInstance, 'username', 'password');
+        })
+        .then(resolve)
+        .catch(reject);
+      });
+    });
+  }
+
+  // before('start cluster', function(done) {
+  //   this.timeout(20000);
+  //   HappnerCluster.create(remoteInstance1Config(1, 1))
+  //     .then(function(server) {
+  //       servers.push(server);
+  //       return HappnerCluster.create(localInstanceConfig(2, 2));
+  //     })
+  //     .then(function(server) {
+  //       servers.push(server);
+  //       localInstance = servers[1];
+  //       //server, username, password, permissions
+  //       users.add(localInstance, 'username', 'password').then(function() {
+  //         done();
+  //       }).catch(done);
+  //     })
+  // });
 
   after('stop cluster', function(done) {
     if (!servers) return done();
@@ -83,16 +137,19 @@ describe('09 - integration - broker', function() {
 
   context('exchange', function() {
 
-    it('connects a client to the local instance, and is able to access the remote component via the broker', function(done) {
+    it('starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker', function(done) {
 
-      users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod')
+      startClusterInternalFirst()
+      .then(function(){
+        return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+      })
       .then(function() {
         return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
       })
-      .then(function(){
+      .then(function() {
         return testclient.create('username', 'password', 55002);
       })
-      .then(function(client){
+      .then(function(client) {
         //first test our broker components methods are directly callable
         client.exchange.brokerComponent.directMethod(function(e, result) {
 
@@ -102,6 +159,40 @@ describe('09 - integration - broker', function() {
           client.exchange.remoteComponent.brokeredMethod1(function(e, result) {
             expect(e).to.be(null);
             expect(result).to.be('MESH_1:remoteComponent:brokeredMethod1');
+            done();
+          });
+        });
+      })
+      .catch(done);
+    });
+
+    it('starts up the edge cluster node first, we assert that the brokered method is not implemented, we than start the internal node (with brokered component), pause and then assert we are able to run the brokered method', function(done) {
+      startClusterEdgeFirst()
+      .then(function(){
+        return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
+      })
+      .then(function(){
+        console.log('pausing...');
+        return new Promise(function(resolve){
+          setTimeout(resolve, 5000);
+        });
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55001);
+      })
+      .then(function(client) {
+        //first test our broker components methods are directly callable
+        client.exchange.brokerComponent.directMethod(function(e, result) {
+
+          expect(e).to.be(null);
+          expect(result).to.be('MESH_1:brokerComponent:directMethod');
+          //call an injected method
+          client.exchange.remoteComponent.brokeredMethod1(function(e, result) {
+            expect(e).to.be(null);
+            expect(result).to.be('MESH_2:remoteComponent:brokeredMethod1');
             done();
           });
         });
@@ -120,5 +211,41 @@ describe('09 - integration - broker', function() {
 
   context('events', function() {
 
+    it('connects a client to the local instance, and is able to access the remote component events via the broker', function(done) {
+
+        startClusterInternalFirst()
+        .then(function(){
+          return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+        })
+        .then(function() {
+          return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredEventEmitMethod');
+        })
+        .then(function() {
+          return users.allowEvent(localInstance, 'username', 'remoteComponent', '/brokered/event');
+        })
+        .then(function() {
+          return testclient.create('username', 'password', 55002);
+        })
+        .then(function(client) {
+          //first test our broker components methods are directly callable
+          client.exchange.brokerComponent.directMethod(function(e, result) {
+
+            expect(e).to.be(null);
+            expect(result).to.be('MESH_2:brokerComponent:directMethod');
+
+            client.event.remoteComponent.on('/brokered/event', function(data) {
+              expect(data).to.eql({"brokered":{"event":{"data":{"from":"MESH_1"}}}});
+              done();
+            }, function(e){
+              expect(e).to.be(null);
+              client.exchange.remoteComponent.brokeredEventEmitMethod(function(e, result) {
+                expect(e).to.be(null);
+                expect(result).to.be('MESH_1:remoteComponent:brokeredEventEmitMethod');
+              });
+            });
+          });
+        })
+        .catch(done);
+    });
   });
 });

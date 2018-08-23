@@ -7,7 +7,8 @@
         "remoteComponent": {
           "version": "^2.0.0",
           "methods": {
-            "brokeredMethod1": {}
+            "brokeredMethod1": {},
+            "brokeredEventEmitMethod":{}
           }
         }
       }
