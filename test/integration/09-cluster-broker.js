@@ -120,23 +120,6 @@ describe.only('09 - integration - broker', function() {
     });
   }
 
-  // before('start cluster', function(done) {
-  //   this.timeout(20000);
-  //   HappnerCluster.create(remoteInstance1Config(1, 1))
-  //     .then(function(server) {
-  //       servers.push(server);
-  //       return HappnerCluster.create(localInstanceConfig(2, 2));
-  //     })
-  //     .then(function(server) {
-  //       servers.push(server);
-  //       localInstance = servers[1];
-  //       //server, username, password, permissions
-  //       users.add(localInstance, 'username', 'password').then(function() {
-  //         done();
-  //       }).catch(done);
-  //     })
-  // });
-
   after('stop cluster', function(done) {
     if (!servers) return done();
     stopCluster(servers, done);
@@ -262,6 +245,21 @@ describe.only('09 - integration - broker', function() {
           });
         })
         .catch(done);
+    });
+  });
+
+  context('errors', function() {
+
+    xit('ensures an error is raised if we are injecting internal components with duplicate names', function(done){
+
+    });
+
+    xit('ensures an error is handled if we are injecting internal components failed start methods', function(done){
+
+    });
+
+    xit('ensures an error is handled if we are injecting internal components failed stop methods', function(done){
+
     });
   });
 });

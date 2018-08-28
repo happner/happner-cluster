@@ -150,8 +150,8 @@ __Note:__
 * If a component is defined locally and remotely then local is preferred and remote never used.
 * If the component is defined on multiple remote nodes, a round-robin is performed on the method calls.
 
-Brokered components
--------------------
+Brokered components using $broker
+---------------------------------
 *Using special syntax in the package.json happner config, it is possible to broker remote dependencies as if they were local components served up by the mesh*
 
 The following is an example package.json of a component that is brokering requests to the internal dependency remoteComponent, note the special $broker dependency name, which instructs the cluster to inject remoteComponent into the meshes exchange:
@@ -174,3 +174,30 @@ The following is an example package.json of a component that is brokering reques
   }
 }
 ```
+Based on the above setup, clients are now able to connect to an edge cluster node (which has declared the broker component) and call the brokered dependencies as if they were loaded as components on the edge node:
+
+```javascript
+
+var client = new Happner.MeshClient({
+  hostname: 'localhost',
+  port: 8080
+});
+
+client.login({
+    username: 'username',
+    password: 'password'
+  })
+  .then(function () {
+    //NB NB: remoteComponent is now injected into the exchange as if the internal component
+    // were a declared component on the edge cluster node:
+    return client.exchange.remoteComponent.brokeredMethod1();
+  })
+  .then(function(result){
+    //happy days...
+  })
+
+```
+
+__Note:__
+
+* Duplicate injected dependencies (components with the same name brokered from different brokers) will fail to load, even if they are pointing to internal components with different versions.
