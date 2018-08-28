@@ -11,7 +11,7 @@ var testclient = require('../_lib/client');
 
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
 
-describe('09 - integration - broker', function() {
+describe.only('09 - integration - broker', function() {
 
   this.timeout(15000);
 
@@ -46,10 +46,17 @@ describe('09 - integration - broker', function() {
     config.modules = {
       'remoteComponent': {
         path: libDir + 'integration-09-remote-component'
+      },
+      'remoteComponent1': {
+        path: libDir + 'integration-09-remote-component-1'
       }
     };
     config.components = {
       'remoteComponent': {
+        startMethod: 'start',
+        stopMethod: 'stop'
+      },
+      'remoteComponent1': {
         startMethod: 'start',
         stopMethod: 'stop'
       }
@@ -139,6 +146,8 @@ describe('09 - integration - broker', function() {
 
     it('starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker', function(done) {
 
+      var thisClient;
+
       startClusterInternalFirst()
       .then(function(){
         return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
@@ -147,26 +156,33 @@ describe('09 - integration - broker', function() {
         return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
       })
       .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent1', 'brokeredMethod1');
+      })
+      .then(function() {
         return testclient.create('username', 'password', 55002);
       })
       .then(function(client) {
+        thisClient = client;
         //first test our broker components methods are directly callable
-        client.exchange.brokerComponent.directMethod(function(e, result) {
-
-          expect(e).to.be(null);
-          expect(result).to.be('MESH_2:brokerComponent:directMethod');
-          //call an injected method
-          client.exchange.remoteComponent.brokeredMethod1(function(e, result) {
-            expect(e).to.be(null);
-            expect(result).to.be('MESH_1:remoteComponent:brokeredMethod1');
-            done();
-          });
-        });
+        return thisClient.exchange.brokerComponent.directMethod();
+      })
+      .then(function(result) {
+        expect(result).to.be('MESH_2:brokerComponent:directMethod');
+        //call an injected method
+        return thisClient.exchange.remoteComponent.brokeredMethod1();
+      })
+      .then(function(result) {
+        expect(result).to.be('MESH_1:remoteComponent:brokeredMethod1');
+        return thisClient.exchange.remoteComponent1.brokeredMethod1();
+      })
+      .then(function(result) {
+        expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod1');
+        done();
       })
       .catch(done);
     });
 
-    it('starts up the edge cluster node first, we assert that the brokered method is not implemented, we than start the internal node (with brokered component), pause and then assert we are able to run the brokered method', function(done) {
+    it('starts up the edge cluster node first, we than start the internal node (with brokered component), pause and then assert we are able to run the brokered method', function(done) {
       startClusterEdgeFirst()
       .then(function(){
         return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');

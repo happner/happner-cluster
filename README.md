@@ -149,3 +149,28 @@ __Note:__
 
 * If a component is defined locally and remotely then local is preferred and remote never used.
 * If the component is defined on multiple remote nodes, a round-robin is performed on the method calls.
+
+Brokered components
+-------------------
+*Using special syntax in the package.json happner config, it is possible to broker remote dependencies as if they were local components served up by the mesh*
+
+The following is an example package.json of a component that is brokering requests to the internal dependency remoteComponent, note the special $broker dependency name, which instructs the cluster to inject remoteComponent into the meshes exchange:
+```json
+{
+  "name": "broker-component",
+  "version": "1.0.1",
+  "happner": {
+    "dependencies": {
+      "$broker": {
+        "remoteComponent": {
+          "version": "^2.0.0",
+          "methods": {
+            "brokeredMethod1": {},
+            "brokeredEventEmitMethod":{}
+          }
+        }
+      }
+    }
+  }
+}
+```

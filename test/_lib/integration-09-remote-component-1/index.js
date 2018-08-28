@@ -11,15 +11,15 @@ Component.prototype.stop = function($happn, callback) {
 };
 
 Component.prototype.brokeredMethod1 = function($happn, callback) {
-  callback(null, $happn.info.mesh.name + ':remoteComponent:brokeredMethod1');
+  callback(null, $happn.info.mesh.name + ':remoteComponent1:brokeredMethod1');
 };
 
 Component.prototype.brokeredMethod2 = function($happn, callback) {
-  callback(null, $happn.info.mesh.name + ':remoteComponent:brokeredMethod2');
+  callback(null, $happn.info.mesh.name + ':remoteComponent1:brokeredMethod2');
 };
 
 Component.prototype.brokeredEventEmitMethod = function($happn, callback) {
-  $happn.emit('/brokered/event', {
+  $happn.emit('/brokered/event1', {
     brokered: {
       event: {
         data: {
@@ -28,5 +28,5 @@ Component.prototype.brokeredEventEmitMethod = function($happn, callback) {
       }
     }
   });
-  callback(null, $happn.info.mesh.name + ':remoteComponent:brokeredEventEmitMethod');
+  callback(null, $happn.info.mesh.name + ':remoteComponent1:brokeredEventEmitMethod');
 };
