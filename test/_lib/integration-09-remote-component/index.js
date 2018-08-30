@@ -18,6 +18,14 @@ Component.prototype.brokeredMethod2 = function($happn, callback) {
   callback(null, $happn.info.mesh.name + ':remoteComponent:brokeredMethod2');
 };
 
+Component.prototype.brokeredMethodFail = function($happn, callback) {
+  callback(new Error('test error'));
+};
+
+Component.prototype.brokeredMethodTimeout = function($happn, callback) {
+
+};
+
 Component.prototype.brokeredEventEmitMethod = function($happn, callback) {
   $happn.emit('/brokered/event', {
     brokered: {

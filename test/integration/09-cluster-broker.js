@@ -41,6 +41,36 @@ describe.only('09 - integration - broker', function() {
     return config;
   }
 
+  function errorInstanceConfigDuplicateBrokered(seq, sync) {
+    var config = baseConfig(seq, sync, true);
+    config.modules = {
+      'localComponent': {
+        path: libDir + 'integration-09-local-component'
+      },
+      'brokerComponent': {
+        path: libDir + 'integration-09-broker-component'
+      },
+      'brokerComponentDuplicate': {
+        path: libDir + 'integration-09-broker-component-1'
+      }
+    };
+    config.components = {
+      'localComponent': {
+        startMethod: 'start',
+        stopMethod: 'stop'
+      },
+      'brokerComponent': {
+        startMethod: 'start',
+        stopMethod: 'stop'
+      },
+      'brokerComponentDuplicate': {
+        startMethod: 'start',
+        stopMethod: 'stop'
+      }
+    };
+    return config;
+  }
+
   function remoteInstance1Config(seq, sync) {
     var config = baseConfig(seq, sync, true);
     config.modules = {
@@ -165,6 +195,54 @@ describe.only('09 - integration - broker', function() {
       .catch(done);
     });
 
+    it('starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker, check we cannot access denied methods', function(done) {
+
+      var thisClient;
+
+      var gotToFinalAttempt = false;
+
+      startClusterInternalFirst()
+      .then(function(){
+        return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent1', 'brokeredMethod1');
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55002);
+      })
+      .then(function(client) {
+        thisClient = client;
+        //first test our broker components methods are directly callable
+        return thisClient.exchange.brokerComponent.directMethod();
+      })
+      .then(function(result) {
+        expect(result).to.be('MESH_2:brokerComponent:directMethod');
+        //call an injected method
+        return thisClient.exchange.remoteComponent.brokeredMethod1();
+      })
+      .then(function(result) {
+        expect(result).to.be('MESH_1:remoteComponent:brokeredMethod1');
+        return thisClient.exchange.remoteComponent1.brokeredMethod1();
+      })
+      .then(function(result) {
+        expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod1');
+        return users.denyMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
+      })
+      .then(function(result) {
+        gotToFinalAttempt = true;
+        return thisClient.exchange.remoteComponent.brokeredMethod1();
+      })
+      .catch(function(e){
+        expect(gotToFinalAttempt).to.be(true);
+        expect(e.toString()).to.be('AccessDenied: unauthorized');
+        done();
+      });
+    });
+
     it('starts up the edge cluster node first, we than start the internal node (with brokered component), pause and then assert we are able to run the brokered method', function(done) {
       startClusterEdgeFirst()
       .then(function(){
@@ -197,14 +275,6 @@ describe.only('09 - integration - broker', function() {
         });
       })
       .catch(done);
-    });
-
-    xit('denies permissions to access the internal components methods and events for the user, connects a client to the local instance, and is unable to access the remote component via the broker', function(done) {
-
-    });
-
-    xit('denies permissions to access to a data path that is used by the internal component, the brokered method returns an Access Denied method because preserveOrigin is in effect', function(done) {
-
     });
   });
 
@@ -248,18 +318,109 @@ describe.only('09 - integration - broker', function() {
     });
   });
 
-  context('errors', function() {
+  context('preserve origin - permissions propagation', function() {
 
-    xit('ensures an error is raised if we are injecting internal components with duplicate names', function(done){
-
-    });
-
-    xit('ensures an error is handled if we are injecting internal components failed start methods', function(done){
+    xit('denies permissions to access the internal components methods and events for the user, connects a client to the local instance, and is unable to access the remote component via the broker', function(done) {
 
     });
 
-    xit('ensures an error is handled if we are injecting internal components failed stop methods', function(done){
+    xit('denies permissions to access to a data path that is used by the internal component, the brokered method returns an Access Denied method because preserveOrigin is in effect', function(done) {
 
+    });
+  });
+
+  context.only('errors', function() {
+
+    it.only('ensures an error is raised if we are injecting internal components with duplicate names', function(done){
+      stopCluster(servers, function(e){
+        if (e) return done(e);
+        HappnerCluster.create(errorInstanceConfigDuplicateBrokered(1, 1))
+        .then(function(){
+          done(new Error('unexpected success'));
+        })
+        .catch(function(e){
+          expect(e.toString()).to.be('Error: Duplicate attempts to broker the package component by brokerComponent & brokerComponentDuplicate');
+          done();
+        });
+      });
+    });
+
+    it('ensures an error is handled and returned accordingly if we execute an internal components failing method using a callback', function(done){
+
+      startClusterInternalFirst()
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethodFail');
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55002);
+      })
+      .then(function(client) {
+        //first test our broker components methods are directly callable
+        client.exchange.remoteComponent.brokeredMethodFail(function(e, result) {
+          expect(e.toString()).to.be('Error: test error');
+          done();
+        });
+      })
+      .catch(done);
+    });
+
+    it('ensures an error is handled and returned accordingly if we execute an internal components failing method using a promise', function(done){
+      startClusterInternalFirst()
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethodFail');
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55002);
+      })
+      .then(function(client) {
+        //first test our broker components methods are directly callable
+        return client.exchange.remoteComponent.brokeredMethodFail();
+      })
+      .catch(function(e){
+        expect(e.toString()).to.be('Error: test error');
+        done();
+      });
+    });
+
+    it('ensures an error is handled and returned accordingly if we execute an internal components method that times out', function(done){
+
+      this.timeout(20000);
+
+      startClusterInternalFirst()
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethodTimeout');
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55002);
+      })
+      .then(function(client) {
+        //first test our broker components methods are directly callable
+        return client.exchange.remoteComponent.brokeredMethodTimeout();
+      })
+      .catch(function(e){
+        expect(e.toString()).to.be('Request timed out');
+        done();
+      });
+    });
+
+    it('ensures an error is handled and returned accordingly if we execute a method that does not exist on the cluster mesh yet', function(done){
+      startClusterEdgeFirst()
+      .then(function(){
+        return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55001);
+      })
+      .then(function(client) {
+        return client.exchange.remoteComponent.brokeredMethod1();
+      })
+      .catch(function(e){
+        expect(e.toString()).to.be('Error: Not implemented remoteComponent:^2.0.0:brokeredMethod1');
+        done();
+      });
     });
   });
 });

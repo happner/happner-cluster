@@ -8,7 +8,9 @@
           "version": "^2.0.0",
           "methods": {
             "brokeredMethod1": {},
-            "brokeredEventEmitMethod":{}
+            "brokeredEventEmitMethod":{},
+            "brokeredMethodFail":{},
+            "brokeredMethodTimeout":{}
           }
         },
         "remoteComponent1": {
