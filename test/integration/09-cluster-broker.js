@@ -95,7 +95,13 @@ describe.only('09 - integration - broker', function() {
   }
 
   beforeEach('clear mongo collection', function(done) {
-    clearMongoCollection('mongodb://localhost', 'happn-cluster', done);
+    stopCluster(servers, function(e){
+      if (e) return done(e);
+      servers = [];
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function(){
+        done();
+      });
+    })
   });
 
   function startInternal(id, clusterMin){
@@ -109,44 +115,37 @@ describe.only('09 - integration - broker', function() {
   function startClusterInternalFirst(){
 
     return new Promise(function(resolve, reject){
-      stopCluster(servers, function(e){
-        if (e) return reject(e);
-        servers = [];
-        startInternal(1,1)
-        .then(function(server){
-          servers.push(server);
-          localInstance = server;
-          return startEdge(2, 2);
-        })
-        .then(function(server){
-          servers.push(server);
-          return users.add(localInstance, 'username', 'password');
-        })
-        .then(resolve)
-        .catch(reject);
-      });
+
+      startInternal(1,1)
+      .then(function(server){
+        servers.push(server);
+        localInstance = server;
+        return startEdge(2, 2);
+      })
+      .then(function(server){
+        servers.push(server);
+        return users.add(localInstance, 'username', 'password');
+      })
+      .then(resolve)
+      .catch(reject);
     });
   }
 
   function startClusterEdgeFirst(){
 
     return new Promise(function(resolve, reject){
-      stopCluster(servers, function(e){
-        if (e) return reject(e);
-        servers = [];
-        startEdge(1,1)
-        .then(function(server){
-          servers.push(server);
-          return startInternal(2, 2);
-        })
-        .then(function(server){
-          servers.push(server);
-          localInstance = server;
-          return users.add(localInstance, 'username', 'password');
-        })
-        .then(resolve)
-        .catch(reject);
-      });
+      startEdge(1,1)
+      .then(function(server){
+        servers.push(server);
+        return startInternal(2, 2);
+      })
+      .then(function(server){
+        servers.push(server);
+        localInstance = server;
+        return users.add(localInstance, 'username', 'password');
+      })
+      .then(resolve)
+      .catch(reject);
     });
   }
 
@@ -331,17 +330,14 @@ describe.only('09 - integration - broker', function() {
 
   context.only('errors', function() {
 
-    it.only('ensures an error is raised if we are injecting internal components with duplicate names', function(done){
-      stopCluster(servers, function(e){
-        if (e) return done(e);
-        HappnerCluster.create(errorInstanceConfigDuplicateBrokered(1, 1))
-        .then(function(){
-          done(new Error('unexpected success'));
-        })
-        .catch(function(e){
-          expect(e.toString()).to.be('Error: Duplicate attempts to broker the package component by brokerComponent & brokerComponentDuplicate');
-          done();
-        });
+    it('ensures an error is raised if we are injecting internal components with duplicate names', function(done){
+      HappnerCluster.create(errorInstanceConfigDuplicateBrokered(1, 1))
+      .then(function(){
+        done(new Error('unexpected success'));
+      })
+      .catch(function(e){
+        expect(e.toString()).to.be('Error: Duplicate attempts to broker the package component by brokerComponent & brokerComponentDuplicate');
+        done();
       });
     });
 
