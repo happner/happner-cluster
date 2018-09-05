@@ -1,0 +1,17 @@
+{
+  "name": "broker-component-1",
+  "version": "1.0.1",
+  "happner": {
+    "dependencies": {
+      "$broker": {
+        "remoteComponent": {
+          "version": "^2.1.0",
+          "methods": {
+            "brokeredMethod1": {},
+            "brokeredEventEmitMethod":{}
+          }
+        }
+      }
+    }
+  }
+}

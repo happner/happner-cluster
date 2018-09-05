@@ -1,11 +1,15 @@
-module.exports = function (seq, minPeers, secure) {
+module.exports = function (seq, minPeers, secure, requestTimeout, responseTimeout) {
+
+  var clusterRequestTimeout = requestTimeout?requestTimeout:10 * 1000;
+  var clusterResponseTimeout = responseTimeout?responseTimeout:20 * 1000;
+
   return {
     name: 'MESH_' + seq,
     domain: 'DOMAIN_NAME',
     port: 57000 + seq,
     cluster: {
-      requestTimeout: 10 * 1000,
-      responseTimeout: 20 * 1000
+      requestTimeout: clusterRequestTimeout,
+      responseTimeout: clusterResponseTimeout
     },
     happn: {
       secure: secure,
