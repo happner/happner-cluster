@@ -53,6 +53,7 @@
 ----------------
   - updated package-lock
 
-6.1.0 2018-07-17
-
+6.1.0 2018-09-05
+----------------
   - updated package-lock
+  - component brokering (without permissions)
