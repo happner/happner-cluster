@@ -52,3 +52,8 @@
 6.0.1 2018-05-29
 ----------------
   - updated package-lock
+
+6.1.0 2018-09-05
+----------------
+  - updated package-lock
+  - component brokering (without permissions)
