@@ -150,7 +150,6 @@ describe('02 - integration - components', function () {
           } catch (e) {
             done(e);
           }
-
         });
       });
     });
@@ -159,7 +158,6 @@ describe('02 - integration - components', function () {
 
       localInstance.exchange.localComponent1.callDependency('remoteComponent4', 'method1', function (e, result) {
         if (e) return done(e);
-
         try {
           expect(result.split(':')[1]).to.be('component4-v2');
           done();
@@ -186,6 +184,8 @@ describe('02 - integration - components', function () {
   context('events', function () {
 
     it('can subscribe cluster wide', function (done) {
+
+      this.timeout(5000);
 
       localInstance.exchange.localComponent2.listTestEvents(function (e, result) {
         if (e) return done(e);
@@ -216,9 +216,6 @@ describe('02 - integration - components', function () {
           done(e);
         }
       });
-
     });
-
   });
-
 });

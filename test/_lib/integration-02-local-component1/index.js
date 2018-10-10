@@ -1,6 +1,6 @@
 module.exports = Component;
 
-function Component() {}
+function Component(){}
 
 Component.prototype.start = function ($happn, callback) {
   callback();

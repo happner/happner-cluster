@@ -243,6 +243,7 @@ describe('07 - integration - security sync', function () {
       })
 
       .then(function () {
+
         return Promise.all([
           users.denyEvent(servers[0], 'username', 'component1', 'event1'),
         ]);
