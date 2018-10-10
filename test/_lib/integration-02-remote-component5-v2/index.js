@@ -11,6 +11,7 @@ Component.prototype.start = function ($happn, callback) {
 };
 
 Component.prototype.stop = function ($happn, callback) {
+  if (this.interval) clearInterval(this.interval);
   callback();
 };
 

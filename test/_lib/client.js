@@ -58,8 +58,9 @@ module.exports.callMethod = function (seq, client, component, method) {
 }
 
 module.exports.subscribe = function (seq, client, component, event, handler) {
-  return new Promise(function (resolve) {
 
+  return new Promise(function (resolve) {
+    
     client.event[component].on(event, handler, function (e) {
       if (e) return resolve({ seq: seq, error: e.message });
       resolve({ seq: seq, result: true });
