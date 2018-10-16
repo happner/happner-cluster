@@ -57,3 +57,11 @@
 ----------------
   - updated package-lock
   - component brokering (without permissions)
+
+7.0.0 2018-10-12
+----------------
+  - happn-3 version 8.0.0
+
+7.0.1
+----------------
+  - happn-3 version 8.0.1
