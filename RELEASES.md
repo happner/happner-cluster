@@ -79,3 +79,9 @@
   - happn-3 v 8.2.1
   - happner-2 v 9.2.1
   - happner-client v 6.2.0
+
+7.3.0 2018-11-17
+----------------
+  - happn-3 v 8.2.7
+  - happner-2 v 9.3.0
+  - happner-client v 6.3.0
