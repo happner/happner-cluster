@@ -10,10 +10,11 @@ var users = require('../_lib/users');
 var testclient = require('../_lib/client');
 
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
+var log = require('why-is-node-running');
 
 describe('09 - integration - broker', function() {
 
-  this.timeout(15000);
+  this.timeout(20000);
 
   var servers = [],
     localInstance;
@@ -151,7 +152,11 @@ describe('09 - integration - broker', function() {
 
   after('stop cluster', function(done) {
     if (!servers) return done();
-    stopCluster(servers, done);
+    stopCluster(servers, function(){
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function(){
+        done();
+      });
+    });
   });
 
   context('exchange', function() {
@@ -189,7 +194,7 @@ describe('09 - integration - broker', function() {
       })
       .then(function(result) {
         expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod1');
-        done();
+        setTimeout(done, 2000);
       })
       .catch(done);
     });
@@ -238,7 +243,7 @@ describe('09 - integration - broker', function() {
       .catch(function(e){
         expect(gotToFinalAttempt).to.be(true);
         expect(e.toString()).to.be('AccessDenied: unauthorized');
-        done();
+        setTimeout(done, 2000);
       });
     });
 
@@ -269,7 +274,7 @@ describe('09 - integration - broker', function() {
           client.exchange.remoteComponent.brokeredMethod1(function(e, result) {
             expect(e).to.be(null);
             expect(result).to.be('MESH_2:remoteComponent:brokeredMethod1');
-            done();
+            setTimeout(done, 2000);
           });
         });
       })
@@ -303,7 +308,7 @@ describe('09 - integration - broker', function() {
 
             client.event.remoteComponent.on('/brokered/event', function(data) {
               expect(data).to.eql({"brokered":{"event":{"data":{"from":"MESH_1"}}}});
-              done();
+              setTimeout(done, 2000);
             }, function(e){
               expect(e).to.be(null);
               client.exchange.remoteComponent.brokeredEventEmitMethod(function(e, result) {
@@ -337,7 +342,7 @@ describe('09 - integration - broker', function() {
       })
       .catch(function(e){
         expect(e.toString()).to.be('Error: Duplicate attempts to broker the package component by brokerComponent & brokerComponentDuplicate');
-        done();
+        setTimeout(done, 2000);
       });
     });
 
@@ -354,13 +359,14 @@ describe('09 - integration - broker', function() {
         //first test our broker components methods are directly callable
         client.exchange.remoteComponent.brokeredMethodFail(function(e, result) {
           expect(e.toString()).to.be('Error: test error');
-          done();
+          setTimeout(done, 2000);
         });
       })
       .catch(done);
     });
 
     it('ensures an error is handled and returned accordingly if we execute an internal components failing method using a promise', function(done){
+
       startClusterInternalFirst()
       .then(function() {
         return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethodFail');
@@ -400,6 +406,7 @@ describe('09 - integration - broker', function() {
     });
 
     it('ensures an error is handled and returned accordingly if we execute a method that does not exist on the cluster mesh yet', function(done){
+
       startClusterEdgeFirst()
       .then(function(){
         return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
@@ -415,7 +422,7 @@ describe('09 - integration - broker', function() {
       })
       .catch(function(e){
         expect(e.toString()).to.be('Error: Not implemented remoteComponent:^2.0.0:brokeredMethod1');
-        done();
+        setTimeout(done, 2000);
       });
     });
   });

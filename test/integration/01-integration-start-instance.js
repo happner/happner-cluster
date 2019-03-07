@@ -3,20 +3,20 @@ var Happner = require('happner-2');
 
 describe('01 - integration - start instance', function () {
 
+  this.timeout(20000);
+
   var server, client;
 
   after('stop server', function (done) {
 
     if (!server) return done();
     server.stop({reconnect: false}, done);
-
   });
 
   after('stop client', function (done) {
 
     if (!client) return done();
     client.disconnect(done);
-
   });
 
   it('starts', function (done) {

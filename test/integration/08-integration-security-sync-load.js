@@ -14,6 +14,8 @@ var client = require('../_lib/client');
 
 describe('08 - integration - security sync load', function () {
 
+  this.timeout(20000);
+
   var servers = [];
   var userlist = {};
   var eventResults;
@@ -50,6 +52,7 @@ describe('08 - integration - security sync load', function () {
   }
 
   before('clear mongo collection', function (done) {
+    this.timeout(10000);
     clearMongoCollection('mongodb://localhost', 'happn-cluster', done);
   });
 
@@ -75,6 +78,7 @@ describe('08 - integration - security sync load', function () {
   });
 
   before('create users', function (done) {
+    this.timeout(10000);
     var promises = [];
     var username, user, component, method, event;
     for (var i = 0; i < 15; i++) {

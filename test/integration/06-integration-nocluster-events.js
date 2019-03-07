@@ -8,6 +8,8 @@ var stopCluster = require('../_lib/stop-cluster');
 
 describe('06 - integration - nocluster events', function () {
 
+  this.timeout(20000);
+
   var servers, localInstance, remoteInstance;
 
   function localInstanceConfig(seq) {

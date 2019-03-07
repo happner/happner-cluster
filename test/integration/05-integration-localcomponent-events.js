@@ -5,6 +5,7 @@ var expect = require('expect.js');
 describe('05 - integration - localcomponent events', function () {
 
   var server;
+  this.timeout(20000);
 
   before('start server', function (done) {
     this.timeout(20000);
