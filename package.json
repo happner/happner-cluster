@@ -1,11 +1,12 @@
 {
   "name": "happner-cluster",
-  "version": "7.3.0",
+  "version": "8.0.0",
   "description": "Extends happner with clustering capabilities",
   "main": "index.js",
   "scripts": {
-    "test": "LOG_LEVEL=warn mocha test/unit test/integration",
-    "test-cover": "LOG_LEVEL=warn istanbul cover _mocha -- test/unit test/integration"
+    "test": "mocha -- silence.js test/unit test/integration",
+    "test-cover": "istanbul cover _mocha -- silence.js test/unit test/integration",
+    "release": "rm -rf node_modules && rm -f package-lock.json && npm install && npm run test-cover"
   },
   "repository": {
     "type": "git",
@@ -26,13 +27,14 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.5.0",
     "mongodb": "^3.0.5",
-    "shortid": "^2.2.8"
+    "shortid": "^2.2.8",
+    "why-is-node-running": "^2.0.3"
   },
   "dependencies": {
     "bluebird": "^3.5.0",
-    "happn-cluster": "^7.2.1",
-    "happner-2": "^9.3.0",
-    "happner-client": "^6.3.0",
+    "happn-cluster": "^8.0.0",
+    "happner-2": "^10.0.0",
+    "happner-client": "^7.0.0",
     "semver": "^5.3.0"
   }
 }

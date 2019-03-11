@@ -10,6 +10,8 @@ var minPeers = 1;
 
 describe('04 - integration - create and destroy components', function () {
 
+  this.timeout(20000);
+  
   var servers, localInstance;
 
   function localInstanceConfig(seq) {

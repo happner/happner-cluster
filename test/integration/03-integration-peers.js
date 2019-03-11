@@ -10,6 +10,8 @@ var stopCluster = require('../_lib/stop-cluster');
 
 describe('03 - integration - peers', function () {
 
+  this.timeout(20000);
+  
   var servers, localInstance;
 
   function localInstanceConfig(seq) {

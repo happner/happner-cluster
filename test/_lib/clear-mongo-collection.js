@@ -8,10 +8,9 @@ module.exports = function (url, collectionName, callback) {
     var collection = db.collection(collectionName);
 
     collection.drop(function (err) {
-      if (err && err.message == 'ns not found') {
-        return callback(null); // no such collection to delete
-      }
-      callback(err);
+      if (err && err.message != 'ns not found')
+        if (err) console.log('error clearing mongodb: ' + err.message);
+      client.close(callback);
     });
   });
 };

@@ -13,6 +13,8 @@ var client = require('../_lib/client');
 
 describe('07 - integration - security sync', function () {
 
+  this.timeout(20000);
+
   var servers = [],
     client1, client2;
 
