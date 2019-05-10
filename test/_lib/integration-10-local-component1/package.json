@@ -1,0 +1,25 @@
+{
+  "name": "component1",
+  "version": "1.0.0",
+  "happner": {
+    "dependencies": {
+      "localComponent1": {
+        "remoteComponent2": {
+          "version": "^1.0.0",
+          "methods": {
+            "method1": {},
+            "method2": {},
+            "method3": {}
+          }
+        },
+        "remoteComponent3": {
+          "version": "^1.0.0",
+          "methods": {
+            "method1": {},
+            "method2": {}
+          }
+        }
+      }
+    }
+  }
+}
