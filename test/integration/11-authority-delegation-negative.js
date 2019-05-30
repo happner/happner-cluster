@@ -13,7 +13,7 @@ var testclient = require('../_lib/client');
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
 var log = require('why-is-node-running');
 
-describe('10 - integration - authority delegation', function() {
+describe('10 - integration - authority delegation negative', function() {
 
   this.timeout(20000);
 
