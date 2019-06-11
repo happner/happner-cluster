@@ -3,7 +3,6 @@ module.exports = Component;
 function Component() {}
 
 Component.prototype.method1 = function($happn, callback) {
-  console.log('successfully ran 3???');
   callback(null, $happn.info.mesh.name + ':component3:method1');
 };
 

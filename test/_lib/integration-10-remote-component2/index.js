@@ -7,7 +7,6 @@ Component.prototype.method1 = function($happn, callback) {
 };
 
 Component.prototype.method2 = function($happn, $origin, callback) {
-  console.log('successfully ran 2???');
   $happn.exchange.remoteComponent3.method1(callback);
 };
 
