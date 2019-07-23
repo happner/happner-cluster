@@ -254,7 +254,6 @@ describe('09 - integration - broker', function() {
         return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
       })
       .then(function(){
-        console.log('pausing...');
         return new Promise(function(resolve){
           setTimeout(resolve, 5000);
         });
@@ -288,7 +287,6 @@ describe('09 - integration - broker', function() {
         return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod3');
       })
       .then(function(){
-        console.log('pausing...');
         return new Promise(function(resolve){
           setTimeout(resolve, 5000);
         });
