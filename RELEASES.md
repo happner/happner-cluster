@@ -103,3 +103,7 @@
 8.1.2 2019-07-11
 ----------------
 - happn-cluster 8.1.2
+
+8.1.3 2019-07-11
+----------------
+- fix: arguments are now passed across brokered component methods

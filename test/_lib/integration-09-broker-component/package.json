@@ -8,16 +8,23 @@
           "version": "^2.0.0",
           "methods": {
             "brokeredMethod1": {},
-            "brokeredEventEmitMethod":{},
-            "brokeredMethodFail":{},
-            "brokeredMethodTimeout":{}
+            "brokeredEventEmitMethod": {},
+            "brokeredMethodFail": {},
+            "brokeredMethodTimeout": {},
+            "brokeredMethod3": {
+              "parameters": [{
+                "name": "testArgument"
+              }, {
+                "name": "callback"
+              }]
+            }
           }
         },
         "remoteComponent1": {
           "version": "^2.0.0",
           "methods": {
             "brokeredMethod1": {},
-            "brokeredEventEmitMethod":{}
+            "brokeredEventEmitMethod": {}
           }
         }
       }

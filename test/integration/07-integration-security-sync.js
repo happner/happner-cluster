@@ -301,7 +301,7 @@ describe('07 - integration - security sync', function () {
 
   });
 
-  context('full spectum security operations', function () {
+  context('full spectrum security operations', function () {
 
     function performAction(port, username, component, method) {
       return new Promise(function (resolve, reject) {
