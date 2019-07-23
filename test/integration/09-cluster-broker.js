@@ -1,5 +1,4 @@
-var path = require('path');
-var HappnerCluster = require('../..');
+const HappnerCluster = require('../..');
 var Promise = require('bluebird');
 var expect = require('expect.js');
 
@@ -10,8 +9,7 @@ var users = require('../_lib/users');
 var testclient = require('../_lib/client');
 
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
-var log = require('why-is-node-running');
-
+//var log = require('why-is-node-running');
 describe('09 - integration - broker', function() {
 
   this.timeout(20000);
@@ -102,7 +100,7 @@ describe('09 - integration - broker', function() {
       clearMongoCollection('mongodb://localhost', 'happn-cluster', function(){
         done();
       });
-    })
+    });
   });
 
   function startInternal(id, clusterMin){
@@ -236,7 +234,7 @@ describe('09 - integration - broker', function() {
         expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod1');
         return users.denyMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
       })
-      .then(function(result) {
+      .then(function() {
         gotToFinalAttempt = true;
         return thisClient.exchange.remoteComponent.brokeredMethod1();
       })
@@ -276,6 +274,33 @@ describe('09 - integration - broker', function() {
             expect(result).to.be('MESH_2:remoteComponent:brokeredMethod1');
             setTimeout(done, 2000);
           });
+        });
+      })
+      .catch(done);
+    });
+
+    it ('starts up the edge cluster node first, we than start the internal node (with brokered component), pause and then assert we are able to run a brokered method with an argument', function(done) {
+      startClusterEdgeFirst()
+      .then(function(){
+        return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod3');
+      })
+      .then(function(){
+        console.log('pausing...');
+        return new Promise(function(resolve){
+          setTimeout(resolve, 5000);
+        });
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55001);
+      })
+      .then(function(client) {
+        client.exchange.remoteComponent.brokeredMethod3("test", function(e, result) {
+          expect(e).to.be(null);
+          expect(result).to.be('MESH_2:remoteComponent:brokeredMethod3:test');
+          setTimeout(done, 2000);
         });
       })
       .catch(done);
@@ -322,17 +347,6 @@ describe('09 - integration - broker', function() {
     });
   });
 
-  context('preserve origin - permissions propagation', function() {
-
-    xit('denies permissions to access the internal components methods and events for the user, connects a client to the local instance, and is unable to access the remote component via the broker', function(done) {
-
-    });
-
-    xit('denies permissions to access to a data path that is used by the internal component, the brokered method returns an Access Denied method because preserveOrigin is in effect', function(done) {
-
-    });
-  });
-
   context('errors', function() {
 
     it('ensures an error is raised if we are injecting internal components with duplicate names', function(done){
@@ -357,7 +371,7 @@ describe('09 - integration - broker', function() {
       })
       .then(function(client) {
         //first test our broker components methods are directly callable
-        client.exchange.remoteComponent.brokeredMethodFail(function(e, result) {
+        client.exchange.remoteComponent.brokeredMethodFail(function(e) {
           expect(e.toString()).to.be('Error: test error');
           setTimeout(done, 2000);
         });
