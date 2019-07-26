@@ -1,8 +1,6 @@
 var HappnerCluster = require('../..');
-var Promise = require('bluebird');
-var expect = require('expect.js');
 
-describe('05 - integration - localcomponent events', function () {
+describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
   var server;
   this.timeout(20000);

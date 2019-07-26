@@ -1,7 +1,7 @@
 var HappnerCluster = require('../..');
 var Happner = require('happner-2');
 
-describe(require('_lib/test-helper').testName('integration', __dirname, __filename), function () {
+describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
   this.timeout(20000);
 

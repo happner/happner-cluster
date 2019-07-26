@@ -10,7 +10,9 @@ describe('02 - unit - brokerage component', function() {
     //package, mesh, client
     var mockModels = {};
     var mockMesh = {};
-    var mockClient = {};
+    var mockClient = {
+      on:function(){}
+    };
 
     var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
 
@@ -40,7 +42,9 @@ describe('02 - unit - brokerage component', function() {
     };
 
     var mockMesh = {};
-    var mockClient = {};
+    var mockClient = {
+      on:function(){}
+    };
     var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
 
     brokerage.inject(function(e){

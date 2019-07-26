@@ -1,8 +1,6 @@
-var path = require('path');
 var HappnerCluster = require('../..');
 var Promise = require('bluebird');
 var expect = require('expect.js');
-var unique = require('array-unique');
 
 var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
@@ -11,9 +9,9 @@ var stopCluster = require('../_lib/stop-cluster');
 var users = require('../_lib/users');
 var testclient = require('../_lib/client');
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
-var log = require('why-is-node-running');
+//var log = require('why-is-node-running');
 
-describe('12 - integration - authority delegation global', function() {
+describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
   this.timeout(20000);
 
