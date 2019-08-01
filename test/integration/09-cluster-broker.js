@@ -12,7 +12,7 @@ var clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
 describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
-  this.timeout(20000);
+  this.timeout(40000);
 
   var servers = [],
     localInstance;
@@ -172,6 +172,12 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
       })
       .then(function() {
         return users.allowMethod(localInstance, 'username', 'remoteComponent1', 'brokeredMethod1');
+      })
+      .then(function() {
+        console.log('pausing...');
+        return new Promise((resolve)=>{
+          setTimeout(resolve, 5000);
+        });
       })
       .then(function() {
         return testclient.create('username', 'password', 55002);

@@ -9,7 +9,13 @@ describe('02 - unit - brokerage component', function() {
   it('injects and detaches the brokerage component', function(done) {
     //package, mesh, client
     var mockModels = {};
-    var mockMesh = {};
+    var mockMesh = {
+      _mesh:{
+        config:{
+          name:'mock'
+        }
+      }
+    };
     var mockClient = {
       on:function(){}
     };
@@ -41,7 +47,14 @@ describe('02 - unit - brokerage component', function() {
       }
     };
 
-    var mockMesh = {};
+    var mockMesh = {
+      _mesh:{
+        config:{
+          name:'mock'
+        }
+      }
+    };
+
     var mockClient = {
       on:function(){}
     };
