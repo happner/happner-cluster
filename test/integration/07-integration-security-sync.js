@@ -1,4 +1,3 @@
-var path = require('path');
 var Happner = require('happner-2');
 var HappnerCluster = require('../..');
 var Promise = require('bluebird');
@@ -11,7 +10,7 @@ var clearMongoCollection = require('../_lib/clear-mongo-collection');
 var users = require('../_lib/users');
 var client = require('../_lib/client');
 
-describe('07 - integration - security sync', function () {
+describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
   this.timeout(20000);
 

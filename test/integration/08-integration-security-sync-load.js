@@ -1,7 +1,5 @@
-var path = require('path');
 var HappnerCluster = require('../..');
 var Promise = require('bluebird');
-var expect = require('expect.js');
 var shortid = require('shortid');
 var async = require('async');
 
@@ -12,7 +10,7 @@ var clearMongoCollection = require('../_lib/clear-mongo-collection');
 var users = require('../_lib/users');
 var client = require('../_lib/client');
 
-describe('08 - integration - security sync load', function () {
+describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
   this.timeout(20000);
 

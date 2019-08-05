@@ -7,7 +7,7 @@ var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 
-describe('02 - integration - components', function () {
+describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
   this.timeout(20000);
 

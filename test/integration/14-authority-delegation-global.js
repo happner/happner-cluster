@@ -1,8 +1,6 @@
-var path = require('path');
 var HappnerCluster = require('../..');
 var Promise = require('bluebird');
 var expect = require('expect.js');
-var unique = require('array-unique');
 
 var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
@@ -11,9 +9,9 @@ var stopCluster = require('../_lib/stop-cluster');
 var users = require('../_lib/users');
 var testclient = require('../_lib/client');
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
-var log = require('why-is-node-running');
+//var log = require('why-is-node-running');
 
-describe('11 - integration - authority delegation negative', function() {
+describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
   this.timeout(20000);
 
@@ -21,6 +19,7 @@ describe('11 - integration - authority delegation negative', function() {
 
   function localInstanceConfig(seq) {
     var config = baseConfig(seq, undefined, true);
+    config.authorityDelegationOn = true;
     config.modules = {
       'localComponent1': {
         path: libDir + 'integration-10-local-component1'
@@ -34,6 +33,7 @@ describe('11 - integration - authority delegation negative', function() {
 
   function remoteInstanceConfig(seq) {
     var config = baseConfig(seq, undefined, true);
+    config.authorityDelegationOn = true;
     config.modules = {
       'remoteComponent2': {
         path: libDir + 'integration-10-remote-component2'
@@ -102,9 +102,36 @@ describe('11 - integration - authority delegation negative', function() {
         return thisClient.exchange.localComponent1.localMethodToRemoteMethod('remoteComponent2', 'method1');
       })
       .then(function() {
-        done();
+        done(new Error('unexpected success'));
       })
-      .catch(done);
+      .catch(function(e) {
+        expect(e.toString()).to.be('AccessDenied: unauthorized');
+        done();
+      });
+  });
+
+  it('ensures a happner client without the correct permissions is unable to execute a remote components method, 2 levels deep', function(done) {
+    this.timeout(4000);
+
+    users.allowMethod(localInstance, 'username', 'localComponent1', 'localMethodToRemoteMethod')
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent2', 'method2');
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55001);
+      })
+      .then(function(client) {
+        thisClient = client;
+        //first test our broker components methods are directly callable
+        return thisClient.exchange.localComponent1.localMethodToRemoteMethod('remoteComponent2', 'method2');
+      })
+      .then(function() {
+        done(new Error('unexpected success'));
+      })
+      .catch(function(e) {
+        expect(e.toString()).to.be('AccessDenied: unauthorized');
+        done();
+      });
   });
 
   it('ensures a happner client without the correct permissions is unable to subscribe to a remote components event', function(done) {
@@ -120,9 +147,36 @@ describe('11 - integration - authority delegation negative', function() {
         return thisClient.exchange.localComponent1.localMethodToRemoteEvent();
       })
       .then(function() {
-        done();
+        done(new Error('unexpected success'));
       })
-      .catch(done);
+      .catch(function(e) {
+        expect(e.toString()).to.be('AccessDenied: unauthorized');
+        done();
+      });
+  });
+
+  it('ensures a happner client without the correct permissions is unable to subscribe to a remote components event, 2 levels deep', function(done) {
+    this.timeout(4000);
+
+    users.allowMethod(localInstance, 'username', 'localComponent1', 'localMethodToRemoteMethod')
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent2', 'method3');
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55001);
+      })
+      .then(function(client) {
+        thisClient = client;
+        //first test our broker components methods are directly callable
+        return thisClient.exchange.localComponent1.localMethodToRemoteMethod('remoteComponent2', 'method3');
+      })
+      .then(function() {
+        done(new Error('unexpected success'));
+      })
+      .catch(function(e) {
+        expect(e.toString()).to.be('AccessDenied: unauthorized');
+        done();
+      });
   });
 
   it('ensures a happner client without the correct permissions is unable to modify a remote components data', function(done) {
@@ -138,8 +192,11 @@ describe('11 - integration - authority delegation negative', function() {
         return thisClient.exchange.localComponent1.localMethodToData();
       })
       .then(function() {
-        done();
+        done(new Error('unexpected success'));
       })
-      .catch(done);
+      .catch(function(e) {
+        expect(e.toString()).to.be('AccessDenied: unauthorized');
+        thisClient.disconnect(done);
+      });
   });
 });

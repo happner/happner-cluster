@@ -104,6 +104,11 @@
 ----------------
 - happn-cluster 8.1.2
 
-8.1.3 2019-07-11
+8.1.3 2019-07-23
 ----------------
 - fix: arguments are now passed across brokered component methods
+
+8.2.0 2019-07-24
+----------------
+- feature: dynamic loading of brokered API definitions
+- feature: deferred listen until all brokered components have loaded a remote exchange at least once

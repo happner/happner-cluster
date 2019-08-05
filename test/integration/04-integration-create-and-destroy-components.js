@@ -8,7 +8,7 @@ var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 var minPeers = 1;
 
-describe('04 - integration - create and destroy components', function () {
+describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
   this.timeout(20000);
   

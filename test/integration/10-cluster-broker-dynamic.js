@@ -12,19 +12,20 @@ var clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
 describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
-  this.timeout(40000);
+  this.timeout(20000);
 
   var servers = [],
     localInstance;
 
-  function localInstanceConfig(seq, sync) {
+  function localInstanceConfig(seq, sync, dynamic) {
     var config = baseConfig(seq, sync, true);
+    let brokerComponentPath = dynamic?libDir + 'integration-10-broker-component-dynamic':libDir + 'integration-09-broker-component';
     config.modules = {
       'localComponent': {
         path: libDir + 'integration-09-local-component'
       },
       'brokerComponent': {
-        path: libDir + 'integration-09-broker-component'
+        path: brokerComponentPath
       }
     };
     config.components = {
@@ -70,7 +71,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
     return config;
   }
 
-  function remoteInstance1Config(seq, sync) {
+  function remoteInstanceConfig(seq, sync) {
     var config = baseConfig(seq, sync, true);
     config.modules = {
       'remoteComponent': {
@@ -104,22 +105,22 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
   });
 
   function startInternal(id, clusterMin){
-    return HappnerCluster.create(remoteInstance1Config(id, clusterMin));
+    return HappnerCluster.create(remoteInstanceConfig(id, clusterMin));
   }
 
-  function startEdge(id, clusterMin){
-    return HappnerCluster.create(localInstanceConfig(id, clusterMin));
+  function startEdge(id, clusterMin, dynamic){
+    return HappnerCluster.create(localInstanceConfig(id, clusterMin, dynamic));
   }
 
-  function startClusterInternalFirst(){
+  function startClusterInternalFirst(dynamic){
 
     return new Promise(function(resolve, reject){
 
-      startInternal(1,1)
+      startInternal(1, 1)
       .then(function(server){
         servers.push(server);
         localInstance = server;
-        return startEdge(2, 2);
+        return startEdge(2, 2, dynamic);
       })
       .then(function(server){
         servers.push(server);
@@ -130,10 +131,10 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
     });
   }
 
-  function startClusterEdgeFirst(){
+  function startClusterEdgeFirst(dynamic){
 
     return new Promise(function(resolve, reject){
-      startEdge(1,1)
+      startEdge(1,1,dynamic)
       .then(function(server){
         servers.push(server);
         return startInternal(2, 2);
@@ -163,7 +164,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
       var thisClient;
 
-      startClusterInternalFirst()
+      startClusterInternalFirst(false)
       .then(function(){
         return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
       })
@@ -174,9 +175,9 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
         return users.allowMethod(localInstance, 'username', 'remoteComponent1', 'brokeredMethod1');
       })
       .then(function() {
-        console.log('pausing...');
-        return new Promise((resolve)=>{
-          setTimeout(resolve, 5000);
+        console.log('pausing for client...');
+        return new Promise((resolve) => {
+          setTimeout(resolve, 10000);
         });
       })
       .then(function() {
@@ -189,15 +190,15 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
       })
       .then(function(result) {
         expect(result).to.be('MESH_2:brokerComponent:directMethod');
-        //call an injected method
-        return thisClient.exchange.remoteComponent.brokeredMethod1();
-      })
-      .then(function(result) {
-        expect(result).to.be('MESH_1:remoteComponent:brokeredMethod1');
         return thisClient.exchange.remoteComponent1.brokeredMethod1();
       })
       .then(function(result) {
         expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod1');
+        return thisClient.exchange.remoteComponent.brokeredMethod1();
+      })
+      .then(function(result) {
+        expect(result).to.be('MESH_1:remoteComponent:brokeredMethod1');
+
         setTimeout(done, 2000);
       })
       .catch(done);
