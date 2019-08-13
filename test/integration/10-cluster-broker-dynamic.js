@@ -226,7 +226,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
       });
     }
 
-    it.only('starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker, check we cannot access denied methods', function(done) {
+    it('starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker, check we cannot access denied methods', function(done) {
 
       var thisClient;
 
