@@ -126,7 +126,9 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
         servers.push(server);
         return users.add(localInstance, 'username', 'password');
       })
-      .then(resolve)
+      .then(function(){
+        setTimeout(resolve, 2000);
+      })
       .catch(reject);
     });
   }
@@ -204,7 +206,27 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
       .catch(done);
     });
 
-    it('starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker, check we cannot access denied methods', function(done) {
+    function testRestCall(token, port, component, method, params, expectedResponse){
+      return new Promise((resolve, reject) => {
+        var restClient = require('restler');
+
+        var operation = {
+          parameters: params || {}
+        };
+
+        var options = {headers:{}};
+        options.headers.authorization = 'Bearer ' + token;
+
+        restClient.postJson(`http://localhost:${port}/rest/method/${component}/${method}`, operation, options)
+          .on('complete', function (result) {
+            if (result.error) return reject(new Error(result.error));
+            expect(result.data).to.eql(expectedResponse);
+            resolve();
+        });
+      });
+    }
+
+    it.only('starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker, check we cannot access denied methods', function(done) {
 
       var thisClient;
 
@@ -239,6 +261,9 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
       })
       .then(function(result) {
         expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod1');
+        return testRestCall(thisClient.data.session.token, 55002, 'remoteComponent1', 'brokeredMethod1', null, 'MESH_1:remoteComponent1:brokeredMethod1');
+      })
+      .then(function() {
         return users.denyMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
       })
       .then(function() {
@@ -246,6 +271,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
         return thisClient.exchange.remoteComponent.brokeredMethod1();
       })
       .catch(function(e){
+        console.log(e.message);
         expect(gotToFinalAttempt).to.be(true);
         expect(e.toString()).to.be('AccessDenied: unauthorized');
         setTimeout(done, 2000);

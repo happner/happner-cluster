@@ -27,6 +27,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.5.0",
     "mongodb": "^3.0.5",
+    "restler": "^3.4.0",
     "shortid": "^2.2.8",
     "why-is-node-running": "^2.0.3"
   },
