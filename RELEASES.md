@@ -112,3 +112,7 @@
 ----------------
 - feature: dynamic loading of brokered API definitions
 - feature: deferred listen until all brokered components have loaded a remote exchange at least once
+
+8.2.1 2019-08-12
+----------------
+- fix: __checkDuplicateInjections of brokerage fixed
