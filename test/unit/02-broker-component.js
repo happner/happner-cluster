@@ -10,14 +10,14 @@ describe('02 - unit - brokerage component', function() {
     //package, mesh, client
     var mockModels = {};
     var mockMesh = {
-      _mesh:{
-        config:{
-          name:'mock'
+      _mesh: {
+        config: {
+          name: 'mock'
         }
       }
     };
     var mockClient = {
-      on:function(){}
+      on: function() {}
     };
 
     var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
@@ -36,31 +36,35 @@ describe('02 - unit - brokerage component', function() {
     //package, mesh, client
     var mockModels = {
       brokerComponent: {
-        remoteComponent3: {
-          version: '^2.0.0'
+        package: {
+          remoteComponent3: {
+            version: '^2.0.0'
+          }
         }
       },
       brokerComponent1: {
-        remoteComponent3: {
-          version: '^2.0.0'
+        package: {
+          remoteComponent3: {
+            version: '^2.0.0'
+          }
         }
       }
     };
 
     var mockMesh = {
-      _mesh:{
-        config:{
-          name:'mock'
+      _mesh: {
+        config: {
+          name: 'mock'
         }
       }
     };
 
     var mockClient = {
-      on:function(){}
+      on: function() {}
     };
     var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
 
-    brokerage.inject(function(e){
+    brokerage.inject(function(e) {
       expect(e.toString()).to.be('Error: Duplicate attempts to broker the remoteComponent3 component by brokerComponent & brokerComponent1');
       done();
     });
@@ -83,15 +87,15 @@ describe('02 - unit - brokerage component', function() {
     };
 
     var mockMesh = {
-      _mesh:{
-        config:{
-          name:'mock'
+      _mesh: {
+        config: {
+          name: 'mock'
         }
       }
     };
 
     var mockClient = {
-      on:function(){}
+      on: function() {}
     };
 
     var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
@@ -115,19 +119,23 @@ describe('02 - unit - brokerage component', function() {
     };
 
     var mockMesh = {
-      _mesh:{
-        config:{
-          name:'mock'
+      _mesh: {
+        config: {
+          name: 'mock'
         }
       }
     };
 
     var mockClient = {
-      on:function(){}
+      on: function() {}
     };
     var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
-    brokerage.deferProxyStart({test:'proxy'}).then(function(){
-      expect(brokerage.__proxy).to.eql({test:'proxy'});
+    brokerage.deferProxyStart({
+      test: 'proxy'
+    }).then(function() {
+      expect(brokerage.__proxy).to.eql({
+        test: 'proxy'
+      });
       done();
     });
   });
@@ -149,15 +157,15 @@ describe('02 - unit - brokerage component', function() {
     };
 
     var mockMesh = {
-      _mesh:{
-        config:{
-          name:'mock'
+      _mesh: {
+        config: {
+          name: 'mock'
         }
       }
     };
 
     var mockClient = {
-      on:function(){}
+      on: function() {}
     };
 
     var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
@@ -187,15 +195,15 @@ describe('02 - unit - brokerage component', function() {
     };
 
     var mockMesh = {
-      _mesh:{
-        config:{
-          name:'mock'
+      _mesh: {
+        config: {
+          name: 'mock'
         }
       }
     };
 
     var mockClient = {
-      on:function(){}
+      on: function() {}
     };
 
     var mockLogger = {
@@ -203,10 +211,10 @@ describe('02 - unit - brokerage component', function() {
     };
 
     var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient, mockLogger, {
-      dependenciesSatisfiedDeferListen:true
+      dependenciesSatisfiedDeferListen: true
     });
     brokerage.__proxy = {
-      start:done
+      start: done
     };
     brokerage.__satisfiedElementNames = ['test2'];
     brokerage.__injectedElementNames = ['test2', 'test1'];
@@ -234,23 +242,23 @@ describe('02 - unit - brokerage component', function() {
     };
 
     var mockMesh = {
-      _mesh:{
-        config:{
-          name:'mock'
+      _mesh: {
+        config: {
+          name: 'mock'
         }
       }
     };
 
     var mockClient = {
-      on:function(){}
+      on: function() {}
     };
 
     var mockLogger = {
-      info:function(msg){
+      info: function(msg) {
         expect('element re-injected: test').to.be(msg);
         done();
       },
-      error:function(){
+      error: function() {
         done(arguments[0]);
       }
     };
@@ -258,32 +266,30 @@ describe('02 - unit - brokerage component', function() {
     var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient, mockLogger);
 
     brokerage.__client = {
-      construct:function(){
+      construct: function() {
         return {
-          exchange:{}
+          exchange: {}
         };
       }
     };
 
-    brokerage.__injectedElements = [
-      {
-        component:{
-          name: 'test'
-        }
+    brokerage.__injectedElements = [{
+      component: {
+        name: 'test'
       }
-    ];
+    }];
 
     brokerage.__mesh = {
-      _updateElement:function(){
-        return new Promise((resolve)=>{
+      _updateElement: function() {
+        return new Promise((resolve) => {
           resolve();
         });
       }
     };
 
     brokerage.__handleDependencyMet({
-      componentName:'test',
-      description:{}
+      componentName: 'test',
+      description: {}
     });
   });
 });

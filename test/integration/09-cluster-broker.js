@@ -359,7 +359,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
         done(new Error('unexpected success'));
       })
       .catch(function(e){
-        expect(e.toString()).to.be('Error: Duplicate attempts to broker the package component by brokerComponent & brokerComponentDuplicate');
+        expect(e.toString()).to.be('Error: Duplicate attempts to broker the remoteComponent component by brokerComponent & brokerComponentDuplicate');
         setTimeout(done, 2000);
       });
     });
