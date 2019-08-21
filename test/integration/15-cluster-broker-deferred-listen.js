@@ -207,7 +207,6 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
         return thisClient.exchange.remoteComponent.brokeredMethod1();
       })
       .catch(function(e){
-        console.log('ERROR:::', e);
         expect(gotToFinalAttempt).to.be(true);
         expect(e.toString()).to.be('AccessDenied: unauthorized');
         setTimeout(done, 2000);
