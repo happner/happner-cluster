@@ -116,3 +116,7 @@
 8.2.1 2019-08-12
 ----------------
 - fix: __checkDuplicateInjections of brokerage fixed
+
+8.2.2 2019-08-21
+----------------
+- fix: dependenciesSatisfied of brokerage fixed, when multiple of the same component in cluster
