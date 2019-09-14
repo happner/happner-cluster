@@ -268,7 +268,9 @@ describe('02 - unit - brokerage component', function() {
     brokerage.__client = {
       construct: function() {
         return {
-          exchange: {}
+          exchange: {
+            'test':{}
+          }
         };
       }
     };

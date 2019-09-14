@@ -1,6 +1,6 @@
 {
   "name": "happner-cluster",
-  "version": "8.2.2",
+  "version": "8.3.0",
   "description": "Extends happner with clustering capabilities",
   "main": "index.js",
   "scripts": {
@@ -27,6 +27,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.5.0",
     "mongodb": "^3.0.5",
+    "request": "^2.88.0",
     "restler": "^3.4.0",
     "shortid": "^2.2.8",
     "why-is-node-running": "^2.0.3"
@@ -36,6 +37,7 @@
     "happn-cluster": "^8.1.2",
     "happner-2": "^10.2.3",
     "happner-client": "^8.1.2",
+    "node-http-proxy": "^0.2.3",
     "semver": "^5.3.0"
   }
 }
