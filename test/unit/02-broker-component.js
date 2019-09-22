@@ -6,7 +6,7 @@ var expect = require('expect.js');
 
 describe('02 - unit - brokerage component', function() {
 
-  it('injects and detaches the brokerage component', function(done) {
+  it('injects the brokerage component', function(done) {
     //package, mesh, client
     var mockModels = {};
     var mockMesh = {
@@ -27,7 +27,7 @@ describe('02 - unit - brokerage component', function() {
       expect(brokerage.__models).to.be(mockModels);
       expect(brokerage.__mesh).to.be(mockMesh);
       expect(brokerage.__client).to.be(mockClient);
-      brokerage.detach(done);
+      done();
     });
   });
 
@@ -289,7 +289,7 @@ describe('02 - unit - brokerage component', function() {
       }
     };
 
-    brokerage.__handleDependencyMet({
+    brokerage.__handlePeerArrived({
       componentName: 'test',
       description: {}
     });

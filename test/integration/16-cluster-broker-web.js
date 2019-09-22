@@ -10,7 +10,7 @@ var testclient = require('../_lib/client');
 
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
-describe(require('../_lib/test-helper').testName(__filename, 3), function () {
+describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   this.timeout(40000);
 
@@ -18,7 +18,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
   function localInstanceConfig(seq, sync, dynamic) {
     var config = baseConfig(seq, sync, true);
-    let brokerComponentPath = dynamic?libDir + 'integration-10-broker-component-dynamic':libDir + 'integration-09-broker-component';
+    let brokerComponentPath = dynamic ? libDir + 'integration-10-broker-component-dynamic' : libDir + 'integration-09-broker-component';
     config.cluster = config.cluster || {};
     config.cluster.dependenciesSatisfiedDeferListen = true;
     config.modules = {
@@ -62,7 +62,8 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
         stopMethod: 'stop',
         web: {
           routes: {
-            "testJSON": ["testJSON"]
+            "testJSON": ["testJSON"],
+            "testJSONSticky": ["testJSONSticky"]
           }
         }
       }
@@ -71,10 +72,10 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
   }
 
   beforeEach('clear mongo collection', function(done) {
-    stopCluster(servers, function(e){
+    stopCluster(servers, function(e) {
       if (e) return done(e);
       servers = [];
-      clearMongoCollection('mongodb://localhost', 'happn-cluster', function(){
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
         done();
       });
     });
@@ -82,17 +83,17 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
   afterEach('stop cluster', function(done) {
     if (!servers) return done();
-    stopCluster(servers, function(){
-      clearMongoCollection('mongodb://localhost', 'happn-cluster', function(){
+    stopCluster(servers, function() {
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
         done();
       });
     });
   });
 
-  function startInternal(id, clusterMin){
+  function startInternal(id, clusterMin) {
     return new Promise((resolve, reject) => {
       return HappnerCluster.create(remoteInstanceConfig(id, clusterMin))
-        .then(function(instance){
+        .then(function(instance) {
           servers.push(instance);
           resolve(instance);
         })
@@ -100,10 +101,10 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
     });
   }
 
-  function startEdge(id, clusterMin, dynamic){
+  function startEdge(id, clusterMin, dynamic) {
     return new Promise((resolve, reject) => {
       return HappnerCluster.create(localInstanceConfig(id, clusterMin, dynamic))
-        .then(function(instance){
+        .then(function(instance) {
           servers.push(instance);
           resolve(instance);
         })
@@ -120,15 +121,20 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
       url: `http://127.0.0.1:${port}${path}?happn_token=${token}`
     };
 
-    request(options, function (error, response, body) {
-      callback(error, {response, body});
+    request(options, function(error, response, body) {
+      callback(error, {
+        response,
+        body
+      });
     });
   }
 
-  function testWebCall(client, path, port){
+  function testWebCall(client, path, port) {
     return new Promise((resolve) => {
-      doRequest(path, client.token, port, function(e, response){
-        if (e) return resolve({error:e});
+      doRequest(path, client.token, port, function(e, response) {
+        if (e) return resolve({
+          error: e
+        });
         resolve(response);
       });
     });
@@ -143,42 +149,46 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
       var internalInstance;
 
       startEdge(1, 1)
-      .then(function(instance) {
-        edgeInstance = instance;
-        return startInternal(2, 2);
-      })
-      .then(function(instance) {
-        internalInstance = instance;
-        return new Promise((resolve) => {
-          setTimeout(resolve, 5000);
-        });
-      })
-      .then(function() {
-        return users.add(edgeInstance, 'username', 'password');
-      })
-      .then(function() {
-        return users.allowWebMethod(internalInstance, 'username', '/remoteComponent1/testJSON');
-      })
-      .then(function() {
-        return testclient.create('_ADMIN', 'happn', 55002);
-      })
-      .then(function(adminClient) {
-        return testWebCall(adminClient, '/remoteComponent1/testJSON', 55002);
-      })
-      .then(function(result) {
-        expect(JSON.parse(result.body)).to.eql({test:'data'});
-        return testclient.create('username', 'password', 55002);
-      })
-      .then(function(client) {
-        thisClient = client;
-        //first test our broker components methods are directly callable
-        return testWebCall(thisClient, '/remoteComponent1/testJSON', 55002);
-      })
-      .then(function(result) {
-        expect(JSON.parse(result.body)).to.eql({test:'data'});
-        setTimeout(done, 2000);
-      })
-      .catch(done);
+        .then(function(instance) {
+          edgeInstance = instance;
+          return startInternal(2, 2);
+        })
+        .then(function(instance) {
+          internalInstance = instance;
+          return new Promise((resolve) => {
+            setTimeout(resolve, 5000);
+          });
+        })
+        .then(function() {
+          return users.add(edgeInstance, 'username', 'password');
+        })
+        .then(function() {
+          return users.allowWebMethod(internalInstance, 'username', '/remoteComponent1/testJSON');
+        })
+        .then(function() {
+          return testclient.create('_ADMIN', 'happn', 55002);
+        })
+        .then(function(adminClient) {
+          return testWebCall(adminClient, '/remoteComponent1/testJSON', 55002);
+        })
+        .then(function(result) {
+          expect(JSON.parse(result.body)).to.eql({
+            test: 'data'
+          });
+          return testclient.create('username', 'password', 55002);
+        })
+        .then(function(client) {
+          thisClient = client;
+          //first test our broker components methods are directly callable
+          return testWebCall(thisClient, '/remoteComponent1/testJSON', 55002);
+        })
+        .then(function(result) {
+          expect(JSON.parse(result.body)).to.eql({
+            test: 'data'
+          });
+          setTimeout(done, 2000);
+        })
+        .catch(done);
     });
 
     it('starts the cluster broker, we ensure indirect calls to the brokered component succeed', function(done) {
@@ -188,82 +198,164 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
       var internalInstance;
 
       startEdge(1, 1)
-      .then(function(instance) {
-        edgeInstance = instance;
-        return startInternal(2, 2);
-      })
-      .then(function(instance) {
-        internalInstance = instance;
-        return new Promise((resolve) => {
-          setTimeout(resolve, 5000);
-        });
-      })
-      .then(function() {
-        return users.add(edgeInstance, 'username', 'password');
-      })
-      .then(function() {
-        return users.allowWebMethod(internalInstance, 'username', '/remoteComponent1/testJSON');
-      })
-      .then(function() {
-        return testclient.create('_ADMIN', 'happn', 55001);
-      })
-      .then(function(adminClient) {
-        return testWebCall(adminClient, '/remoteComponent1/testJSON', 55001);
-      })
-      .then(function(result) {
-        expect(JSON.parse(result.body)).to.eql({test:'data'});
-        return testclient.create('username', 'password', 55001);
-      })
-      .then(function(client) {
-        thisClient = client;
-        //first test our broker components methods are directly callable
-        return testWebCall(thisClient, '/remoteComponent1/testJSON', 55001);
-      })
-      .then(function(result) {
-        expect(JSON.parse(result.body)).to.eql({test:'data'});
-        setTimeout(done, 2000);
-      })
-      .catch(done);
+        .then(function(instance) {
+          edgeInstance = instance;
+          return startInternal(2, 2);
+        })
+        .then(function(instance) {
+          internalInstance = instance;
+          return new Promise((resolve) => {
+            setTimeout(resolve, 5000);
+          });
+        })
+        .then(function() {
+          return users.add(edgeInstance, 'username', 'password');
+        })
+        .then(function() {
+          return users.allowWebMethod(internalInstance, 'username', '/remoteComponent1/testJSON');
+        })
+        .then(function() {
+          return testclient.create('_ADMIN', 'happn', 55001);
+        })
+        .then(function(adminClient) {
+          return testWebCall(adminClient, '/remoteComponent1/testJSON', 55001);
+        })
+        .then(function(result) {
+          expect(JSON.parse(result.body)).to.eql({
+            test: 'data'
+          });
+          return testclient.create('username', 'password', 55001);
+        })
+        .then(function(client) {
+          thisClient = client;
+          //first test our broker components methods are directly callable
+          return testWebCall(thisClient, '/remoteComponent1/testJSON', 55001);
+        })
+        .then(function(result) {
+          expect(JSON.parse(result.body)).to.eql({
+            test: 'data'
+          });
+          setTimeout(done, 2000);
+        })
+        .catch(done);
     });
 
-    xit('starts the cluster broker, we ensure calls to the brokered web paths fail, then start the brokered component and ensure calls to the brokered web methods work', function(done) {
+    function getClientForMesh(meshId, username, password, edgePort) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          let client = null;
+          while (client == null) {
+            let checkClient = await testclient.create(username, password, edgePort);
+            let response = await testWebCall(checkClient, '/remoteComponent1/testJSONSticky', 55001);
+            if (response.body.toString().indexOf(`MESH_${meshId}`) > -1) client = checkClient;
+            else await checkClient.disconnect();
+          }
+          resolve(client);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }
 
-      var thisClient;
+    it('starts the cluster broker, with 2 brokered internal nodes in a high availability configuration, we ensure indirect calls to the brokered component succeed and are sticky sessioned, then we stop one internal node and we ensure we are still able to access the web content on the remaining node', function(done) {
+
+      var thisClientMesh2, thisClientMesh3;
       var edgeInstance;
+      var internalInstance1, internalInstance2, results = [];
+
+      let pushResults = (responseBody) => {
+        let result = {
+          statusCode: responseBody.response.statusCode,
+          statusMessage: responseBody.response.statusMessage,
+          body: responseBody.body
+        };
+        results.push(result);
+      };
 
       startEdge(1, 1)
-      .then(function(instance) {
-        edgeInstance = instance;
-        return users.add(edgeInstance, 'username', 'password');
-      })
-      .then(function() {
-        return users.allowWebMethod(edgeInstance, 'username', '/remoteComponent1/testJSON');
-      })
-      .then(function() {
-        return testclient.create('username', 'password', 55001);
-      })
-      .then(function(client) {
-        thisClient = client;
-        //first test our broker components methods are directly callable
-        return testWebCall(thisClient, '/test/resource.json');
-      })
-      .then(function(result) {
-        expect(result.error).to.be('404 error: ');
-        return startInternal(2, 2);
-      })
-      .then(function() {
-        return new Promise((resolve) => {
-          setTimeout(resolve, 5000);
+        .then(function(instance) {
+          edgeInstance = instance;
+          return startInternal(2, 2);
+        })
+        .then(function(instance) {
+          internalInstance1 = instance;
+          return startInternal(3, 3);
+        })
+        .then(function(instance) {
+          internalInstance2 = instance;
+          return new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
+        })
+        .then(function() {
+          return users.add(edgeInstance, 'username', 'password');
+        })
+        .then(function() {
+          return users.allowWebMethod(internalInstance1, 'username', '/remoteComponent1/testJSONSticky');
+        })
+        .then(function() {
+          return getClientForMesh(2, 'username', 'password', 55001);
+        })
+        .then(function(client) {
+          thisClientMesh2 = client;
+          return getClientForMesh(3, 'username', 'password', 55001);
+        })
+        .then(function(client) {
+          thisClientMesh3 = client;
+          return testWebCall(thisClientMesh2, '/remoteComponent1/testJSONSticky', 55001);
+        })
+        .then(function(response) {
+          pushResults(response);
+          return testWebCall(thisClientMesh3, '/remoteComponent1/testJSONSticky', 55001);
+        })
+        .then(function(response) {
+          pushResults(response);
+          return new Promise((resolve, reject) => {
+            internalInstance1.stop((e) => {
+              if (e) return reject(e);
+              console.log('stopping a peer');
+              setTimeout(resolve, 3000);
+            });
+          });
+        })
+        .then(function(response) {
+          return testWebCall(thisClientMesh2, '/remoteComponent1/testJSONSticky', 55001);
+        })
+        .then(function(response) {
+          pushResults(response);
+          return testWebCall(thisClientMesh3, '/remoteComponent1/testJSONSticky', 55001);
+        })
+        .then(function(response) {
+          pushResults(response);
+          expect(results).to.eql(
+            // ran on different nodes
+            [{
+              "statusCode": 200,
+              "statusMessage": "OK",
+              "body": "{\"ran_on\":\"MESH_2\"}"
+            },
+            {
+              "statusCode": 200,
+              "statusMessage": "OK",
+              "body": "{\"ran_on\":\"MESH_3\"}"
+            },
+            // failover to MESH_3, because MESH_2 went offline
+            {
+              "statusCode": 200,
+              "statusMessage": "OK",
+              "body": "{\"ran_on\":\"MESH_3\"}"
+            },
+            {
+              "statusCode": 200,
+              "statusMessage": "OK",
+              "body": "{\"ran_on\":\"MESH_3\"}"
+            }
+          ]);
+          done();
+        })
+        .catch(function(e) {
+          done(e);
         });
-      })
-      .then(function() {
-        return testWebCall(thisClient, '/test/resource.json');
-      })
-      .then(function(result) {
-        expect(result.data).to.eql({test:'data'});
-        setTimeout(done, 2000);
-      })
-      .catch(done);
     });
   });
 });

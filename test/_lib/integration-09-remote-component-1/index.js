@@ -27,6 +27,11 @@ Component.prototype.testJSON = function (req, res) {
   res.end(JSON.stringify({"test": "data"}));
 };
 
+Component.prototype.testJSONSticky = function ($happn, req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  res.end(JSON.stringify({"ran_on": `${$happn.info.mesh.name}`}));
+};
+
 Component.prototype.brokeredEventEmitMethod = function($happn, callback) {
   $happn.emit('/brokered/event1', {
     brokered: {
