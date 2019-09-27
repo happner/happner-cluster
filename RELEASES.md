@@ -120,3 +120,8 @@
 8.2.2 2019-08-21
 ----------------
 - fix: dependenciesSatisfied of brokerage fixed, when multiple of the same component in cluster
+
+8.3.0 2019-09-27
+----------------
+- upgrade: happner-client v9
+- feature: web brokering
