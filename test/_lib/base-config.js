@@ -14,6 +14,11 @@ module.exports = function (seq, minPeers, secure, requestTimeout, responseTimeou
     happn: {
       secure: secure,
       services: {
+        security:{
+          config:{
+            sessionTokenSecret:'TEST-SESSION-TOKEN-SECRET'
+          }
+        },
         data:{
           config:{
             autoUpdateDBVersion:true

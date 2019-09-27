@@ -15,10 +15,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
   this.timeout(20000);
 
   var servers = [],
-    localInstance;
+    localInstance, availableInstance;
 
   function localInstanceConfig(seq, sync, dynamic) {
     var config = baseConfig(seq, sync, true);
+    config.authorityDelegationOn = true;
     let brokerComponentPath = dynamic?libDir + 'integration-10-broker-component-dynamic':libDir + 'integration-09-broker-component';
     config.modules = {
       'localComponent': {
@@ -110,6 +111,54 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
 
   function startEdge(id, clusterMin, dynamic){
     return HappnerCluster.create(localInstanceConfig(id, clusterMin, dynamic));
+  }
+
+  function startClusterEdgeFirstHighAvailable(dynamic){
+
+    return new Promise(function(resolve, reject){
+      startEdge(1,1,dynamic)
+      .then(function(server){
+        servers.push(server);
+        return startInternal(2, 2);
+      })
+      .then(function(server){
+        servers.push(server);
+        localInstance = server;
+        return startInternal(3, 3);
+      })
+      .then(function(server){
+        servers.push(server);
+        availableInstance = server;
+        return users.add(localInstance, 'username', 'password');
+      })
+      .then(resolve)
+      .catch(reject);
+    });
+  }
+
+  function startClusterInternalFirstHighAvailableEdge(dynamic){
+
+    return new Promise(function(resolve, reject){
+
+      startInternal(1, 1)
+      .then(function(server){
+        servers.push(server);
+        localInstance = server;
+        return startEdge(2, 2, dynamic);
+      })
+      .then(function(server){
+        servers.push(server);
+        return startEdge(3, 3, dynamic);
+      })
+      .then(function(server){
+        servers.push(server);
+        return users.add(localInstance, 'username', 'password');
+      })
+      .then(function(){
+        setTimeout(resolve, 2000);
+      })
+      .catch(reject);
+    });
   }
 
   function startClusterInternalFirst(dynamic){
@@ -311,7 +360,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
       .catch(done);
     });
 
-    it ('starts up the edge cluster node first, we than start the internal node (with brokered component), pause and then assert we are able to run a brokered method with an argument', function(done) {
+    it ('starts up the edge cluster node first, we then start the internal node (with brokered component), pause and then assert we are able to run a brokered method with an argument', function(done) {
       startClusterEdgeFirst()
       .then(function(){
         return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
@@ -333,6 +382,185 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function () {
           expect(result).to.be('MESH_2:remoteComponent:brokeredMethod3:test');
           setTimeout(done, 2000);
         });
+      })
+      .catch(done);
+    });
+
+    it ('starts up the edge cluster node first, we then start the internal node (with brokered component), pause and then assert we are able to run a brokered method with an argument, with the correct origin', function(done) {
+      startClusterEdgeFirst()
+      .then(function(){
+        return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod3');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent1', 'brokeredMethod3');
+      })
+      .then(function(){
+        return new Promise(function(resolve){
+          setTimeout(resolve, 5000);
+        });
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55001);
+      })
+      .then(function(client) {
+        client.exchange.remoteComponent1.brokeredMethod3("test", function(e, result) {
+          expect(e).to.be(null);
+          expect(result).to.be('MESH_2:remoteComponent1:brokeredMethod3:test:username');
+          setTimeout(done, 2000);
+        });
+      })
+      .catch(done);
+    });
+
+    it ('starts up the internal cluster node first, we then start the internal node (with brokered component), pause and then assert we are able to run a brokered method with an argument, with the correct origin', function(done) {
+      startClusterInternalFirst()
+      .then(function(){
+        return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod3');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent1', 'brokeredMethod3');
+      })
+      .then(function(){
+        return new Promise(function(resolve){
+          setTimeout(resolve, 5000);
+        });
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55001);
+      })
+      .then(function(client) {
+        client.exchange.remoteComponent1.brokeredMethod3("test", function(e, result) {
+          expect(e).to.be(null);
+          expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod3:test:username');
+          setTimeout(done, 2000);
+        });
+      })
+      .catch(done);
+    });
+
+    it ('starts up the internal cluster node first, we then start the internal node (with brokered component), pause and then assert we are able to run a brokered method, we then shutdown the brokered instance, run the same method and get the correct error', function(done) {
+      let testClient;
+
+      startClusterInternalFirst()
+      .then(function(){
+        return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod3');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent1', 'brokeredMethod3');
+      })
+      .then(function(){
+        return new Promise(function(resolve){
+          setTimeout(resolve, 2000);
+        });
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55002);
+      })
+      .then(function(client) {
+        testClient = client;
+        return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+      })
+      .then(function(result) {
+        expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod3:test:username');
+        return new Promise((resolve, reject) =>{
+          localInstance.stop((e) => {
+            if (e) return reject(e);
+            setTimeout(resolve, 2000);
+          });
+        });
+      })
+      .then(function() {
+        return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+      })
+      .catch(function(e){
+        expect(e.message).to.be('Not implemented remoteComponent1:2.2.0:brokeredMethod3');
+        done();
+      });
+    });
+
+    it('starts up the internal cluster node first, we then start 2 the internal nodes in a high availability configuration, pause and then assert we are able to run a brokered methods and they are load balanced, we then shutdown a brokered instance, and are able to run the same method on the remaining instance', function(done) {
+      let testClient, results = [];
+
+      startClusterEdgeFirstHighAvailable()
+      .then(function(){
+        return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod3');
+      })
+      .then(function() {
+        return users.allowMethod(localInstance, 'username', 'remoteComponent1', 'brokeredMethod3');
+      })
+      .then(function(){
+        return new Promise(function(resolve){
+          setTimeout(resolve, 2000);
+        });
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55001);
+      })
+      .then(function(client) {
+        testClient = client;
+        return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+      })
+      .then(function(result) {
+        results.push(result);
+        return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+      })
+      .then(function(result) {
+        results.push(result);
+        return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+      })
+      .then(function(result) {
+        results.push(result);
+        return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+      })
+      .then(function() {
+        return new Promise((resolve, reject) =>{
+          localInstance.stop((e) => {
+            if (e) return reject(e);
+            setTimeout(resolve, 2000);
+          });
+        });
+      })
+      .then(function() {
+        return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+      })
+      .then(function(result) {
+        results.push(result);
+        return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+      })
+      .then(function(result) {
+        results.push(result);
+        return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+      })
+      .then(function(result) {
+        results.push(result);
+        return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+      })
+      .then(function(result) {
+        results.push(result);
+        expect(results).to.eql([
+          //round robin happening
+          'MESH_2:remoteComponent1:brokeredMethod3:test:username',
+          'MESH_3:remoteComponent1:brokeredMethod3:test:username',
+          'MESH_2:remoteComponent1:brokeredMethod3:test:username',
+          'MESH_3:remoteComponent1:brokeredMethod3:test:username',
+          //now only mesh 3 is up, so it handles all method calls
+          'MESH_3:remoteComponent1:brokeredMethod3:test:username',
+          'MESH_3:remoteComponent1:brokeredMethod3:test:username',
+          'MESH_3:remoteComponent1:brokeredMethod3:test:username'
+        ]);
+        done();
       })
       .catch(done);
     });

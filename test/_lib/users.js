@@ -10,7 +10,7 @@ module.exports.add = function (server, username, password, permissions) {
   var group = {
     name: username + '_group',
     permissions: permissions || {}
-  }
+  };
 
   return Promise.all([
     server.exchange.security.addGroup(group),
@@ -18,16 +18,18 @@ module.exports.add = function (server, username, password, permissions) {
   ]).spread(function (group, user) {
     return server.exchange.security.linkGroup(group, user);
   });
-}
+};
 
 module.exports.generatePermissions = function (user) {
+
   var component, event, method, path;
   var allowedEvents = user.allowedEvents;
   var allowedMethods = user.allowedMethods;
+
   var permissions = {
     methods: {},
     events: {}
-  }
+  };
   for (component in allowedMethods) {
     for (method in allowedMethods[component]) {
       path = '/DOMAIN_NAME/' + component + '/' + method;
@@ -41,7 +43,7 @@ module.exports.generatePermissions = function (user) {
     }
   }
   return permissions;
-}
+};
 
 // can only process one permission change at a time
 var queue = async.queue(function (task, callback) {
@@ -67,9 +69,9 @@ module.exports.allowMethod = function (server, username, component, method) {
     }, function (err) {
       if (err) return reject(err);
       resolve();
-    })
+    });
   });
-}
+};
 
 module.exports.denyMethod = function (server, username, component, method) {
   var group = username + '_group';
@@ -86,9 +88,44 @@ module.exports.denyMethod = function (server, username, component, method) {
     }, function (err) {
       if (err) return reject(err);
       resolve();
-    })
+    });
   });
-}
+};
+
+module.exports.allowWebMethod = function (server, username, path) {
+  var group = username + '_group';
+  var permissions = {web: {}};
+  permissions.web[path] = { actions: ['get', 'put', 'post'], description: 'a test web permission' };
+  return new Promise(function (resolve, reject) {
+    queue.push({
+      server: server,
+      group: group,
+      permissions: permissions,
+      method: 'addGroupPermissions'
+    }, function (err) {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+};
+
+module.exports.denyWebMethod = function (server, username, path) {
+  var group = username + '_group';
+  var permissions = { web: {} };
+  permissions.web[path] = {};
+
+  return new Promise(function (resolve, reject) {
+    queue.push({
+      server: server,
+      group: group,
+      permissions: permissions,
+      method: 'removeGroupPermissions'
+    }, function (err) {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+};
 
 module.exports.allowEvent = function (server, username, component, event) {
   var group = username + '_group';
@@ -105,9 +142,9 @@ module.exports.allowEvent = function (server, username, component, event) {
     }, function (err) {
       if (err) return reject(err);
       resolve();
-    })
+    });
   });
-}
+};
 
 module.exports.denyEvent = function (server, username, component, event) {
   var group = username + '_group';
@@ -124,6 +161,6 @@ module.exports.denyEvent = function (server, username, component, event) {
     }, function (err) {
       if (err) return reject(err);
       resolve();
-    })
+    });
   });
-}
+};
