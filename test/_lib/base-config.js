@@ -45,5 +45,5 @@ module.exports = function (seq, minPeers, secure, requestTimeout, responseTimeou
         }
       }
     }
-  }
+  };
 };
