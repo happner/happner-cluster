@@ -125,3 +125,8 @@
 ----------------
 - upgrade: happner-client v9
 - feature: web brokering
+
+9.0.0 2019-11-28
+----------------
+  - happn-3 version 11.0.0, breaking: client disconnection on token revocation
+  - happn-cluster version 9.0.0
