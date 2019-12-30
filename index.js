@@ -1,1 +1,1 @@
-module.exports = require('./lib/happner-cluster');
+module.exports = require("./lib/happner-cluster");

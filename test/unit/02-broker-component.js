@@ -1,18 +1,14 @@
-var HappnerCluster = require('../..');
-var Happner = require('happner-2');
-var HappnCluster = require('happn-cluster');
-var Promise = require('bluebird');
-var expect = require('expect.js');
+var Promise = require("bluebird");
+var expect = require("expect.js");
 
-describe('02 - unit - brokerage component', function() {
-
-  it('injects the brokerage component', function(done) {
+describe("02 - unit - brokerage component", function() {
+  it("injects the brokerage component", function(done) {
     //package, mesh, client
     var mockModels = {};
     var mockMesh = {
       _mesh: {
         config: {
-          name: 'mock'
+          name: "mock"
         }
       }
     };
@@ -20,7 +16,11 @@ describe('02 - unit - brokerage component', function() {
       on: function() {}
     };
 
-    var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
+    var brokerage = require("../../lib/brokerage").create(
+      mockModels,
+      mockMesh,
+      mockClient
+    );
 
     brokerage.inject(function(e) {
       if (e) return done(e);
@@ -31,21 +31,20 @@ describe('02 - unit - brokerage component', function() {
     });
   });
 
-  it('tests the __checkDuplicateInjections method', function(done) {
-
+  it("tests the __checkDuplicateInjections method", function(done) {
     //package, mesh, client
     var mockModels = {
       brokerComponent: {
         package: {
           remoteComponent3: {
-            version: '^2.0.0'
+            version: "^2.0.0"
           }
         }
       },
       brokerComponent1: {
         package: {
           remoteComponent3: {
-            version: '^2.0.0'
+            version: "^2.0.0"
           }
         }
       }
@@ -54,7 +53,7 @@ describe('02 - unit - brokerage component', function() {
     var mockMesh = {
       _mesh: {
         config: {
-          name: 'mock'
+          name: "mock"
         }
       }
     };
@@ -62,26 +61,31 @@ describe('02 - unit - brokerage component', function() {
     var mockClient = {
       on: function() {}
     };
-    var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
+    var brokerage = require("../../lib/brokerage").create(
+      mockModels,
+      mockMesh,
+      mockClient
+    );
 
     brokerage.inject(function(e) {
-      expect(e.toString()).to.be('Error: Duplicate attempts to broker the remoteComponent3 component by brokerComponent & brokerComponent1');
+      expect(e.toString()).to.be(
+        "Error: Duplicate attempts to broker the remoteComponent3 component by brokerComponent & brokerComponent1"
+      );
       done();
     });
   });
 
-  it('tests the instance method', function() {
-
+  it("tests the instance method", function() {
     //package, mesh, client
     var mockModels = {
       brokerComponent: {
         remoteComponent3: {
-          version: '^2.0.0'
+          version: "^2.0.0"
         }
       },
       brokerComponent1: {
         remoteComponent3: {
-          version: '^2.0.0'
+          version: "^2.0.0"
         }
       }
     };
@@ -89,7 +93,7 @@ describe('02 - unit - brokerage component', function() {
     var mockMesh = {
       _mesh: {
         config: {
-          name: 'mock'
+          name: "mock"
         }
       }
     };
@@ -98,22 +102,25 @@ describe('02 - unit - brokerage component', function() {
       on: function() {}
     };
 
-    var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
-    expect(require('../../lib/brokerage').instance('mock')).to.eql(brokerage);
+    var brokerage = require("../../lib/brokerage").create(
+      mockModels,
+      mockMesh,
+      mockClient
+    );
+    expect(require("../../lib/brokerage").instance("mock")).to.eql(brokerage);
   });
 
-  it('tests the deferProxyStart method', function(done) {
-
+  it("tests the deferProxyStart method", function(done) {
     //package, mesh, client
     var mockModels = {
       brokerComponent: {
         remoteComponent3: {
-          version: '^2.0.0'
+          version: "^2.0.0"
         }
       },
       brokerComponent1: {
         remoteComponent3: {
-          version: '^2.0.0'
+          version: "^2.0.0"
         }
       }
     };
@@ -121,7 +128,7 @@ describe('02 - unit - brokerage component', function() {
     var mockMesh = {
       _mesh: {
         config: {
-          name: 'mock'
+          name: "mock"
         }
       }
     };
@@ -129,29 +136,34 @@ describe('02 - unit - brokerage component', function() {
     var mockClient = {
       on: function() {}
     };
-    var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
-    brokerage.deferProxyStart({
-      test: 'proxy'
-    }).then(function() {
-      expect(brokerage.__proxy).to.eql({
-        test: 'proxy'
+    var brokerage = require("../../lib/brokerage").create(
+      mockModels,
+      mockMesh,
+      mockClient
+    );
+    brokerage
+      .deferProxyStart({
+        test: "proxy"
+      })
+      .then(function() {
+        expect(brokerage.__proxy).to.eql({
+          test: "proxy"
+        });
+        done();
       });
-      done();
-    });
   });
 
-  it('tests the dependenciesSatisfied method', function() {
-
+  it("tests the dependenciesSatisfied method", function() {
     //package, mesh, client
     var mockModels = {
       brokerComponent: {
         remoteComponent3: {
-          version: '^2.0.0'
+          version: "^2.0.0"
         }
       },
       brokerComponent1: {
         remoteComponent3: {
-          version: '^2.0.0'
+          version: "^2.0.0"
         }
       }
     };
@@ -159,7 +171,7 @@ describe('02 - unit - brokerage component', function() {
     var mockMesh = {
       _mesh: {
         config: {
-          name: 'mock'
+          name: "mock"
         }
       }
     };
@@ -168,28 +180,31 @@ describe('02 - unit - brokerage component', function() {
       on: function() {}
     };
 
-    var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient);
-    brokerage.__satisfiedElementNames = ['test1', 'test2'];
-    brokerage.__injectedElementNames = ['test2', 'test1'];
+    var brokerage = require("../../lib/brokerage").create(
+      mockModels,
+      mockMesh,
+      mockClient
+    );
+    brokerage.__satisfiedElementNames = ["test1", "test2"];
+    brokerage.__injectedElementNames = ["test2", "test1"];
     expect(brokerage.dependenciesSatisfied()).to.be(true);
 
-    brokerage.__satisfiedElementNames = ['test1', 'test2'];
-    brokerage.__injectedElementNames = ['test2'];
+    brokerage.__satisfiedElementNames = ["test1", "test2"];
+    brokerage.__injectedElementNames = ["test2"];
     expect(brokerage.dependenciesSatisfied()).to.be(false);
   });
 
-  it('tests the __checkDependenciesSatisfied method', function(done) {
-
+  it("tests the __checkDependenciesSatisfied method", function(done) {
     //package, mesh, client
     var mockModels = {
       brokerComponent: {
         remoteComponent3: {
-          version: '^2.0.0'
+          version: "^2.0.0"
         }
       },
       brokerComponent1: {
         remoteComponent3: {
-          version: '^2.0.0'
+          version: "^2.0.0"
         }
       }
     };
@@ -197,7 +212,7 @@ describe('02 - unit - brokerage component', function() {
     var mockMesh = {
       _mesh: {
         config: {
-          name: 'mock'
+          name: "mock"
         }
       }
     };
@@ -206,37 +221,40 @@ describe('02 - unit - brokerage component', function() {
       on: function() {}
     };
 
-    var mockLogger = {
+    var mockLogger = {};
 
-    };
-
-    var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient, mockLogger, {
-      dependenciesSatisfiedDeferListen: true
-    });
+    var brokerage = require("../../lib/brokerage").create(
+      mockModels,
+      mockMesh,
+      mockClient,
+      mockLogger,
+      {
+        dependenciesSatisfiedDeferListen: true
+      }
+    );
     brokerage.__proxy = {
       start: done
     };
-    brokerage.__satisfiedElementNames = ['test2'];
-    brokerage.__injectedElementNames = ['test2', 'test1'];
+    brokerage.__satisfiedElementNames = ["test2"];
+    brokerage.__injectedElementNames = ["test2", "test1"];
     brokerage.__checkDependenciesSatisfied();
 
-    brokerage.__satisfiedElementNames = ['test1', 'test2'];
-    brokerage.__injectedElementNames = ['test2', 'test1'];
+    brokerage.__satisfiedElementNames = ["test1", "test2"];
+    brokerage.__injectedElementNames = ["test2", "test1"];
     brokerage.__checkDependenciesSatisfied();
   });
 
-  it('tests the __handleDependencyMet method', function(done) {
-
+  it("tests the __handleDependencyMet method", function(done) {
     //package, mesh, client
     var mockModels = {
       brokerComponent: {
         remoteComponent3: {
-          version: '^2.0.0'
+          version: "^2.0.0"
         }
       },
       brokerComponent1: {
         remoteComponent3: {
-          version: '^2.0.0'
+          version: "^2.0.0"
         }
       }
     };
@@ -244,7 +262,7 @@ describe('02 - unit - brokerage component', function() {
     var mockMesh = {
       _mesh: {
         config: {
-          name: 'mock'
+          name: "mock"
         }
       }
     };
@@ -255,7 +273,7 @@ describe('02 - unit - brokerage component', function() {
 
     var mockLogger = {
       info: function(msg) {
-        expect('element re-injected: test').to.be(msg);
+        expect("element re-injected: test").to.be(msg);
         done();
       },
       error: function() {
@@ -263,34 +281,41 @@ describe('02 - unit - brokerage component', function() {
       }
     };
 
-    var brokerage = require('../../lib/brokerage').create(mockModels, mockMesh, mockClient, mockLogger);
+    var brokerage = require("../../lib/brokerage").create(
+      mockModels,
+      mockMesh,
+      mockClient,
+      mockLogger
+    );
 
     brokerage.__client = {
       construct: function() {
         return {
           exchange: {
-            'test':{}
+            test: {}
           }
         };
       }
     };
 
-    brokerage.__injectedElements = [{
-      component: {
-        name: 'test'
+    brokerage.__injectedElements = [
+      {
+        component: {
+          name: "test"
+        }
       }
-    }];
+    ];
 
     brokerage.__mesh = {
       _updateElement: function() {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
           resolve();
         });
       }
     };
 
     brokerage.__handlePeerArrived({
-      componentName: 'test',
+      componentName: "test",
       description: {}
     });
   });
