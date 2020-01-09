@@ -246,30 +246,20 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .catch(done);
     });
 
-    function getClientForMesh(meshId, username, password, edgePort) {
-      return new Promise((resolve, reject) => {
-        try {
-          let client = null;
-          while (client == null) {
-            let checkClient = Promise.resolve(
-              testclient.create(username, password, edgePort)
-            );
-            let response = Promise.resolve(
-              testWebCall(
-                checkClient,
-                "/remoteComponent1/testJSONSticky",
-                55001
-              )
-            );
-            if (response.body.toString().indexOf(`MESH_${meshId}`) > -1)
-              client = checkClient;
-            else Promise.resolve(checkClient.disconnect());
-          }
-          resolve(client);
-        } catch (e) {
-          reject(e);
-        }
-      });
+    async function getClientForMesh(meshId, username, password, edgePort) {
+      let client = null;
+      while (client == null) {
+        let checkClient = await testclient.create(username, password, edgePort);
+        let response = await testWebCall(
+          checkClient,
+          "/remoteComponent1/testJSONSticky",
+          55001
+        );
+        if (response.body.toString().indexOf(`MESH_${meshId}`) > -1)
+          client = checkClient;
+        else await checkClient.disconnect();
+      }
+      return client;
     }
 
     it("starts the cluster broker, with 2 brokered internal nodes in a high availability configuration, we ensure indirect calls to the brokered component succeed and are sticky sessioned, then we stop one internal node and we ensure we are still able to access the web content on the remaining node", function(done) {

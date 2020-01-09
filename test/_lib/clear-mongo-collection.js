@@ -8,7 +8,10 @@ module.exports = function(url, collectionName, callback) {
     var collection = db.collection(collectionName);
 
     collection.drop(function(err) {
-      if (err && err.message !== "ns not found") client.close(callback);
+      if (err && err.message !== "ns not found")
+        //eslint-disable-next-line
+        console.log("error clearing mongodb: " + err.message);
+      client.close(callback);
     });
   });
 };

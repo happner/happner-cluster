@@ -349,7 +349,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
 
   it("ensures a happner client without the correct permissions is unable to modify a remote components data", function(done) {
     this.timeout(4000);
-
+    let thisClient;
     users
       .allowMethod(
         localInstance,
@@ -361,7 +361,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         return testclient.create("username", "password", 55001);
       })
       .then(function(client) {
-        let thisClient = client;
+        thisClient = client;
         //first test our broker components methods are directly callable
         return thisClient.exchange.localComponent1.localMethodToData();
       })
@@ -369,7 +369,6 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         done(new Error("unexpected success"));
       })
       .catch(function(e) {
-        let thisClient;
         expect(e.toString()).to.be("AccessDenied: unauthorized");
         thisClient.disconnect(done);
       });

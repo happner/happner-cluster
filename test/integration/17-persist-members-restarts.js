@@ -4,7 +4,7 @@ var Promise = require("bluebird");
 const clearMongoCollection = require("../_lib/clear-mongo-collection");
 const testHelper = require("../_lib/test-helper");
 
-xdescribe(testHelper.testName(__filename, 3), function() {
+describe(testHelper.testName(__filename, 3), function() {
   this.timeout(60000);
   var seedNode;
   var clientNodes = [];
