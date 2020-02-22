@@ -3,10 +3,15 @@ module.exports = function(
   minPeers,
   secure,
   requestTimeout,
-  responseTimeout
+  responseTimeout,
+  hosts,
+  joinTimeout
 ) {
   var clusterRequestTimeout = requestTimeout ? requestTimeout : 10 * 1000;
   var clusterResponseTimeout = responseTimeout ? responseTimeout : 20 * 1000;
+
+  hosts = hosts ? hosts.split(",") : ["127.0.0.1:56001"];
+  joinTimeout = joinTimeout || 2e3;
 
   return {
     name: "MESH_" + seq,
@@ -34,8 +39,9 @@ module.exports = function(
             host: "127.0.0.1",
             port: 56000 + seq,
             seed: seq === 1,
-            seedWait: 300,
-            hosts: ["127.0.0.1:56001"]
+            seedWait: 1000,
+            hosts,
+            joinTimeout
           }
         },
         proxy: {

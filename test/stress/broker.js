@@ -8,13 +8,24 @@ commander
 .option('--min [number]', 'minimum peers')
 .option('--seed [number]', 'minimum peers')
 .option('--hosts [number]', 'hosts')
+.option('--join-timeout [number]', 'join timeout')
 .parse(process.argv);
 
 commander.seq = parseInt(commander.seq || 1);
-commander.hosts = commander.hosts || "127.0.0.1:56001,127.0.0.1:56002";
+commander.hosts =
+  commander.hosts || "127.0.0.1:56001,127.0.0.1:56002,127.0.0.1:56003";
+commander.joinTimeout = commander.joinTimeout || 10000;
 
 function brokerInstanceConfig(seq, sync) {
-  var config = baseConfig(seq, sync, true, null, null, commander.hosts);
+  var config = baseConfig(
+    seq,
+    sync,
+    true,
+    null,
+    null,
+    commander.hosts,
+    commander.joinTimeout
+  );
   config.authorityDelegationOn = true;
   config.modules = {
     localComponent: {
