@@ -140,7 +140,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
   });
 
   it("adds implementation on peer arrival", function(done) {
-    this.timeout(4000);
+    this.timeout(10000);
 
     Promise.all([
       localInstance.exchange.localComponent1.callDependency(
@@ -179,7 +179,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         servers.push(server);
       })
       .then(function() {
-        return Promise.delay(1000); // time for peer arrival to "arrival" at localInstance
+        return Promise.delay(3000); // time for peer arrival to "arrival" at localInstance
       })
       .then(function() {
         return Promise.all([

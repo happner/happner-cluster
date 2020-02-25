@@ -1,15 +1,15 @@
 const HappnerCluster = require("../..");
 const baseConfig = require("../_lib/base-config");
 const libDir = require("../_lib/lib-dir");
-const commander = require('commander');
+const commander = require("commander");
 
 commander
-.option('--seq [number]', 'sequence number')
-.option('--min [number]', 'minimum peers')
-.option('--seed [number]', 'minimum peers')
-.option('--hosts [number]', 'hosts')
-.option('--join-timeout [number]', 'join timeout')
-.parse(process.argv);
+  .option("--seq [number]", "sequence number")
+  .option("--min [number]", "minimum peers")
+  .option("--seed [number]", "minimum peers")
+  .option("--hosts [number]", "hosts")
+  .option("--join-timeout [number]", "join timeout")
+  .parse(process.argv);
 
 commander.seq = parseInt(commander.seq || 1);
 commander.hosts =
@@ -45,8 +45,10 @@ function brokerInstanceConfig(seq, sync) {
       stopMethod: "stop"
     }
   };
-  config.cluster.ignoreBrokerPeers = ['MESH_1', 'MESH_2', 'MESH_3'];
+  config.cluster.ignoreBrokerPeers = ["MESH_1", "MESH_2", "MESH_3"];
   return config;
 }
 
-return HappnerCluster.create(brokerInstanceConfig(commander.seq, commander.min));
+return HappnerCluster.create(
+  brokerInstanceConfig(commander.seq, commander.min)
+);
