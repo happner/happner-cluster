@@ -539,68 +539,52 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .catch(done);
     });
 
-    xit("injects the correct amount of brokered elements, even when brokered cluster nodes are dropped and restarted", function(done) {
+    it("injects the correct amount of brokered elements, even when brokered cluster nodes are dropped and restarted", function(done) {
+      this.timeout(40000);
+
       startClusterEdgeFirstHighAvailable()
         .then(function() {
-          expect(
-            require("./brokerage").instance("MESH_1").__injectedElements.length
-          ).to.be(2);
-          expect(
-            require("./brokerage").instance("MESH_1").__injectedElements[0]
-              .serverName != null
-          ).to.be(true);
-          expect(
-            require("./brokerage").instance("MESH_1").__injectedElements[1]
-              .serverName != null
-          ).to.be(true);
+          expect(getInjectedElements("MESH_1").length).to.be(2);
+          expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
+          expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
           return stopServer(servers[1]);
+        })
+        .then(() => {
+          return Promise.delay(3000);
         })
         .then(function() {
           //we check injected components is 1
-          expect(
-            require("./brokerage").instance("MESH_1").__injectedElements.length
-          ).to.be(1);
-          expect(
-            require("./brokerage").instance("MESH_1").__injectedElements[0]
-              .serverName != null
-          ).to.be(true);
+          expect(getInjectedElements("MESH_1").length).to.be(2);
+          expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
+          expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
           return stopServer(servers[2]);
         })
-        .then(function() {
-          //we check injected components is still 1 and injected component meshName is null
-          expect(
-            require("./brokerage").instance("MESH_1").__injectedElements.length
-          ).to.be(1);
-          expect(
-            require("./brokerage").instance("MESH_1").__injectedElements[0]
-              .serverName == null
-          ).to.be(true);
-          return startInternal(2, 2);
+        .then(() => {
+          return Promise.delay(3000);
         })
         .then(function() {
           //we check injected components is still 1 and injected component meshName is null
-          expect(
-            require("./brokerage").instance("MESH_1").__injectedElements.length
-          ).to.be(1);
-          expect(
-            require("./brokerage").instance("MESH_1").__injectedElements[0]
-              .serverName != null
-          ).to.be(true);
+          expect(getInjectedElements("MESH_1").length).to.be(2);
+          expect(getInjectedElements("MESH_1")[0].meshName == null).to.be(true);
+          expect(getInjectedElements("MESH_1")[1].meshName == null).to.be(true);
+          return startInternal(2, 2);
+        })
+        .then(() => {
+          return Promise.delay(3000);
+        })
+        .then(function() {
+          //we check injected components is still 1 and injected component meshName is null
+          expect(getInjectedElements("MESH_1").length).to.be(2);
+          expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
+          expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
           return startInternal(3, 3);
         })
         .then(function() {
           //we check injected components is 2
-          expect(
-            require("./brokerage").instance("MESH_1").__injectedElements.length
-          ).to.be(2);
-          expect(
-            require("./brokerage").instance("MESH_1").__injectedElements[0]
-              .serverName != null
-          ).to.be(true);
-          expect(
-            require("./brokerage").instance("MESH_1").__injectedElements[1]
-              .serverName != null
-          ).to.be(true);
+          //we check injected components is still 1 and injected component meshName is null
+          expect(getInjectedElements("MESH_1").length).to.be(2);
+          expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
+          expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
           done();
         })
         .catch(done);
@@ -937,5 +921,11 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .then(resolve)
         .catch(reject);
     });
+  }
+
+  function getInjectedElements(meshName) {
+    const brokerageInstance = require("../../lib/brokerage").instance(meshName);
+    if (!brokerageInstance) return null;
+    return brokerageInstance.__injectedElements;
   }
 });

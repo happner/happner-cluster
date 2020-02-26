@@ -14,7 +14,7 @@ commander
 commander.seq = parseInt(commander.seq || 1);
 commander.hosts =
   commander.hosts || "127.0.0.1:56001,127.0.0.1:56002,127.0.0.1:56003";
-commander.joinTimeout = commander.joinTimeout || 10000;
+commander.joinTimeout = commander.joinTimeout || 300;
 
 function brokerInstanceConfig(seq, sync) {
   var config = baseConfig(

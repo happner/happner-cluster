@@ -11,7 +11,7 @@ module.exports = function(
   var clusterResponseTimeout = responseTimeout ? responseTimeout : 20 * 1000;
 
   hosts = hosts ? hosts.split(",") : ["127.0.0.1:56001"];
-  joinTimeout = joinTimeout || 2e3;
+  joinTimeout = joinTimeout || 300;
 
   return {
     name: "MESH_" + seq,
