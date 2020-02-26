@@ -539,7 +539,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .catch(done);
     });
 
-    it("injects the correct amount of brokered elements, even when brokered cluster nodes are dropped and restarted", function(done) {
+    xit("injects the correct amount of brokered elements, even when brokered cluster nodes are dropped and restarted", function(done) {
       this.timeout(40000);
 
       startClusterEdgeFirstHighAvailable()
