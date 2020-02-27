@@ -539,14 +539,19 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .catch(done);
     });
 
-    xit("injects the correct amount of brokered elements, even when brokered cluster nodes are dropped and restarted", function(done) {
+    it("injects the correct amount of brokered elements, even when brokered cluster nodes are dropped and restarted", function(done) {
       this.timeout(40000);
 
       startClusterEdgeFirstHighAvailable()
+        .then(() => {
+          return Promise.delay(5000);
+        })
         .then(function() {
-          expect(getInjectedElements("MESH_1").length).to.be(2);
+          expect(getInjectedElements("MESH_1").length).to.be(4);
           expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
           expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
+          expect(getInjectedElements("MESH_1")[2].meshName != null).to.be(true);
+          expect(getInjectedElements("MESH_1")[3].meshName != null).to.be(true);
           return stopServer(servers[1]);
         })
         .then(() => {
@@ -570,7 +575,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           return startInternal(2, 2);
         })
         .then(() => {
-          return Promise.delay(3000);
+          return Promise.delay(5000);
         })
         .then(function() {
           //we check injected components is still 1 and injected component meshName is null
@@ -579,10 +584,13 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
           return startInternal(3, 3);
         })
+        .then(() => {
+          return Promise.delay(5000);
+        })
         .then(function() {
           //we check injected components is 2
           //we check injected components is still 1 and injected component meshName is null
-          expect(getInjectedElements("MESH_1").length).to.be(2);
+          expect(getInjectedElements("MESH_1").length).to.be(4);
           expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
           expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
           done();
@@ -858,28 +866,33 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     return config;
   }
 
-  function startInternal(id, clusterMin) {
-    return HappnerCluster.create(remoteInstanceConfig(id, clusterMin));
+  async function startInternal(id, clusterMin) {
+    const server = await HappnerCluster.create(
+      remoteInstanceConfig(id, clusterMin)
+    );
+    servers.push(server);
+    return server;
   }
 
-  function startEdge(id, clusterMin, dynamic) {
-    return HappnerCluster.create(localInstanceConfig(id, clusterMin, dynamic));
+  async function startEdge(id, clusterMin, dynamic) {
+    const server = await HappnerCluster.create(
+      localInstanceConfig(id, clusterMin, dynamic)
+    );
+    servers.push(server);
+    return server;
   }
 
   function startClusterEdgeFirstHighAvailable(dynamic) {
     return new Promise(function(resolve, reject) {
       startEdge(1, 1, dynamic)
-        .then(function(server) {
-          servers.push(server);
+        .then(function() {
           return startInternal(2, 2);
         })
         .then(function(server) {
-          servers.push(server);
           localInstance = server;
           return startInternal(3, 3);
         })
-        .then(function(server) {
-          servers.push(server);
+        .then(function() {
           return users.add(localInstance, "username", "password");
         })
         .then(resolve)
@@ -891,12 +904,10 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     return new Promise(function(resolve, reject) {
       startInternal(1, 1)
         .then(function(server) {
-          servers.push(server);
           localInstance = server;
           return startEdge(2, 2, dynamic);
         })
-        .then(function(server) {
-          servers.push(server);
+        .then(function() {
           return users.add(localInstance, "username", "password");
         })
         .then(function() {
@@ -909,12 +920,10 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
   function startClusterEdgeFirst(dynamic) {
     return new Promise(function(resolve, reject) {
       startEdge(1, 1, dynamic)
-        .then(function(server) {
-          servers.push(server);
+        .then(function() {
           return startInternal(2, 2);
         })
         .then(function(server) {
-          servers.push(server);
           localInstance = server;
           return users.add(localInstance, "username", "password");
         })
