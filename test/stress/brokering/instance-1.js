@@ -1,6 +1,6 @@
-const HappnerCluster = require("../..");
-const baseConfig = require("../_lib/base-config");
-const libDir = require("../_lib/lib-dir");
+const HappnerCluster = require("../../..");
+const baseConfig = require("../../_lib/base-config");
+const libDir = require("../../_lib/lib-dir");
 const commander = require("commander");
 
 commander

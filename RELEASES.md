@@ -138,5 +138,6 @@
 9.0.2 2020-02-25
 ----------------
   - fix: cluster brokering component injection - no duplicates
+  - test: stress test scripts
   - dep: happn-3 upgrades 11.2.0
   - dep: happn-cluster upgrades 9.0.3

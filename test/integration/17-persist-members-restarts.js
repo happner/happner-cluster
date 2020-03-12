@@ -45,6 +45,7 @@ describe(testHelper.testName(__filename, 3), function() {
         startedProcess.on(
           "message",
           function(message) {
+            console.log('message:::', message);
             if (this.memberName === "seedNode")
               return messages[this.memberName].push(message);
             if (message.operation === "update")

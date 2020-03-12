@@ -1,4 +1,6 @@
 module.exports = Component;
+var methodCalls = 0;
+var webMethodCalls = 0;
 
 function Component() {}
 
@@ -11,6 +13,10 @@ Component.prototype.stop = function($happn, callback) {
 };
 
 Component.prototype.brokeredMethod1 = function($happn, callback) {
+  methodCalls++;
+  if (methodCalls % 1000 === 0)
+    // eslint-disable-next-line no-console
+    console.log(`brokeredMethod1 call count:::${methodCalls}`);
   callback(null, $happn.info.mesh.name + ":remoteComponent1:brokeredMethod1");
 };
 
@@ -31,6 +37,10 @@ Component.prototype.brokeredMethod3 = function(
 };
 
 Component.prototype.testJSON = function(req, res) {
+  webMethodCalls++;
+  if (webMethodCalls % 1000 === 0)
+    // eslint-disable-next-line no-console
+    console.log(`testJSON web call count:::${webMethodCalls}`);
   res.setHeader("Content-Type", "application/json");
   res.end(JSON.stringify({ test: "data" }));
 };

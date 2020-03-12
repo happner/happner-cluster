@@ -1,6 +1,6 @@
-const HappnerCluster = require("../..");
-const baseConfig = require("../_lib/base-config");
-const libDir = require("../_lib/lib-dir");
+const HappnerCluster = require("../../..");
+const baseConfig = require("../../_lib/base-config");
+const libDir = require("../../_lib/lib-dir");
 const commander = require("commander");
 
 commander
@@ -49,6 +49,10 @@ function brokerInstanceConfig(seq, sync) {
   return config;
 }
 
-return HappnerCluster.create(
-  brokerInstanceConfig(commander.seq, commander.min)
+HappnerCluster.create(brokerInstanceConfig(commander.seq, commander.min)).then(
+  instance => {
+    setInterval(() => {
+      console.log(`active sessions: ${Object.keys(instance._mesh.happn.server.services.session.__activeSessions.__cache).length}`);
+    }, 5000);
+  }
 );
