@@ -14,10 +14,13 @@ Component.prototype.stop = function($happn, callback) {
 
 Component.prototype.brokeredMethod1 = function($happn, callback) {
   methodCalls++;
-  if (methodCalls % 1000 === 0)
-    // eslint-disable-next-line no-console
-    console.log(`brokeredMethod1 call count:::${methodCalls}`);
-  callback(null, $happn.info.mesh.name + ":remoteComponent1:brokeredMethod1");
+  console.log(`EMITTING:::/test/${methodCalls}`);
+  $happn.emit(`test/${methodCalls}`, {}, () => {
+    if (methodCalls % 1000 === 0)
+      // eslint-disable-next-line no-console
+      console.log(`brokeredMethod1 call count:::${methodCalls}`);
+    callback(null, $happn.info.mesh.name + ":remoteComponent1:brokeredMethod1");
+  });
 };
 
 Component.prototype.brokeredMethod2 = function($happn, callback) {

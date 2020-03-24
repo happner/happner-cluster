@@ -18,14 +18,13 @@ commander.interval = parseInt(commander.interval || 1000);
 var ports = commander.ports.split(",");
 var totalCalls = 0;
 var totalWebCalls = 0;
+var totalEmits = 0;
 var HashRing = require("hashring");
 var randomPort = new HashRing();
 
 ports.forEach(port => {
   randomPort.add(port);
 });
-
-console.log("randomPort:::", randomPort.get(Date.now()));
 
 createClients()
   .then(clients => {
@@ -71,7 +70,17 @@ function createClient() {
           api.happner = client.construct(schema.components);
           api.port = port;
           api.token = api.data.session.token;
-          resolve(api);
+          api.happner.event.remoteComponent1.on(
+            "test/*",
+            () => {
+              totalEmits++;
+              if (totalEmits % commander.clients === 0)
+                console.log(`events emitted:::${totalEmits}`);
+            },
+            () => {
+              resolve(api);
+            }
+          );
         });
       }
     );
@@ -114,7 +123,7 @@ function startActivity(clients) {
         console.log(`data method called:::${data} total calls:::${totalCalls}`);
     });
     doRequest("/remoteComponent1/testJSON", client)
-      .then((response, body) => {
+      .then(response => {
         totalWebCalls++;
         if (totalWebCalls % commander.clients === 0) {
           console.log(

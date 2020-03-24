@@ -52,7 +52,14 @@ function brokerInstanceConfig(seq, sync) {
 HappnerCluster.create(brokerInstanceConfig(commander.seq, commander.min)).then(
   instance => {
     setInterval(() => {
-      console.log(`active sessions: ${Object.keys(instance._mesh.happn.server.services.session.__activeSessions.__cache).length}`);
+      console.log(
+        `active sessions: ${
+          Object.keys(
+            instance._mesh.happn.server.services.session.__activeSessions
+              .__cache
+          ).length
+        }`
+      );
     }, 5000);
   }
 );
