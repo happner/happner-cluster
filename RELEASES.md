@@ -139,5 +139,5 @@
 ----------------
   - fix: cluster brokering component injection - no duplicates
   - test: stress test scripts
-  - dep: happn-3 upgrades 11.2.0
+  - dep: happn-3 upgrades 11.2.4
   - dep: happn-cluster upgrades 9.0.3

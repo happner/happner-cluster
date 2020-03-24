@@ -45,7 +45,6 @@ function brokerInstanceConfig(seq, sync) {
       stopMethod: "stop"
     }
   };
-  config.cluster.ignoreBrokerPeers = ["MESH_1", "MESH_2", "MESH_3"];
   return config;
 }
 
