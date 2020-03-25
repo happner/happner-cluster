@@ -1,4 +1,5 @@
 const HappnerCluster = require("../..");
+const HappnerClient = require("happner-client");
 var Promise = require("bluebird");
 var expect = require("expect.js");
 
@@ -7,6 +8,7 @@ const baseConfig = require("../_lib/base-config");
 const stopCluster = require("../_lib/stop-cluster");
 const users = require("../_lib/users");
 const testclient = require("../_lib/client");
+const delay = require("await-delay");
 
 const clearMongoCollection = require("../_lib/clear-mongo-collection");
 //var log = require('why-is-node-running');
@@ -660,7 +662,45 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .catch(done);
     });
   });
-
+  context("happner-client", function() {
+    it("does a comprehensive test using the happner-client", function(done) {
+      startClusterEdgeFirst()
+        .then(function() {
+          return delay(5000);
+        })
+        .then(function() {
+          return users.allowMethod(
+            localInstance,
+            "username",
+            "remoteComponent1",
+            "brokeredMethod1"
+          );
+        })
+        .then(function() {
+          return users.allowWebMethod(
+            localInstance,
+            "username",
+            "/remoteComponent1/testJSON"
+          );
+        })
+        .then(function() {
+          return users.allowEvent(
+            localInstance,
+            "username",
+            "remoteComponent1",
+            "test/*"
+          );
+        })
+        .then(function() {
+          return connectHappnerClient("username", "password", 55001);
+        })
+        .then(function(client) {
+          return testHappnerClient(client);
+        })
+        .then(done)
+        .catch(done);
+    });
+  });
   context("errors", function() {
     it("ensures an error is raised if we are injecting internal components with duplicate names", function(done) {
       HappnerCluster.create(errorInstanceConfigDuplicateBrokered(1, 1))
@@ -778,6 +818,84 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         });
     });
   });
+
+  function doRequest(path, token, port, callback) {
+    var request = require("request");
+    var options;
+
+    options = {
+      url: `http://127.0.0.1:${port}${path}?happn_token=${token}`
+    };
+
+    request(options, function(error, response, body) {
+      callback(error, {
+        response,
+        body
+      });
+    });
+  }
+
+  function testWebCall(client, path, port) {
+    return new Promise(resolve => {
+      doRequest(path, client.token, port, function(e, response) {
+        if (e)
+          return resolve({
+            error: e
+          });
+        resolve(response);
+      });
+    });
+  }
+
+  function testHappnerClient(client) {
+    return new Promise((resolve, reject) => {
+      const api = { data: client.dataClient() };
+      getDescription(api)
+        .then(schema => {
+          api.happner = client.construct(schema.components);
+          api.token = api.data.session.token;
+          api.happner.event.remoteComponent1.on("test/*", () => {
+            resolve();
+          });
+          return testWebCall(api, "/remoteComponent1/testJSON", 55001);
+        })
+        .then(result => {
+          expect(JSON.parse(result.body)).to.eql({
+            test: "data"
+          });
+          return api.happner.exchange.remoteComponent1.brokeredMethod1();
+        })
+        .catch(reject);
+    });
+  }
+
+  function getDescription(api) {
+    return new Promise((resolve, reject) => {
+      api.data.get("/mesh/schema/description", (e, schema) => {
+        if (e) return reject(e);
+        return resolve(schema);
+      });
+    });
+  }
+
+  function connectHappnerClient(username, password, port) {
+    return new Promise((resolve, reject) => {
+      const client = new HappnerClient();
+      client.connect(
+        null,
+        {
+          username,
+          password,
+          port
+        },
+        e => {
+          if (e) return reject(e);
+          resolve(client);
+        }
+      );
+    });
+  }
+
   function stopServer(server) {
     return server.stop({ reconnect: false }).then(function() {
       // stopping all at once causes replicator client happn logouts to timeout
@@ -860,7 +978,13 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       },
       remoteComponent1: {
         startMethod: "start",
-        stopMethod: "stop"
+        stopMethod: "stop",
+        web: {
+          routes: {
+            testJSON: ["testJSON"],
+            testJSONSticky: ["testJSONSticky"]
+          }
+        }
       }
     };
     return config;
