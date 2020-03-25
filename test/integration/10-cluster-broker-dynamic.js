@@ -697,7 +697,9 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .then(function(client) {
           return testHappnerClient(client);
         })
-        .then(done)
+        .then(function(client) {
+          client.disconnect(done);
+        })
         .catch(done);
     });
   });
@@ -855,7 +857,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           api.happner = client.construct(schema.components);
           api.token = api.data.session.token;
           api.happner.event.remoteComponent1.on("test/*", () => {
-            resolve();
+            resolve(client);
           });
           return testWebCall(api, "/remoteComponent1/testJSON", 55001);
         })
