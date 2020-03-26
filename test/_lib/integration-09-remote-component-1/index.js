@@ -14,7 +14,6 @@ Component.prototype.stop = function($happn, callback) {
 
 Component.prototype.brokeredMethod1 = function($happn, callback) {
   methodCalls++;
-  console.log(`EMITTING:::/test/${methodCalls}`);
   $happn.emit(`test/${methodCalls}`, {}, () => {
     if (methodCalls % 1000 === 0)
       // eslint-disable-next-line no-console
