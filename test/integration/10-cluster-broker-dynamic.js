@@ -1,178 +1,35 @@
 const HappnerCluster = require("../..");
+const HappnerClient = require("happner-client");
 var Promise = require("bluebird");
 var expect = require("expect.js");
 
-var libDir = require("../_lib/lib-dir");
-var baseConfig = require("../_lib/base-config");
-var stopCluster = require("../_lib/stop-cluster");
-var users = require("../_lib/users");
-var testclient = require("../_lib/client");
+const libDir = require("../_lib/lib-dir");
+const baseConfig = require("../_lib/base-config");
+const stopCluster = require("../_lib/stop-cluster");
+const users = require("../_lib/users");
+const testclient = require("../_lib/client");
+const delay = require("await-delay");
 
-var clearMongoCollection = require("../_lib/clear-mongo-collection");
+const clearMongoCollection = require("../_lib/clear-mongo-collection");
 //var log = require('why-is-node-running');
 describe(require("../_lib/test-helper").testName(__filename, 3), function() {
+  const servers = [];
+  let localInstance;
   this.timeout(20000);
 
-  let servers = [];
-  let localInstance;
-
-  function localInstanceConfig(seq, sync, dynamic) {
-    var config = baseConfig(seq, sync, true);
-    config.authorityDelegationOn = true;
-    let brokerComponentPath = dynamic
-      ? libDir + "integration-10-broker-component-dynamic"
-      : libDir + "integration-09-broker-component";
-    config.modules = {
-      localComponent: {
-        path: libDir + "integration-09-local-component"
-      },
-      brokerComponent: {
-        path: brokerComponentPath
-      }
-    };
-    config.components = {
-      localComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
-      },
-      brokerComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
-      }
-    };
-    return config;
-  }
-
-  function errorInstanceConfigDuplicateBrokered(seq, sync) {
-    var config = baseConfig(seq, sync, true);
-    config.modules = {
-      localComponent: {
-        path: libDir + "integration-09-local-component"
-      },
-      brokerComponent: {
-        path: libDir + "integration-09-broker-component"
-      },
-      brokerComponentDuplicate: {
-        path: libDir + "integration-09-broker-component-1"
-      }
-    };
-    config.components = {
-      localComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
-      },
-      brokerComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
-      },
-      brokerComponentDuplicate: {
-        startMethod: "start",
-        stopMethod: "stop"
-      }
-    };
-    return config;
-  }
-
-  function remoteInstanceConfig(seq, sync) {
-    var config = baseConfig(seq, sync, true);
-    config.modules = {
-      remoteComponent: {
-        path: libDir + "integration-09-remote-component"
-      },
-      remoteComponent1: {
-        path: libDir + "integration-09-remote-component-1"
-      }
-    };
-    config.components = {
-      remoteComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
-      },
-      remoteComponent1: {
-        startMethod: "start",
-        stopMethod: "stop"
-      }
-    };
-    return config;
-  }
-
   beforeEach("clear mongo collection", function(done) {
+    this.timeout(20000);
     stopCluster(servers, function(e) {
       if (e) return done(e);
-      servers = [];
+      servers.splice(0, servers.length);
       clearMongoCollection("mongodb://localhost", "happn-cluster", function() {
         done();
       });
     });
   });
 
-  function startInternal(id, clusterMin) {
-    return HappnerCluster.create(remoteInstanceConfig(id, clusterMin));
-  }
-
-  function startEdge(id, clusterMin, dynamic) {
-    return HappnerCluster.create(localInstanceConfig(id, clusterMin, dynamic));
-  }
-
-  function startClusterEdgeFirstHighAvailable(dynamic) {
-    return new Promise(function(resolve, reject) {
-      startEdge(1, 1, dynamic)
-        .then(function(server) {
-          servers.push(server);
-          return startInternal(2, 2);
-        })
-        .then(function(server) {
-          servers.push(server);
-          localInstance = server;
-          return startInternal(3, 3);
-        })
-        .then(function(server) {
-          servers.push(server);
-          return users.add(localInstance, "username", "password");
-        })
-        .then(resolve)
-        .catch(reject);
-    });
-  }
-
-  function startClusterInternalFirst(dynamic) {
-    return new Promise(function(resolve, reject) {
-      startInternal(1, 1)
-        .then(function(server) {
-          servers.push(server);
-          localInstance = server;
-          return startEdge(2, 2, dynamic);
-        })
-        .then(function(server) {
-          servers.push(server);
-          return users.add(localInstance, "username", "password");
-        })
-        .then(function() {
-          setTimeout(resolve, 2000);
-        })
-        .catch(reject);
-    });
-  }
-
-  function startClusterEdgeFirst(dynamic) {
-    return new Promise(function(resolve, reject) {
-      startEdge(1, 1, dynamic)
-        .then(function(server) {
-          servers.push(server);
-          return startInternal(2, 2);
-        })
-        .then(function(server) {
-          servers.push(server);
-          localInstance = server;
-          return users.add(localInstance, "username", "password");
-        })
-        .then(resolve)
-        .catch(reject);
-    });
-  }
-
   after("stop cluster", function(done) {
-    if (!servers) return done();
+    this.timeout(20000);
     stopCluster(servers, function() {
       clearMongoCollection("mongodb://localhost", "happn-cluster", function() {
         done();
@@ -211,7 +68,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
         .then(function() {
           return new Promise(resolve => {
-            setTimeout(resolve, 10000);
+            setTimeout(resolve, 5000);
           });
         })
         .then(function() {
@@ -232,7 +89,6 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
         .then(function(result) {
           expect(result).to.be("MESH_1:remoteComponent:brokeredMethod1");
-
           setTimeout(done, 2000);
         })
         .catch(done);
@@ -684,6 +540,65 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
         .catch(done);
     });
+
+    it("injects the correct amount of brokered elements, even when brokered cluster nodes are dropped and restarted", function(done) {
+      this.timeout(40000);
+
+      startClusterEdgeFirstHighAvailable()
+        .then(() => {
+          return Promise.delay(5000);
+        })
+        .then(function() {
+          expect(getInjectedElements("MESH_1").length).to.be(4);
+          expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
+          expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
+          expect(getInjectedElements("MESH_1")[2].meshName != null).to.be(true);
+          expect(getInjectedElements("MESH_1")[3].meshName != null).to.be(true);
+          return stopServer(servers[1]);
+        })
+        .then(() => {
+          return Promise.delay(3000);
+        })
+        .then(function() {
+          //we check injected components is 1
+          expect(getInjectedElements("MESH_1").length).to.be(2);
+          expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
+          expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
+          return stopServer(servers[2]);
+        })
+        .then(() => {
+          return Promise.delay(3000);
+        })
+        .then(function() {
+          //we check injected components is still 1 and injected component meshName is null
+          expect(getInjectedElements("MESH_1").length).to.be(2);
+          expect(getInjectedElements("MESH_1")[0].meshName == null).to.be(true);
+          expect(getInjectedElements("MESH_1")[1].meshName == null).to.be(true);
+          return startInternal(2, 2);
+        })
+        .then(() => {
+          return Promise.delay(5000);
+        })
+        .then(function() {
+          //we check injected components is still 1 and injected component meshName is null
+          expect(getInjectedElements("MESH_1").length).to.be(2);
+          expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
+          expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
+          return startInternal(3, 3);
+        })
+        .then(() => {
+          return Promise.delay(5000);
+        })
+        .then(function() {
+          //we check injected components is 2
+          //we check injected components is still 1 and injected component meshName is null
+          expect(getInjectedElements("MESH_1").length).to.be(4);
+          expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
+          expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
+          done();
+        })
+        .catch(done);
+    });
   });
 
   context("events", function() {
@@ -747,7 +662,47 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .catch(done);
     });
   });
-
+  context("happner-client", function() {
+    it("does a comprehensive test using the happner-client", function(done) {
+      startClusterEdgeFirst()
+        .then(function() {
+          return delay(5000);
+        })
+        .then(function() {
+          return users.allowMethod(
+            localInstance,
+            "username",
+            "remoteComponent1",
+            "brokeredMethod1"
+          );
+        })
+        .then(function() {
+          return users.allowWebMethod(
+            localInstance,
+            "username",
+            "/remoteComponent1/testJSON"
+          );
+        })
+        .then(function() {
+          return users.allowEvent(
+            localInstance,
+            "username",
+            "remoteComponent1",
+            "test/*"
+          );
+        })
+        .then(function() {
+          return connectHappnerClient("username", "password", 55001);
+        })
+        .then(function(client) {
+          return testHappnerClient(client);
+        })
+        .then(function(client) {
+          client.disconnect(done);
+        })
+        .catch(done);
+    });
+  });
   context("errors", function() {
     it("ensures an error is raised if we are injecting internal components with duplicate names", function(done) {
       HappnerCluster.create(errorInstanceConfigDuplicateBrokered(1, 1))
@@ -865,4 +820,247 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         });
     });
   });
+
+  function doRequest(path, token, port, callback) {
+    var request = require("request");
+    var options;
+
+    options = {
+      url: `http://127.0.0.1:${port}${path}?happn_token=${token}`
+    };
+
+    request(options, function(error, response, body) {
+      callback(error, {
+        response,
+        body
+      });
+    });
+  }
+
+  function testWebCall(client, path, port) {
+    return new Promise(resolve => {
+      doRequest(path, client.token, port, function(e, response) {
+        if (e)
+          return resolve({
+            error: e
+          });
+        resolve(response);
+      });
+    });
+  }
+
+  function testHappnerClient(client) {
+    return new Promise((resolve, reject) => {
+      const api = { data: client.dataClient() };
+      getDescription(api)
+        .then(schema => {
+          api.happner = client.construct(schema.components);
+          api.token = api.data.session.token;
+          api.happner.event.remoteComponent1.on("test/*", () => {
+            resolve(client);
+          });
+          return testWebCall(api, "/remoteComponent1/testJSON", 55001);
+        })
+        .then(result => {
+          expect(JSON.parse(result.body)).to.eql({
+            test: "data"
+          });
+          return api.happner.exchange.remoteComponent1.brokeredMethod1();
+        })
+        .catch(reject);
+    });
+  }
+
+  function getDescription(api) {
+    return new Promise((resolve, reject) => {
+      api.data.get("/mesh/schema/description", (e, schema) => {
+        if (e) return reject(e);
+        return resolve(schema);
+      });
+    });
+  }
+
+  function connectHappnerClient(username, password, port) {
+    return new Promise((resolve, reject) => {
+      const client = new HappnerClient();
+      client.connect(
+        null,
+        {
+          username,
+          password,
+          port
+        },
+        e => {
+          if (e) return reject(e);
+          resolve(client);
+        }
+      );
+    });
+  }
+
+  function stopServer(server) {
+    return server.stop({ reconnect: false }).then(function() {
+      // stopping all at once causes replicator client happn logouts to timeout
+      // because happn logout attempts unsubscribe on server, and all servers
+      // are gone
+      return Promise.delay(200); // ...so pause between stops (long for travis)
+    });
+  }
+  function localInstanceConfig(seq, sync, dynamic) {
+    var config = baseConfig(seq, sync, true);
+    config.authorityDelegationOn = true;
+    let brokerComponentPath = dynamic
+      ? libDir + "integration-10-broker-component-dynamic"
+      : libDir + "integration-09-broker-component";
+    config.modules = {
+      localComponent: {
+        path: libDir + "integration-09-local-component"
+      },
+      brokerComponent: {
+        path: brokerComponentPath
+      }
+    };
+    config.components = {
+      localComponent: {
+        startMethod: "start",
+        stopMethod: "stop"
+      },
+      brokerComponent: {
+        startMethod: "start",
+        stopMethod: "stop"
+      }
+    };
+    return config;
+  }
+
+  function errorInstanceConfigDuplicateBrokered(seq, sync) {
+    var config = baseConfig(seq, sync, true);
+    config.modules = {
+      localComponent: {
+        path: libDir + "integration-09-local-component"
+      },
+      brokerComponent: {
+        path: libDir + "integration-09-broker-component"
+      },
+      brokerComponentDuplicate: {
+        path: libDir + "integration-09-broker-component-1"
+      }
+    };
+    config.components = {
+      localComponent: {
+        startMethod: "start",
+        stopMethod: "stop"
+      },
+      brokerComponent: {
+        startMethod: "start",
+        stopMethod: "stop"
+      },
+      brokerComponentDuplicate: {
+        startMethod: "start",
+        stopMethod: "stop"
+      }
+    };
+    return config;
+  }
+
+  function remoteInstanceConfig(seq, sync) {
+    var config = baseConfig(seq, sync, true);
+    config.modules = {
+      remoteComponent: {
+        path: libDir + "integration-09-remote-component"
+      },
+      remoteComponent1: {
+        path: libDir + "integration-09-remote-component-1"
+      }
+    };
+    config.components = {
+      remoteComponent: {
+        startMethod: "start",
+        stopMethod: "stop"
+      },
+      remoteComponent1: {
+        startMethod: "start",
+        stopMethod: "stop",
+        web: {
+          routes: {
+            testJSON: ["testJSON"],
+            testJSONSticky: ["testJSONSticky"]
+          }
+        }
+      }
+    };
+    return config;
+  }
+
+  async function startInternal(id, clusterMin) {
+    const server = await HappnerCluster.create(
+      remoteInstanceConfig(id, clusterMin)
+    );
+    servers.push(server);
+    return server;
+  }
+
+  async function startEdge(id, clusterMin, dynamic) {
+    const server = await HappnerCluster.create(
+      localInstanceConfig(id, clusterMin, dynamic)
+    );
+    servers.push(server);
+    return server;
+  }
+
+  function startClusterEdgeFirstHighAvailable(dynamic) {
+    return new Promise(function(resolve, reject) {
+      startEdge(1, 1, dynamic)
+        .then(function() {
+          return startInternal(2, 2);
+        })
+        .then(function(server) {
+          localInstance = server;
+          return startInternal(3, 3);
+        })
+        .then(function() {
+          return users.add(localInstance, "username", "password");
+        })
+        .then(resolve)
+        .catch(reject);
+    });
+  }
+
+  function startClusterInternalFirst(dynamic) {
+    return new Promise(function(resolve, reject) {
+      startInternal(1, 1)
+        .then(function(server) {
+          localInstance = server;
+          return startEdge(2, 2, dynamic);
+        })
+        .then(function() {
+          return users.add(localInstance, "username", "password");
+        })
+        .then(function() {
+          setTimeout(resolve, 2000);
+        })
+        .catch(reject);
+    });
+  }
+
+  function startClusterEdgeFirst(dynamic) {
+    return new Promise(function(resolve, reject) {
+      startEdge(1, 1, dynamic)
+        .then(function() {
+          return startInternal(2, 2);
+        })
+        .then(function(server) {
+          localInstance = server;
+          return users.add(localInstance, "username", "password");
+        })
+        .then(resolve)
+        .catch(reject);
+    });
+  }
+
+  function getInjectedElements(meshName) {
+    const brokerageInstance = require("../../lib/brokerage").instance(meshName);
+    if (!brokerageInstance) return null;
+    return brokerageInstance.__injectedElements;
+  }
 });

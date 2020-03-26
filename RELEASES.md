@@ -130,3 +130,14 @@
 ----------------
   - happn-3 version 11.0.0, breaking: client disconnection on token revocation
   - happn-cluster version 9.0.0
+
+9.0.1 2020-01-25
+----------------
+  - linting
+
+9.0.2 2020-02-25
+----------------
+  - fix: cluster brokering component injection - no duplicates
+  - test: stress test scripts
+  - dep: happn-3 upgrades 11.2.4
+  - dep: happn-cluster upgrades 9.0.3
