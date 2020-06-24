@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const HappnerClient = require("happner-client");
 const commander = require("commander");
 
