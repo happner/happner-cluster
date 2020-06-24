@@ -141,3 +141,10 @@
   - test: stress test scripts
   - dep: happn-3 upgrades 11.2.4
   - dep: happn-cluster upgrades 9.0.3
+
+9.0.3 2020-06-24
+----------------
+  - dep: happn-3 upgrade 11.5.2
+  - dep: happner-2 upgrade 11.4.13
+  - dep: happn-cluster upgrade 9.0.4
+  - dep: happner-client upgrade 11.1.0

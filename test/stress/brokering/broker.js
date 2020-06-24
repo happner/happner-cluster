@@ -51,6 +51,7 @@ function brokerInstanceConfig(seq, sync) {
 HappnerCluster.create(brokerInstanceConfig(commander.seq, commander.min)).then(
   instance => {
     setInterval(() => {
+      // eslint-disable-next-line no-console
       console.log(
         `active sessions: ${
           Object.keys(
