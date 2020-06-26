@@ -37,6 +37,13 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     config.modules = {
       remoteComponent: {
         path: libDir + "integration-remote-component-versions"
+      },
+      prereleaseComponent: {
+        path: libDir + "integration-remote-component-versions-prerelease"
+      },
+      prereleaseComponentNotFound: {
+        path:
+          libDir + "integration-remote-component-versions-prerelease-not-found"
       }
     };
     config.components = {
@@ -46,6 +53,16 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       },
       remoteComponent1: {
         module: "remoteComponent",
+        startMethod: "start",
+        stopMethod: "stop"
+      },
+      prereleaseComponent: {
+        module: "prereleaseComponent",
+        startMethod: "start",
+        stopMethod: "stop"
+      },
+      prereleaseComponentNotFound: {
+        module: "prereleaseComponentNotFound",
         startMethod: "start",
         stopMethod: "stop"
       }
@@ -127,6 +144,22 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           );
         })
         .then(function() {
+          return users.allowMethod(
+            localInstance,
+            "username",
+            "prereleaseComponent",
+            "brokeredMethod1"
+          );
+        })
+        .then(function() {
+          return users.allowMethod(
+            localInstance,
+            "username",
+            "prereleaseComponentNotFound",
+            "brokeredMethod1"
+          );
+        })
+        .then(function() {
           return new Promise(resolve => {
             setTimeout(resolve, 5000);
           });
@@ -145,6 +178,10 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           return thisClient.exchange.remoteComponent1.brokeredMethod1();
         })
         .then(function() {
+          //call to prerelease method
+          return thisClient.exchange.prereleaseComponent.brokeredMethod1();
+        })
+        .then(function() {
           //call to bad version of method
           return thisClient.exchange.remoteComponent.brokeredMethod1();
         })
@@ -152,6 +189,85 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           //expect a failure - wrong version
           expect(e.message).to.be(
             "Not implemented remoteComponent:^1.0.0:brokeredMethod1"
+          );
+          done();
+        });
+    });
+
+    it("starts the cluster internal first, connects a client to the local instance, and is not able to access the unimplemented remote component, prerelease not found", function(done) {
+      var thisClient;
+
+      startClusterInternalFirst()
+        .then(function() {
+          return users.allowMethod(
+            localInstance,
+            "username",
+            "brokerComponent",
+            "directMethod"
+          );
+        })
+        .then(function() {
+          return users.allowMethod(
+            localInstance,
+            "username",
+            "remoteComponent",
+            "brokeredMethod1"
+          );
+        })
+        .then(function() {
+          return users.allowMethod(
+            localInstance,
+            "username",
+            "remoteComponent1",
+            "brokeredMethod1"
+          );
+        })
+        .then(function() {
+          return users.allowMethod(
+            localInstance,
+            "username",
+            "prereleaseComponent",
+            "brokeredMethod1"
+          );
+        })
+        .then(function() {
+          return users.allowMethod(
+            localInstance,
+            "username",
+            "prereleaseComponentNotFound",
+            "brokeredMethod1"
+          );
+        })
+        .then(function() {
+          return new Promise(resolve => {
+            setTimeout(resolve, 5000);
+          });
+        })
+        .then(function() {
+          return testclient.create("username", "password", 55002);
+        })
+        .then(function(client) {
+          thisClient = client;
+          //first test our broker components methods are directly callable
+          return thisClient.exchange.brokerComponent.directMethod();
+        })
+        .then(function(result) {
+          expect(result).to.be("MESH_2:brokerComponent:directMethod");
+          //call to good version of method
+          return thisClient.exchange.remoteComponent1.brokeredMethod1();
+        })
+        .then(function() {
+          //call to prerelease method
+          return thisClient.exchange.prereleaseComponent.brokeredMethod1();
+        })
+        .then(function() {
+          //call to bad version of method
+          return thisClient.exchange.prereleaseComponentNotFound.brokeredMethod1();
+        })
+        .catch(e => {
+          //expect a failure - wrong version
+          expect(e.message).to.be(
+            "Not implemented prereleaseComponentNotFound:^4.0.0:brokeredMethod1"
           );
           done();
         });

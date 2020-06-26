@@ -15,6 +15,18 @@
           "methods": {
             "brokeredMethod1": {}
           }
+        },
+        "prereleaseComponent": {
+          "version": "^3.0.0",
+          "methods": {
+            "brokeredMethod1": {}
+          }
+        },
+        "prereleaseComponentNotFound": {
+          "version": "^4.0.0",
+          "methods": {
+            "brokeredMethod1": {}
+          }
         }
       }
     }
