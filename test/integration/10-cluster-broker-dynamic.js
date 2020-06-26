@@ -441,7 +441,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
         .catch(function(e) {
           expect(e.message).to.be(
-            "Not implemented remoteComponent1:2.2.0:brokeredMethod3"
+            "Not implemented remoteComponent1:^2.0.0:brokeredMethod3"
           );
           done();
         });

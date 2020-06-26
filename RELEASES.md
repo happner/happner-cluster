@@ -148,3 +148,7 @@
   - dep: happner-2 upgrade 11.4.13
   - dep: happn-cluster upgrade 9.0.4
   - dep: happner-client upgrade 11.1.0
+
+9.0.4 2020-06-26
+----------------
+  - fix: #189 - correct version range injected by broker

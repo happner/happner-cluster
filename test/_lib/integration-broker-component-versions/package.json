@@ -1,0 +1,34 @@
+{
+  "name": "broker-component",
+  "version": "1.0.1",
+  "happner": {
+    "dependencies": {
+      "$broker": {
+        "remoteComponent": {
+          "version": "^1.0.0",
+          "methods": {
+            "brokeredMethod1": {}
+          }
+        },
+        "remoteComponent1": {
+          "version": "^2.0.0",
+          "methods": {
+            "brokeredMethod1": {}
+          }
+        },
+        "prereleaseComponent": {
+          "version": "^3.0.0",
+          "methods": {
+            "brokeredMethod1": {}
+          }
+        },
+        "prereleaseComponentNotFound": {
+          "version": "^4.0.0",
+          "methods": {
+            "brokeredMethod1": {}
+          }
+        }
+      }
+    }
+  }
+}
