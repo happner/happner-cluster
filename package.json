@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "bluebird": "^3.5.0",
-    "happn-cluster": "^9.0.5-test",
+    "happn-cluster": "^9.0.5-test2",
     "happner-2": "^11.2.15",
     "happner-client": "^11.1.0",
     "hashring": "^3.2.0",
