@@ -152,3 +152,7 @@
 9.0.4 2020-06-26
 ----------------
   - fix: #189 - correct version range injected by broker
+
+9.0.5 2020-07-08
+----------------
+  - dep: happn-cluster upgrade 9.0.5
