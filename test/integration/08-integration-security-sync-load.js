@@ -69,7 +69,8 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         servers = servers.concat(_servers);
       })
       .then(function() {
-        done();
+        //wait for stabilisation
+        setTimeout(done, 5000);
       })
       .catch(done);
   });

@@ -156,3 +156,7 @@
 9.0.5 2020-07-08
 ----------------
   - dep: happn-cluster upgrade 9.0.5
+
+9.0.6 2020-07-16
+----------------
+  - dep: happn-3 upgrade in package-lock v11.5.4, test fixed tests 06,07 to stabilise cluster before running tests
