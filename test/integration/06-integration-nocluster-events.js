@@ -51,7 +51,8 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         servers = _servers;
         localInstance = servers[0];
         remoteInstance = servers[1];
-        done();
+        //wait 5 seconds before starting tests
+        setTimeout(done, 5000);
       })
       .catch(done);
   });
