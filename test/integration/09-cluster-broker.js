@@ -16,8 +16,8 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
   var servers = [],
     localInstance;
 
-  function localInstanceConfig(seq, sync) {
-    var config = baseConfig(seq, sync, true);
+  function localInstanceConfig(seq, sync, replicate) {
+    var config = baseConfig(seq, sync, true, null, null, null, null, replicate);
     config.modules = {
       localComponent: {
         path: libDir + "integration-09-local-component"
@@ -39,8 +39,18 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     return config;
   }
 
-  function errorInstanceConfigDuplicateBrokered(seq, sync) {
-    var config = baseConfig(seq, sync, true);
+  function errorInstanceConfigDuplicateBrokered(seq, sync, replicate) {
+    var config = baseConfig(
+      seq,
+      sync,
+      true,
+      true,
+      null,
+      null,
+      null,
+      null,
+      replicate
+    );
     config.modules = {
       localComponent: {
         path: libDir + "integration-09-local-component"
@@ -69,8 +79,8 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     return config;
   }
 
-  function remoteInstance1Config(seq, sync) {
-    var config = baseConfig(seq, sync, true);
+  function remoteInstance1Config(seq, sync, replicate) {
+    var config = baseConfig(seq, sync, true, null, null, null, null, replicate);
     config.modules = {
       remoteComponent: {
         path: libDir + "integration-09-remote-component"
@@ -102,21 +112,25 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     });
   });
 
-  function startInternal(id, clusterMin) {
-    return HappnerCluster.create(remoteInstance1Config(id, clusterMin));
+  function startInternal(id, clusterMin, replicate) {
+    return HappnerCluster.create(
+      remoteInstance1Config(id, clusterMin, replicate)
+    );
   }
 
-  function startEdge(id, clusterMin) {
-    return HappnerCluster.create(localInstanceConfig(id, clusterMin));
+  function startEdge(id, clusterMin, replicate) {
+    return HappnerCluster.create(
+      localInstanceConfig(id, clusterMin, replicate)
+    );
   }
 
-  function startClusterInternalFirst() {
+  function startClusterInternalFirst(replicate) {
     return new Promise(function(resolve, reject) {
-      startInternal(1, 1)
+      startInternal(1, 1, replicate)
         .then(function(server) {
           servers.push(server);
           localInstance = server;
-          return startEdge(2, 2);
+          return startEdge(2, 2, replicate);
         })
         .then(function(server) {
           servers.push(server);
@@ -420,6 +434,50 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
               }
             );
           });
+        })
+        .catch(done);
+    });
+  });
+
+  context("data", function() {
+    it("connects a client to the local instance, and is able to access the remote component events via the broker", function(done) {
+      let edgeClient, internalClient;
+      startClusterInternalFirst(["/test/*/*"])
+        .then(function() {
+          return testclient.create("_ADMIN", "happn", 55002);
+        })
+        .then(function(client) {
+          edgeClient = client;
+          return testclient.create("_ADMIN", "happn", 55001);
+        })
+        .then(function(client) {
+          internalClient = client;
+          edgeClient.data.on("/test/**", data => {
+            expect(data.value).to.be(1);
+            setTimeout(done, 2000);
+          });
+          internalClient.data.set("/test/1/2", 1);
+        })
+        .catch(done);
+    });
+
+    it("connects a client to the local instance, and is able to access the remote component events via the broker, negative test", function(done) {
+      let edgeClient, internalClient;
+      startClusterInternalFirst()
+        .then(function() {
+          return testclient.create("_ADMIN", "happn", 55002);
+        })
+        .then(function(client) {
+          edgeClient = client;
+          return testclient.create("_ADMIN", "happn", 55001);
+        })
+        .then(function(client) {
+          internalClient = client;
+          edgeClient.data.on("/test/**", () => {
+            done(new Error("not meant to happen"));
+          });
+          internalClient.data.set("/test/1/2", 1);
+          setTimeout(done, 2000);
         })
         .catch(done);
     });

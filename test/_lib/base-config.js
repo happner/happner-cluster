@@ -5,7 +5,8 @@ module.exports = function(
   requestTimeout,
   responseTimeout,
   hosts,
-  joinTimeout
+  joinTimeout,
+  replicate
 ) {
   var clusterRequestTimeout = requestTimeout ? requestTimeout : 10 * 1000;
   var clusterResponseTimeout = responseTimeout ? responseTimeout : 20 * 1000;
@@ -51,7 +52,8 @@ module.exports = function(
         },
         orchestrator: {
           config: {
-            minimumPeers: minPeers || 3
+            minimumPeers: minPeers || 3,
+            replicate
           }
         }
       }
