@@ -442,7 +442,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
   context("data", function() {
     it("connects a client to the local instance, and is able to access the remote component events via the broker", function(done) {
       let edgeClient, internalClient;
-      startClusterInternalFirst(["/test/*/*"])
+      startClusterInternalFirst(["/test/**"])
         .then(function() {
           return testclient.create("_ADMIN", "happn", 55002);
         })
