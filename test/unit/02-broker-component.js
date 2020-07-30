@@ -7,7 +7,6 @@ describe("02 - unit - brokerage component", function() {
     var mockModels = {};
     var mockMesh = {
       _mesh: {
-        disableSchemaPublish: () => {},
         config: {
           name: "mock"
         }
@@ -211,6 +210,7 @@ describe("02 - unit - brokerage component", function() {
     };
 
     var mockMesh = {
+      disableSchemaPublish: () => {},
       _mesh: {
         config: {
           name: "mock"
