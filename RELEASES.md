@@ -164,3 +164,7 @@
 9.0.7 2020-07-27
 ----------------
   - feature / fix: ability to add paths to orchestrator replicate config
+
+9.0.8 2020-07-30
+----------------
+  - feature / fix: broker does not re-publish mesh description if deferrListen is true JIRA: SMC-617
