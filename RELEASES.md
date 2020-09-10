@@ -171,5 +171,5 @@
 
 9.0.9 2020-09-10
 ----------------
-  - patch: allow for brokered flag in description - passed in from happner-cluster - JIRA: SMC-989
+  - patch: brokered flag in description prevents brokers being brokered or referred to by cluster peers - JIRA: SMC-989
 
