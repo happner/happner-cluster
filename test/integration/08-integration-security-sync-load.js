@@ -1,16 +1,16 @@
-var HappnerCluster = require("../..");
-var Promise = require("bluebird");
-var shortid = require("shortid");
-var async = require("async");
+var HappnerCluster = require('../..');
+var Promise = require('bluebird');
+var shortid = require('shortid');
+var async = require('async');
 
-var libDir = require("../_lib/lib-dir");
-var baseConfig = require("../_lib/base-config");
-var stopCluster = require("../_lib/stop-cluster");
-var clearMongoCollection = require("../_lib/clear-mongo-collection");
-var users = require("../_lib/users");
-var client = require("../_lib/client");
+var libDir = require('../_lib/lib-dir');
+var baseConfig = require('../_lib/base-config');
+var stopCluster = require('../_lib/stop-cluster');
+var clearMongoCollection = require('../_lib/clear-mongo-collection');
+var users = require('../_lib/users');
+var client = require('../_lib/client');
 
-describe(require("../_lib/test-helper").testName(__filename, 3), function() {
+describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
 
   var servers = [];
@@ -23,19 +23,19 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq, minPeers, true);
     config.modules = {
       component1: {
-        path: libDir + "integration-08-component"
+        path: libDir + 'integration-08-component'
       },
       component2: {
-        path: libDir + "integration-08-component"
+        path: libDir + 'integration-08-component'
       },
       component3: {
-        path: libDir + "integration-08-component"
+        path: libDir + 'integration-08-component'
       },
       component4: {
-        path: libDir + "integration-08-component"
+        path: libDir + 'integration-08-component'
       },
       component5: {
-        path: libDir + "integration-08-component"
+        path: libDir + 'integration-08-component'
       }
     };
     config.components = {
@@ -48,12 +48,12 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     return config;
   }
 
-  before("clear mongo collection", function(done) {
+  before('clear mongo collection', function(done) {
     this.timeout(10000);
-    clearMongoCollection("mongodb://localhost", "happn-cluster", done);
+    clearMongoCollection('mongodb://localhost', 'happn-cluster', done);
   });
 
-  before("start cluster", function(done) {
+  before('start cluster', function(done) {
     this.timeout(20000);
     HappnerCluster.create(serverConfig(1, 1))
       .then(function(server) {
@@ -75,7 +75,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  before("create users", function(done) {
+  before('create users', function(done) {
     this.timeout(10000);
     var promises = [];
     var username, user, component, method, event;
@@ -86,24 +86,17 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         allowedEvents: {}
       };
       for (var j = 1; j <= 5; j++) {
-        component = "component" + j;
+        component = 'component' + j;
         user.allowedMethods[component] = {};
         user.allowedEvents[component] = {};
         for (var k = 1; k <= 5; k++) {
-          method = "method" + k;
-          event = "event" + k;
+          method = 'method' + k;
+          event = 'event' + k;
           user.allowedMethods[component][method] = true;
           user.allowedEvents[component][event] = true;
         }
       }
-      promises.push(
-        users.add(
-          servers[0],
-          username,
-          "password",
-          users.generatePermissions(user)
-        )
-      );
+      promises.push(users.add(servers[0], username, 'password', users.generatePermissions(user)));
     }
     Promise.all(promises)
       .then(function() {
@@ -112,14 +105,14 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  before("connect clients", function(done) {
+  before('connect clients', function(done) {
     var port;
     var i = 0;
     var promises = [];
     let username;
     for (username in userlist) {
       port = 55000 + (++i % servers.length) + 1;
-      promises.push(client.create(username, "password", port));
+      promises.push(client.create(username, 'password', port));
     }
     Promise.all(promises)
       .then(function(clients) {
@@ -131,7 +124,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  before("subscribe to all events", function(done) {
+  before('subscribe to all events', function(done) {
     var username, component, event, user;
     var promises = [];
 
@@ -140,8 +133,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         var event = data.event;
         var component = data.component;
         eventResults[username] = eventResults[username] || {};
-        eventResults[username][component] =
-          eventResults[username][component] || {};
+        eventResults[username][component] = eventResults[username][component] || {};
         eventResults[username][component][event] = true;
       };
     }
@@ -151,13 +143,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       for (component in user.allowedEvents) {
         for (event in user.allowedEvents[component]) {
           promises.push(
-            client.subscribe(
-              0,
-              user.client,
-              component,
-              event,
-              createHandler(username)
-            )
+            client.subscribe(0, user.client, component, event, createHandler(username))
           );
         }
       }
@@ -165,15 +151,14 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     Promise.all(promises)
       .then(function(results) {
         for (var i = 0; i < results.length; i++) {
-          if (results[i].result !== true)
-            return done(new Error("Failed subscription"));
+          if (results[i].result !== true) return done(new Error('Failed subscription'));
         }
         done();
       })
       .catch(done);
   });
 
-  after("stop clients", function(done) {
+  after('stop clients', function(done) {
     var promises = [];
     for (var username in userlist) {
       promises.push(client.destroy(userlist[username].client));
@@ -185,7 +170,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  after("stop cluster", function(done) {
+  after('stop cluster', function(done) {
     if (!servers) return done();
     stopCluster(servers, done);
   });
@@ -201,15 +186,15 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
   }
 
   function randomComponent() {
-    return "component" + (Math.round(Math.random() * 4) + 1);
+    return 'component' + (Math.round(Math.random() * 4) + 1);
   }
 
   function randomMethod() {
-    return "method" + (Math.round(Math.random() * 4) + 1);
+    return 'method' + (Math.round(Math.random() * 4) + 1);
   }
 
   function randomEvent() {
-    return "event" + (Math.round(Math.random() * 4) + 1);
+    return 'event' + (Math.round(Math.random() * 4) + 1);
   }
 
   function randomAdjustPermissions() {
@@ -244,7 +229,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         var i, component;
         var promises = [];
         for (i = 1; i < 6; i++) {
-          component = "component" + i;
+          component = 'component' + i;
           promises.push(servers[0].exchange[component].emitEvents());
         }
         return Promise.all(promises);
@@ -256,12 +241,10 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         for (var username in userlist) {
           user = userlist[username];
           for (i = 1; i < 6; i++) {
-            component = "component" + i;
+            component = 'component' + i;
             for (j = 1; j < 6; j++) {
-              method = "method" + j;
-              promises.push(
-                client.callMethod(0, user.client, component, method)
-              );
+              method = 'method' + j;
+              promises.push(client.callMethod(0, user.client, component, method));
             }
           }
         }
@@ -285,37 +268,21 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
               if (allowed) {
                 if (!eventResults[username][component][event]) {
                   return reject(
-                    new Error(
-                      "missing event " +
-                        username +
-                        " " +
-                        component +
-                        " " +
-                        event
-                    )
+                    new Error('missing event ' + username + ' ' + component + ' ' + event)
                   );
                 } else {
                   // console.log('ok', username, component, event);
                 }
               }
             } catch (e) {
-              return reject(
-                new Error(
-                  "missing event " + username + " " + component + " " + event
-                )
-              );
+              return reject(new Error('missing event ' + username + ' ' + component + ' ' + event));
             }
             try {
               if (!allowed) {
                 if (eventResults[username][component][event]) {
                   return reject(
                     new Error(
-                      "should not have received event " +
-                        username +
-                        " " +
-                        component +
-                        " " +
-                        event
+                      'should not have received event ' + username + ' ' + component + ' ' + event
                     )
                   );
                 }
@@ -337,25 +304,11 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         if (userlist[username].allowedMethods[component][method] !== allowed) {
           if (allowed) {
             return reject(
-              new Error(
-                "should not have allowed " +
-                  username +
-                  " " +
-                  component +
-                  " " +
-                  method
-              )
+              new Error('should not have allowed ' + username + ' ' + component + ' ' + method)
             );
           } else {
             return reject(
-              new Error(
-                "should not allowed " +
-                  username +
-                  " " +
-                  component +
-                  " " +
-                  method
-              )
+              new Error('should not allowed ' + username + ' ' + component + ' ' + method)
             );
           }
         }
@@ -368,21 +321,21 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
   // one at a time
   var queue = async.queue(function(task, callback) {
     if (stop) return callback();
-    if (task.action === "randomAdjustPermissions") {
+    if (task.action === 'randomAdjustPermissions') {
       return randomAdjustPermissions()
         .then(function() {
           callback();
         })
         .catch(callback);
     }
-    if (task.action === "useMethodsAndEvents") {
+    if (task.action === 'useMethodsAndEvents') {
       return useMethodsAndEvents()
         .then(function() {
           callback();
         })
         .catch(callback);
     }
-    if (task.action === "testResponses") {
+    if (task.action === 'testResponses') {
       return testResponses()
         .then(function() {
           callback();
@@ -400,14 +353,14 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     });
   }
 
-  it("handles repetitive security syncronisations", function(done) {
+  it('handles repetitive security syncronisations', function(done) {
     this.timeout(200 * 1000);
     var promises = [];
 
     for (var i = 0; i < 5; i++) {
-      promises.push(call("randomAdjustPermissions"));
-      promises.push(call("useMethodsAndEvents"));
-      promises.push(call("testResponses"));
+      promises.push(call('randomAdjustPermissions'));
+      promises.push(call('useMethodsAndEvents'));
+      promises.push(call('testResponses'));
     }
 
     Promise.all(promises)

@@ -1,5 +1,5 @@
-var Promise = require("bluebird");
-var async = require("async");
+var Promise = require('bluebird');
+var async = require('async');
 
 module.exports.add = function(server, username, password, permissions) {
   var user = {
@@ -8,7 +8,7 @@ module.exports.add = function(server, username, password, permissions) {
   };
 
   var group = {
-    name: username + "_group",
+    name: username + '_group',
     permissions: permissions || {}
   };
 
@@ -31,13 +31,13 @@ module.exports.generatePermissions = function(user) {
   };
   for (component in allowedMethods) {
     for (method in allowedMethods[component]) {
-      path = "/DOMAIN_NAME/" + component + "/" + method;
+      path = '/DOMAIN_NAME/' + component + '/' + method;
       permissions.methods[path] = { authorized: true };
     }
   }
   for (component in allowedEvents) {
     for (event in allowedEvents[component]) {
-      path = "/DOMAIN_NAME/" + component + "/" + event;
+      path = '/DOMAIN_NAME/' + component + '/' + event;
       permissions.events[path] = { authorized: true };
     }
   }
@@ -54,8 +54,8 @@ var queue = async.queue(function(task, callback) {
 }, 1);
 
 module.exports.allowMethod = function(server, username, component, method) {
-  var group = username + "_group";
-  var path = "/DOMAIN_NAME/" + component + "/" + method;
+  var group = username + '_group';
+  var path = '/DOMAIN_NAME/' + component + '/' + method;
   var permissions = { methods: {} };
   permissions.methods[path] = { authorized: true };
 
@@ -65,7 +65,7 @@ module.exports.allowMethod = function(server, username, component, method) {
         server: server,
         group: group,
         permissions: permissions,
-        method: "addGroupPermissions"
+        method: 'addGroupPermissions'
       },
       function(err) {
         if (err) return reject(err);
@@ -76,8 +76,8 @@ module.exports.allowMethod = function(server, username, component, method) {
 };
 
 module.exports.denyMethod = function(server, username, component, method) {
-  var group = username + "_group";
-  var path = "/DOMAIN_NAME/" + component + "/" + method;
+  var group = username + '_group';
+  var path = '/DOMAIN_NAME/' + component + '/' + method;
   var permissions = { methods: {} };
   permissions.methods[path] = {};
 
@@ -87,7 +87,7 @@ module.exports.denyMethod = function(server, username, component, method) {
         server: server,
         group: group,
         permissions: permissions,
-        method: "removeGroupPermissions"
+        method: 'removeGroupPermissions'
       },
       function(err) {
         if (err) return reject(err);
@@ -98,11 +98,11 @@ module.exports.denyMethod = function(server, username, component, method) {
 };
 
 module.exports.allowWebMethod = function(server, username, path) {
-  var group = username + "_group";
+  var group = username + '_group';
   var permissions = { web: {} };
   permissions.web[path] = {
-    actions: ["get", "put", "post"],
-    description: "a test web permission"
+    actions: ['get', 'put', 'post'],
+    description: 'a test web permission'
   };
   return new Promise(function(resolve, reject) {
     queue.push(
@@ -110,7 +110,7 @@ module.exports.allowWebMethod = function(server, username, path) {
         server: server,
         group: group,
         permissions: permissions,
-        method: "addGroupPermissions"
+        method: 'addGroupPermissions'
       },
       function(err) {
         if (err) return reject(err);
@@ -121,7 +121,7 @@ module.exports.allowWebMethod = function(server, username, path) {
 };
 
 module.exports.denyWebMethod = function(server, username, path) {
-  var group = username + "_group";
+  var group = username + '_group';
   var permissions = { web: {} };
   permissions.web[path] = {};
 
@@ -131,7 +131,7 @@ module.exports.denyWebMethod = function(server, username, path) {
         server: server,
         group: group,
         permissions: permissions,
-        method: "removeGroupPermissions"
+        method: 'removeGroupPermissions'
       },
       function(err) {
         if (err) return reject(err);
@@ -142,8 +142,8 @@ module.exports.denyWebMethod = function(server, username, path) {
 };
 
 module.exports.allowEvent = function(server, username, component, event) {
-  var group = username + "_group";
-  var path = "/DOMAIN_NAME/" + component + "/" + event;
+  var group = username + '_group';
+  var path = '/DOMAIN_NAME/' + component + '/' + event;
   var permissions = { events: {} };
   permissions.events[path] = { authorized: true };
 
@@ -153,7 +153,7 @@ module.exports.allowEvent = function(server, username, component, event) {
         server: server,
         group: group,
         permissions: permissions,
-        method: "addGroupPermissions"
+        method: 'addGroupPermissions'
       },
       function(err) {
         if (err) return reject(err);
@@ -164,8 +164,8 @@ module.exports.allowEvent = function(server, username, component, event) {
 };
 
 module.exports.denyEvent = function(server, username, component, event) {
-  var group = username + "_group";
-  var path = "/DOMAIN_NAME/" + component + "/" + event;
+  var group = username + '_group';
+  var path = '/DOMAIN_NAME/' + component + '/' + event;
   var permissions = { events: {} };
   permissions.events[path] = {};
 
@@ -175,7 +175,7 @@ module.exports.denyEvent = function(server, username, component, event) {
         server: server,
         group: group,
         permissions: permissions,
-        method: "removeGroupPermissions"
+        method: 'removeGroupPermissions'
       },
       function(err) {
         if (err) return reject(err);

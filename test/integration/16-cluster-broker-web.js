@@ -1,16 +1,16 @@
-const HappnerCluster = require("../..");
-var Promise = require("bluebird");
-var expect = require("expect.js");
+const HappnerCluster = require('../..');
+var Promise = require('bluebird');
+var expect = require('expect.js');
 
-var libDir = require("../_lib/lib-dir");
-var baseConfig = require("../_lib/base-config");
-var stopCluster = require("../_lib/stop-cluster");
-var users = require("../_lib/users");
-var testclient = require("../_lib/client");
+var libDir = require('../_lib/lib-dir');
+var baseConfig = require('../_lib/base-config');
+var stopCluster = require('../_lib/stop-cluster');
+var users = require('../_lib/users');
+var testclient = require('../_lib/client');
 
-var clearMongoCollection = require("../_lib/clear-mongo-collection");
+var clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
-describe(require("../_lib/test-helper").testName(__filename, 3), function() {
+describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(40000);
 
   var servers = [];
@@ -18,13 +18,13 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
   function localInstanceConfig(seq, sync, dynamic) {
     var config = baseConfig(seq, sync, true);
     let brokerComponentPath = dynamic
-      ? libDir + "integration-10-broker-component-dynamic"
-      : libDir + "integration-09-broker-component";
+      ? libDir + 'integration-10-broker-component-dynamic'
+      : libDir + 'integration-09-broker-component';
     config.cluster = config.cluster || {};
     config.cluster.dependenciesSatisfiedDeferListen = true;
     config.modules = {
       localComponent: {
-        path: libDir + "integration-09-local-component"
+        path: libDir + 'integration-09-local-component'
       },
       brokerComponent: {
         path: brokerComponentPath
@@ -32,12 +32,12 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     };
     config.components = {
       localComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       },
       brokerComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       }
     };
     return config;
@@ -47,24 +47,24 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq, sync, true);
     config.modules = {
       remoteComponent: {
-        path: libDir + "integration-09-remote-component"
+        path: libDir + 'integration-09-remote-component'
       },
       remoteComponent1: {
-        path: libDir + "integration-09-remote-component-1"
+        path: libDir + 'integration-09-remote-component-1'
       }
     };
     config.components = {
       remoteComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       },
       remoteComponent1: {
-        startMethod: "start",
-        stopMethod: "stop",
+        startMethod: 'start',
+        stopMethod: 'stop',
         web: {
           routes: {
-            testJSON: ["testJSON"],
-            testJSONSticky: ["testJSONSticky"]
+            testJSON: ['testJSON'],
+            testJSONSticky: ['testJSONSticky']
           }
         }
       }
@@ -72,20 +72,20 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     return config;
   }
 
-  beforeEach("clear mongo collection", function(done) {
+  beforeEach('clear mongo collection', function(done) {
     stopCluster(servers, function(e) {
       if (e) return done(e);
       servers = [];
-      clearMongoCollection("mongodb://localhost", "happn-cluster", function() {
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
         done();
       });
     });
   });
 
-  afterEach("stop cluster", function(done) {
+  afterEach('stop cluster', function(done) {
     if (!servers) return done();
     stopCluster(servers, function() {
-      clearMongoCollection("mongodb://localhost", "happn-cluster", function() {
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
         done();
       });
     });
@@ -114,7 +114,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
   }
 
   function doRequest(path, token, port, callback) {
-    var request = require("request");
+    var request = require('request');
     var options;
 
     options = {
@@ -141,8 +141,8 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     });
   }
 
-  context("web", function() {
-    it("starts the cluster broker, we ensure direct calls to the brokered component succeed", function(done) {
+  context('web', function() {
+    it('starts the cluster broker, we ensure direct calls to the brokered component succeed', function(done) {
       var thisClient;
       var edgeInstance;
       var internalInstance;
@@ -159,42 +159,38 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return users.add(edgeInstance, "username", "password");
+          return users.add(edgeInstance, 'username', 'password');
         })
         .then(function() {
-          return users.allowWebMethod(
-            internalInstance,
-            "username",
-            "/remoteComponent1/testJSON"
-          );
+          return users.allowWebMethod(internalInstance, 'username', '/remoteComponent1/testJSON');
         })
         .then(function() {
-          return testclient.create("_ADMIN", "happn", 55002);
+          return testclient.create('_ADMIN', 'happn', 55002);
         })
         .then(function(adminClient) {
-          return testWebCall(adminClient, "/remoteComponent1/testJSON", 55002);
+          return testWebCall(adminClient, '/remoteComponent1/testJSON', 55002);
         })
         .then(function(result) {
           expect(JSON.parse(result.body)).to.eql({
-            test: "data"
+            test: 'data'
           });
-          return testclient.create("username", "password", 55002);
+          return testclient.create('username', 'password', 55002);
         })
         .then(function(client) {
           thisClient = client;
           //first test our broker components methods are directly callable
-          return testWebCall(thisClient, "/remoteComponent1/testJSON", 55002);
+          return testWebCall(thisClient, '/remoteComponent1/testJSON', 55002);
         })
         .then(function(result) {
           expect(JSON.parse(result.body)).to.eql({
-            test: "data"
+            test: 'data'
           });
           setTimeout(done, 2000);
         })
         .catch(done);
     });
 
-    it("starts the cluster broker, we ensure indirect calls to the brokered component succeed", function(done) {
+    it('starts the cluster broker, we ensure indirect calls to the brokered component succeed', function(done) {
       var thisClient;
       var edgeInstance;
       var internalInstance;
@@ -211,35 +207,31 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return users.add(edgeInstance, "username", "password");
+          return users.add(edgeInstance, 'username', 'password');
         })
         .then(function() {
-          return users.allowWebMethod(
-            internalInstance,
-            "username",
-            "/remoteComponent1/testJSON"
-          );
+          return users.allowWebMethod(internalInstance, 'username', '/remoteComponent1/testJSON');
         })
         .then(function() {
-          return testclient.create("_ADMIN", "happn", 55001);
+          return testclient.create('_ADMIN', 'happn', 55001);
         })
         .then(function(adminClient) {
-          return testWebCall(adminClient, "/remoteComponent1/testJSON", 55001);
+          return testWebCall(adminClient, '/remoteComponent1/testJSON', 55001);
         })
         .then(function(result) {
           expect(JSON.parse(result.body)).to.eql({
-            test: "data"
+            test: 'data'
           });
-          return testclient.create("username", "password", 55001);
+          return testclient.create('username', 'password', 55001);
         })
         .then(function(client) {
           thisClient = client;
           //first test our broker components methods are directly callable
-          return testWebCall(thisClient, "/remoteComponent1/testJSON", 55001);
+          return testWebCall(thisClient, '/remoteComponent1/testJSON', 55001);
         })
         .then(function(result) {
           expect(JSON.parse(result.body)).to.eql({
-            test: "data"
+            test: 'data'
           });
           setTimeout(done, 2000);
         })
@@ -250,19 +242,14 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       let client = null;
       while (client == null) {
         let checkClient = await testclient.create(username, password, edgePort);
-        let response = await testWebCall(
-          checkClient,
-          "/remoteComponent1/testJSONSticky",
-          55001
-        );
-        if (response.body.toString().indexOf(`MESH_${meshId}`) > -1)
-          client = checkClient;
+        let response = await testWebCall(checkClient, '/remoteComponent1/testJSONSticky', 55001);
+        if (response.body.toString().indexOf(`MESH_${meshId}`) > -1) client = checkClient;
         else await checkClient.disconnect();
       }
       return client;
     }
 
-    it("starts the cluster broker, with 2 brokered internal nodes in a high availability configuration, we ensure indirect calls to the brokered component succeed and are sticky sessioned, then we stop one internal node and we ensure we are still able to access the web content on the remaining node", function(done) {
+    it('starts the cluster broker, with 2 brokered internal nodes in a high availability configuration, we ensure indirect calls to the brokered component succeed and are sticky sessioned, then we stop one internal node and we ensure we are still able to access the web content on the remaining node', function(done) {
       let thisClientMesh2;
       let thisClientMesh3;
       let edgeInstance;
@@ -294,37 +281,29 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return users.add(edgeInstance, "username", "password");
+          return users.add(edgeInstance, 'username', 'password');
         })
         .then(function() {
           return users.allowWebMethod(
             internalInstance1,
-            "username",
-            "/remoteComponent1/testJSONSticky"
+            'username',
+            '/remoteComponent1/testJSONSticky'
           );
         })
         .then(function() {
-          return getClientForMesh(2, "username", "password", 55001);
+          return getClientForMesh(2, 'username', 'password', 55001);
         })
         .then(function(client) {
           thisClientMesh2 = client;
-          return getClientForMesh(3, "username", "password", 55001);
+          return getClientForMesh(3, 'username', 'password', 55001);
         })
         .then(function(client) {
           thisClientMesh3 = client;
-          return testWebCall(
-            thisClientMesh2,
-            "/remoteComponent1/testJSONSticky",
-            55001
-          );
+          return testWebCall(thisClientMesh2, '/remoteComponent1/testJSONSticky', 55001);
         })
         .then(function(response) {
           pushResults(response);
-          return testWebCall(
-            thisClientMesh3,
-            "/remoteComponent1/testJSONSticky",
-            55001
-          );
+          return testWebCall(thisClientMesh3, '/remoteComponent1/testJSONSticky', 55001);
         })
         .then(function(response) {
           pushResults(response);
@@ -336,19 +315,11 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testWebCall(
-            thisClientMesh2,
-            "/remoteComponent1/testJSONSticky",
-            55001
-          );
+          return testWebCall(thisClientMesh2, '/remoteComponent1/testJSONSticky', 55001);
         })
         .then(function(response) {
           pushResults(response);
-          return testWebCall(
-            thisClientMesh3,
-            "/remoteComponent1/testJSONSticky",
-            55001
-          );
+          return testWebCall(thisClientMesh3, '/remoteComponent1/testJSONSticky', 55001);
         })
         .then(function(response) {
           pushResults(response);
@@ -357,23 +328,23 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
             [
               {
                 statusCode: 200,
-                statusMessage: "OK",
+                statusMessage: 'OK',
                 body: '{"ran_on":"MESH_2"}'
               },
               {
                 statusCode: 200,
-                statusMessage: "OK",
+                statusMessage: 'OK',
                 body: '{"ran_on":"MESH_3"}'
               },
               // failover to MESH_3, because MESH_2 went offline
               {
                 statusCode: 200,
-                statusMessage: "OK",
+                statusMessage: 'OK',
                 body: '{"ran_on":"MESH_3"}'
               },
               {
                 statusCode: 200,
-                statusMessage: "OK",
+                statusMessage: 'OK',
                 body: '{"ran_on":"MESH_3"}'
               }
             ]

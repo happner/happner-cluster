@@ -1,26 +1,26 @@
 /* eslint-disable no-console */
-const HappnerClient = require("happner-client");
-const commander = require("commander");
+const HappnerClient = require('happner-client');
+const commander = require('commander');
 
 commander
-  .option("--clients [number]", "clients count")
-  .option("--calls [number]", "method calls")
-  .option("--events [number]", "event emits")
-  .option("--interval [number]", "activity interval")
-  .option("--ports [string]", "ports commaseparated")
+  .option('--clients [number]', 'clients count')
+  .option('--calls [number]', 'method calls')
+  .option('--events [number]', 'event emits')
+  .option('--interval [number]', 'activity interval')
+  .option('--ports [string]', 'ports commaseparated')
   .parse(process.argv);
 
-commander.ports = commander.ports || "55001";
+commander.ports = commander.ports || '55001';
 commander.clients = parseInt(commander.clients || 1);
 commander.calls = parseInt(commander.calls || 1);
 commander.events = parseInt(commander.events || 1);
 commander.interval = parseInt(commander.interval || 1000);
 
-var ports = commander.ports.split(",");
+var ports = commander.ports.split(',');
 var totalCalls = 0;
 var totalWebCalls = 0;
 var totalEmits = 0;
-var HashRing = require("hashring");
+var HashRing = require('hashring');
 var randomPort = new HashRing();
 
 ports.forEach(port => {
@@ -32,11 +32,11 @@ createClients()
     return startActivity(clients);
   })
   .then(() => {
-    console.log("STARTED ACTIVITY...");
+    console.log('STARTED ACTIVITY...');
   });
 
 function failAndExit(e) {
-  console.log("FAILED:::", e.message);
+  console.log('FAILED:::', e.message);
   console.log(e.stack);
   process.exit(1);
 }
@@ -45,7 +45,7 @@ let description;
 function getDescription(api) {
   return new Promise(resolve => {
     if (description) return resolve(description);
-    api.data.get("/mesh/schema/description", (e, schema) => {
+    api.data.get('/mesh/schema/description', (e, schema) => {
       if (e) return failAndExit(e);
       description = schema;
       return resolve(description);
@@ -60,8 +60,8 @@ function createClient() {
     client.connect(
       null,
       {
-        username: "_ADMIN",
-        password: "happn",
+        username: '_ADMIN',
+        password: 'happn',
         port
       },
       e => {
@@ -72,7 +72,7 @@ function createClient() {
           api.port = port;
           api.token = api.data.session.token;
           api.happner.event.remoteComponent1.on(
-            "test/*",
+            'test/*',
             () => {
               totalEmits++;
               if (totalEmits % commander.clients === 0)
@@ -90,7 +90,7 @@ function createClient() {
 
 function doRequest(path, client) {
   return new Promise((resolve, reject) => {
-    var request = require("request");
+    var request = require('request');
     var options;
 
     options = {
@@ -123,7 +123,7 @@ function startActivity(clients) {
       if (totalCalls % commander.clients === 0)
         console.log(`data method called:::${data} total calls:::${totalCalls}`);
     });
-    doRequest("/remoteComponent1/testJSON", client)
+    doRequest('/remoteComponent1/testJSON', client)
       .then(response => {
         totalWebCalls++;
         if (totalWebCalls % commander.clients === 0) {
@@ -133,7 +133,7 @@ function startActivity(clients) {
         }
       })
       .catch(e => {
-        console.log("web method failed...", e);
+        console.log('web method failed...', e);
       });
   });
   setTimeout(() => {

@@ -3,7 +3,7 @@ module.exports = Component;
 function Component() {}
 
 Component.prototype.method1 = function($happn, callback) {
-  callback(null, $happn.info.mesh.name + ":component1:method1");
+  callback(null, $happn.info.mesh.name + ':component1:method1');
 };
 
 Component.prototype.method2 = function($happn, $origin, callback) {
@@ -12,7 +12,7 @@ Component.prototype.method2 = function($happn, $origin, callback) {
 
 Component.prototype.method3 = function($happn, $origin, callback) {
   $happn.event.remoteComponent3.on(
-    "test-event",
+    'test-event',
     function() {},
     function(e) {
       callback(e);

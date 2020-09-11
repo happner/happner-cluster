@@ -10,28 +10,28 @@ LocalComponent.prototype.start = function($happn, callback) {
   var sequence = 0;
   this.interval = setInterval(function() {
     !(function(seq) {
-      $happn.data.set("/something/here", { seq: seq });
+      $happn.data.set('/something/here', { seq: seq });
 
-      $happn.exchange["remote-component"]
+      $happn.exchange['remote-component']
         .method1(seq)
         .then(function(result) {
-          $happn.log.info("%d reply %s", seq, result);
+          $happn.log.info('%d reply %s', seq, result);
         })
         .catch(function(error) {
-          $happn.log.error("%d error %s", seq, error.toString());
+          $happn.log.error('%d error %s', seq, error.toString());
         });
     })(sequence++);
   }, 900);
 
   // subscribe to cluster events
-  $happn.event["remote-component"].on(
-    "event",
+  $happn.event['remote-component'].on(
+    'event',
     function(data) {
-      $happn.log.info("event from %s", data.origin);
+      $happn.log.info('event from %s', data.origin);
     },
     function(e, subscriptionId) {
       if (e) {
-        $happn.log.error("failed to subscribe to event");
+        $happn.log.error('failed to subscribe to event');
         return;
       }
       _this.subscriptionId = subscriptionId;
@@ -45,7 +45,7 @@ LocalComponent.prototype.stop = function($happn, callback) {
   clearInterval(this.interval);
 
   if (this.subscriptionId) {
-    $happn.event["remote-component"].off(this.subscriptionId);
+    $happn.event['remote-component'].off(this.subscriptionId);
   }
 
   callback();

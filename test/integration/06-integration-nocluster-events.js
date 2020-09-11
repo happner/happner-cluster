@@ -1,12 +1,12 @@
-var HappnerCluster = require("../..");
-var Promise = require("bluebird");
-var expect = require("expect.js");
+var HappnerCluster = require('../..');
+var Promise = require('bluebird');
+var expect = require('expect.js');
 
-var libDir = require("../_lib/lib-dir");
-var baseConfig = require("../_lib/base-config");
-var stopCluster = require("../_lib/stop-cluster");
+var libDir = require('../_lib/lib-dir');
+var baseConfig = require('../_lib/base-config');
+var stopCluster = require('../_lib/stop-cluster');
 
-describe(require("../_lib/test-helper").testName(__filename, 3), function() {
+describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
 
   var servers, localInstance, remoteInstance;
@@ -15,13 +15,13 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq, 2);
     config.modules = {
       component1: {
-        path: libDir + "integration-06-component1"
+        path: libDir + 'integration-06-component1'
       }
     };
     config.components = {
       component1: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       }
     };
     return config;
@@ -31,7 +31,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq, 2);
     config.modules = {
       component2: {
-        path: libDir + "integration-06-component2"
+        path: libDir + 'integration-06-component2'
       }
     };
     config.components = {
@@ -40,7 +40,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     return config;
   }
 
-  beforeEach("start cluster", function(done) {
+  beforeEach('start cluster', function(done) {
     this.timeout(20000);
 
     Promise.all([
@@ -57,19 +57,19 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  afterEach("stop cluster", function(done) {
+  afterEach('stop cluster', function(done) {
     if (!servers) return done();
     stopCluster(servers, done);
   });
 
-  it("gets local and global events where local", function(done) {
+  it('gets local and global events where local', function(done) {
     localInstance.exchange.component1
       .awaitEvents()
 
       .then(function(result) {
         expect(result).to.eql({
-          "event/global": { some: "thing1" },
-          "event/local": { some: "thing2" }
+          'event/global': { some: 'thing1' },
+          'event/local': { some: 'thing2' }
         });
       })
 
@@ -77,13 +77,13 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  it("gets only global events where remote", function(done) {
+  it('gets only global events where remote', function(done) {
     remoteInstance.exchange.component2
       .awaitEvents()
 
       .then(function(result) {
         expect(result).to.eql({
-          "event/global": { some: "thing1" }
+          'event/global': { some: 'thing1' }
         });
       })
 
