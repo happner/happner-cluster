@@ -1,14 +1,14 @@
-const expect = require("expect.js");
-describe("03-filter-event-versions", function() {
-  it("tests filter-event-versions", function() {
-    const eventVersionsFilter = require("../../lib/filter-event-versions");
+const expect = require('expect.js');
+describe('03-filter-event-versions', function() {
+  it('tests filter-event-versions', function() {
+    const eventVersionsFilter = require('../../lib/filter-event-versions');
     expect(
       eventVersionsFilter(
         {
           request: {
             options: {
               meta: {
-                componentVersion: "1.0.0-prerelease-1"
+                componentVersion: '1.0.0-prerelease-1'
               }
             }
           }
@@ -18,20 +18,20 @@ describe("03-filter-event-versions", function() {
             data: {
               options: {
                 meta: {
-                  componentVersion: "^1.0.0"
+                  componentVersion: '^1.0.0'
                 }
               },
-              path: "/_events/test/1"
+              path: '/_events/test/1'
             }
           },
           {
             data: {
               options: {
                 meta: {
-                  componentVersion: "^2.0.0"
+                  componentVersion: '^2.0.0'
                 }
               },
-              path: "/_events/test/1"
+              path: '/_events/test/1'
             }
           }
         ]
@@ -42,10 +42,10 @@ describe("03-filter-event-versions", function() {
         data: {
           options: {
             meta: {
-              componentVersion: "^1.0.0"
+              componentVersion: '^1.0.0'
             }
           },
-          path: "/_events/test/1"
+          path: '/_events/test/1'
         }
       }
     ]);
@@ -56,7 +56,7 @@ describe("03-filter-event-versions", function() {
           request: {
             options: {
               meta: {
-                componentVersion: "1.0.1"
+                componentVersion: '1.0.1'
               }
             }
           }
@@ -66,20 +66,20 @@ describe("03-filter-event-versions", function() {
             data: {
               options: {
                 meta: {
-                  componentVersion: "^1.0.0"
+                  componentVersion: '^1.0.0'
                 }
               },
-              path: "/_events/test/1"
+              path: '/_events/test/1'
             }
           },
           {
             data: {
               options: {
                 meta: {
-                  componentVersion: "^2.0.0"
+                  componentVersion: '^2.0.0'
                 }
               },
-              path: "/_events/test/1"
+              path: '/_events/test/1'
             }
           }
         ]
@@ -90,10 +90,10 @@ describe("03-filter-event-versions", function() {
         data: {
           options: {
             meta: {
-              componentVersion: "^1.0.0"
+              componentVersion: '^1.0.0'
             }
           },
-          path: "/_events/test/1"
+          path: '/_events/test/1'
         }
       }
     ]);

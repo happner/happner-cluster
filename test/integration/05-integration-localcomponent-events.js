@@ -1,20 +1,20 @@
-var HappnerCluster = require("../..");
+var HappnerCluster = require('../..');
 
-describe(require("../_lib/test-helper").testName(__filename, 3), function() {
+describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   var server;
   this.timeout(20000);
 
-  before("start server", function(done) {
+  before('start server', function(done) {
     this.timeout(20000);
     HappnerCluster.create({
-      name: "NODE-01",
-      domain: "DOMAIN_NAME",
+      name: 'NODE-01',
+      domain: 'DOMAIN_NAME',
       happn: {
         services: {
           membership: {
             config: {
               seed: true,
-              hosts: ["localhost:56000"]
+              hosts: ['localhost:56000']
             }
           }
         }
@@ -24,7 +24,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           instance: {
             start: function($happn, callback) {
               this.interval = setInterval(function() {
-                $happn.emit("test/event", { some: "data" });
+                $happn.emit('test/event', { some: 'data' });
               }, 1000);
               callback();
             },
@@ -39,7 +39,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
             awaitEvent: function($happn, callback) {
               var subscriberId;
               $happn.event.component1.on(
-                "test/event",
+                'test/event',
                 function(data) {
                   $happn.event.component1.off(subscriberId);
                   callback(null, data);
@@ -55,8 +55,8 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       },
       components: {
         component1: {
-          startMethod: "start",
-          stopMethod: "stop"
+          startMethod: 'start',
+          stopMethod: 'stop'
         },
         component2: {}
       }
@@ -68,12 +68,12 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  after("stop server", function(done) {
+  after('stop server', function(done) {
     if (!server) return done();
     server.stop({ reconnect: false }, done);
   });
 
-  it("can subscribe to event from local components", function(done) {
+  it('can subscribe to event from local components', function(done) {
     server.exchange.component2.awaitEvent(function(e) {
       if (e) return done(e);
       done();

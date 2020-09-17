@@ -13,33 +13,25 @@ Component.prototype.stop = function($happn, callback) {
 };
 
 Component.prototype.brokeredMethod1 = function($happn, $req_headers, callback) {
-  let headers = "";
-  if (typeof $req_headers === "function") {
+  let headers = '';
+  if (typeof $req_headers === 'function') {
     callback = $req_headers;
-  } else headers = ":true";
+  } else headers = ':true';
 
   methodCalls++;
   $happn.emit(`test/${methodCalls}`, {}, () => {
     if (methodCalls % 1000 === 0)
       // eslint-disable-next-line no-console
       console.log(`brokeredMethod1 call count:::${methodCalls}`);
-    callback(
-      null,
-      `${$happn.info.mesh.name}:remoteComponent1:brokeredMethod1${headers}`
-    );
+    callback(null, `${$happn.info.mesh.name}:remoteComponent1:brokeredMethod1${headers}`);
   });
 };
 
 Component.prototype.brokeredMethod2 = function($happn, callback) {
-  callback(null, $happn.info.mesh.name + ":remoteComponent1:brokeredMethod2");
+  callback(null, $happn.info.mesh.name + ':remoteComponent1:brokeredMethod2');
 };
 
-Component.prototype.brokeredMethod3 = function(
-  $happn,
-  $origin,
-  param,
-  callback
-) {
+Component.prototype.brokeredMethod3 = function($happn, $origin, param, callback) {
   callback(
     null,
     `${$happn.info.mesh.name}:remoteComponent1:brokeredMethod3:${param}:${$origin.username}`
@@ -51,17 +43,17 @@ Component.prototype.testJSON = function(req, res) {
   if (webMethodCalls % 1000 === 0)
     // eslint-disable-next-line no-console
     console.log(`testJSON web call count:::${webMethodCalls}`);
-  res.setHeader("Content-Type", "application/json");
-  res.end(JSON.stringify({ test: "data" }));
+  res.setHeader('Content-Type', 'application/json');
+  res.end(JSON.stringify({ test: 'data' }));
 };
 
 Component.prototype.testJSONSticky = function($happn, req, res) {
-  res.setHeader("Content-Type", "application/json");
+  res.setHeader('Content-Type', 'application/json');
   res.end(JSON.stringify({ ran_on: `${$happn.info.mesh.name}` }));
 };
 
 Component.prototype.brokeredEventEmitMethod = function($happn, callback) {
-  $happn.emit("/brokered/event1", {
+  $happn.emit('/brokered/event1', {
     brokered: {
       event: {
         data: {
@@ -70,8 +62,5 @@ Component.prototype.brokeredEventEmitMethod = function($happn, callback) {
       }
     }
   });
-  callback(
-    null,
-    $happn.info.mesh.name + ":remoteComponent1:brokeredEventEmitMethod"
-  );
+  callback(null, $happn.info.mesh.name + ':remoteComponent1:brokeredEventEmitMethod');
 };

@@ -1,33 +1,33 @@
 /* eslint-disable no-console */
-const HappnerCluster = require("../..");
-const HappnerClient = require("happner-client");
-var Promise = require("bluebird");
-var expect = require("expect.js");
+const HappnerCluster = require('../..');
+const HappnerClient = require('happner-client');
+var Promise = require('bluebird');
+var expect = require('expect.js');
 
-var libDir = require("../_lib/lib-dir");
-var baseConfig = require("../_lib/base-config");
-var stopCluster = require("../_lib/stop-cluster");
-var users = require("../_lib/users");
-var testclient = require("../_lib/client");
+var libDir = require('../_lib/lib-dir');
+var baseConfig = require('../_lib/base-config');
+var stopCluster = require('../_lib/stop-cluster');
+var users = require('../_lib/users');
+var testclient = require('../_lib/client');
 
-var clearMongoCollection = require("../_lib/clear-mongo-collection");
-describe(require("../_lib/test-helper").testName(__filename, 3), function() {
+var clearMongoCollection = require('../_lib/clear-mongo-collection');
+describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(40000);
   const previousLogLevel = process.env.LOG_LEVEL;
-  process.env.LOG_LEVEL = "info";
+  process.env.LOG_LEVEL = 'info';
   var servers = [];
 
   function localInstanceConfig(seq, sync, dynamic) {
     var config = baseConfig(seq, sync, true);
     let brokerComponentPath = dynamic
-      ? libDir + "integration-10-broker-component-dynamic"
-      : libDir + "integration-09-broker-component";
+      ? libDir + 'integration-10-broker-component-dynamic'
+      : libDir + 'integration-09-broker-component';
 
     config.cluster = config.cluster || {};
     config.cluster.dependenciesSatisfiedDeferListen = true;
     config.modules = {
       localComponent: {
-        path: libDir + "integration-09-local-component"
+        path: libDir + 'integration-09-local-component'
       },
       brokerComponent: {
         path: brokerComponentPath
@@ -35,12 +35,12 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     };
     config.components = {
       localComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       },
       brokerComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       }
     };
     return config;
@@ -50,39 +50,39 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq, sync, true);
     config.modules = {
       remoteComponent: {
-        path: libDir + "integration-09-remote-component"
+        path: libDir + 'integration-09-remote-component'
       },
       remoteComponent1: {
-        path: libDir + "integration-09-remote-component-1"
+        path: libDir + 'integration-09-remote-component-1'
       }
     };
     config.components = {
       remoteComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       },
       remoteComponent1: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       }
     };
     return config;
   }
 
-  beforeEach("clear mongo collection", function(done) {
+  beforeEach('clear mongo collection', function(done) {
     stopCluster(servers, function(e) {
       if (e) return done(e);
       servers = [];
-      clearMongoCollection("mongodb://localhost", "happn-cluster", function() {
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
         done();
       });
     });
   });
 
-  afterEach("stop cluster", function(done) {
+  afterEach('stop cluster', function(done) {
     if (!servers) return done();
     stopCluster(servers, function() {
-      clearMongoCollection("mongodb://localhost", "happn-cluster", function() {
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
         done();
       });
     });
@@ -106,9 +106,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .then(function(instance) {
           servers.push(instance);
           instances.push(instance);
-          return HappnerCluster.create(
-            localInstanceConfig(id + 1, clusterMin + 1, dynamic)
-          );
+          return HappnerCluster.create(localInstanceConfig(id + 1, clusterMin + 1, dynamic));
         })
         .then(function(instance) {
           servers.push(instance);
@@ -121,10 +119,10 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     });
   }
 
-  context("exchange", function() {
-    it("starts the cluster broker first, fails to connect a client to the broker instance because listening is deferred, we start the internal brokered node, the client is now able to connect as we have the full API dynamically loaded", function(done) {
+  context('exchange', function() {
+    it('starts the cluster broker first, fails to connect a client to the broker instance because listening is deferred, we start the internal brokered node, the client is now able to connect as we have the full API dynamically loaded', function(done) {
       const capturedLogs = [];
-      const intercept = require("intercept-stdout");
+      const intercept = require('intercept-stdout');
       const unhook_intercept = intercept(function(txt) {
         capturedLogs.push(txt);
       });
@@ -138,15 +136,15 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           edgeInstance = instance;
           return new Promise((resolve, reject) => {
             testclient
-              .create("username", "password", 55001)
+              .create('username', 'password', 55001)
               .then(() => {
-                reject(new Error("not meant to happen"));
+                reject(new Error('not meant to happen'));
               })
               .catch(e => {
-                if (e.message.indexOf("connect ECONNREFUSED") !== 0)
-                  return reject("unexpected error: " + e.message);
+                if (e.message.indexOf('connect ECONNREFUSED') !== 0)
+                  return reject('unexpected error: ' + e.message);
                 users
-                  .add(edgeInstance[0], "username", "password")
+                  .add(edgeInstance[0], 'username', 'password')
                   .then(() => {
                     resolve();
                   })
@@ -158,44 +156,29 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           return startInternal(3, 3);
         })
         .then(function() {
+          return users.allowMethod(edgeInstance[0], 'username', 'brokerComponent', 'directMethod');
+        })
+        .then(function() {
           return users.allowMethod(
             edgeInstance[0],
-            "username",
-            "brokerComponent",
-            "directMethod"
+            'username',
+            'remoteComponent',
+            'brokeredMethod1'
           );
         })
         .then(function() {
           return users.allowMethod(
             edgeInstance[0],
-            "username",
-            "remoteComponent",
-            "brokeredMethod1"
+            'username',
+            'remoteComponent1',
+            'brokeredMethod1'
           );
         })
         .then(function() {
-          return users.allowMethod(
-            edgeInstance[0],
-            "username",
-            "remoteComponent1",
-            "brokeredMethod1"
-          );
+          return users.allowEvent(edgeInstance[0], 'username', 'remoteComponent1', 'test/event');
         })
         .then(function() {
-          return users.allowEvent(
-            edgeInstance[0],
-            "username",
-            "remoteComponent1",
-            "test/event"
-          );
-        })
-        .then(function() {
-          return users.allowMethod(
-            edgeInstance[0],
-            "username",
-            "remoteComponent",
-            "attachToEvent"
-          );
+          return users.allowMethod(edgeInstance[0], 'username', 'remoteComponent', 'attachToEvent');
         })
         .then(function() {
           return new Promise(resolve => {
@@ -203,12 +186,12 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create("username", "password", 55003);
+          return testclient.create('username', 'password', 55003);
         })
         .then(function(client) {
           thisLocalClient = client;
           //first test our broker components methods are directly callable
-          return thisLocalClient.event.remoteComponent1.on("test/event");
+          return thisLocalClient.event.remoteComponent1.on('test/event');
         })
         .then(function(handle) {
           console.log(handle);
@@ -217,7 +200,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .then(function(handle) {
           console.log(handle);
           thisLocalClient.disconnect();
-          return testclient.create("username", "password", 55001);
+          return testclient.create('username', 'password', 55001);
         })
         .then(function(client) {
           thisClient = client;
@@ -225,21 +208,21 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           return thisClient.exchange.brokerComponent.directMethod();
         })
         .then(function(result) {
-          expect(result).to.be("MESH_1:brokerComponent:directMethod");
+          expect(result).to.be('MESH_1:brokerComponent:directMethod');
           //call an injected method
           return thisClient.exchange.remoteComponent.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be("MESH_3:remoteComponent:brokeredMethod1");
+          expect(result).to.be('MESH_3:remoteComponent:brokeredMethod1');
           return thisClient.exchange.remoteComponent1.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be("MESH_3:remoteComponent1:brokeredMethod1");
+          expect(result).to.be('MESH_3:remoteComponent1:brokeredMethod1');
           return users.denyMethod(
             edgeInstance[0],
-            "username",
-            "remoteComponent",
-            "brokeredMethod1"
+            'username',
+            'remoteComponent',
+            'brokeredMethod1'
           );
         })
         .then(function() {
@@ -248,7 +231,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
             var happnerClient = new HappnerClient();
             let api = happnerClient.construct({
               remoteComponent1: {
-                version: "*",
+                version: '*',
                 methods: {
                   brokeredMethod1: {}
                 }
@@ -257,10 +240,10 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
             happnerClient.connect(
               null,
               {
-                host: "localhost",
+                host: 'localhost',
                 port: 55001,
-                username: "username",
-                password: "password"
+                username: 'username',
+                password: 'password'
               },
               function(e) {
                 if (e) return reject(e);
@@ -278,24 +261,22 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
         .catch(function(e) {
           expect(gotToFinalAttempt).to.be(true);
-          expect(e.toString()).to.be("AccessDenied: unauthorized");
+          expect(e.toString()).to.be('AccessDenied: unauthorized');
           unhook_intercept();
           expect(
             capturedLogs
               .filter(txt => {
-                return (
-                  txt.indexOf("ignoring brokered description for peer:") > -1
-                );
+                return txt.indexOf('ignoring brokered description for peer:') > -1;
               })
               .map(txt => {
-                return txt.split("ms MESH_")[1];
+                return txt.split('ms MESH_')[1];
               })
               .sort()
           ).to.eql([
-            "1 (HappnerClient) ignoring brokered description for peer: MESH_2\n",
-            "2 (HappnerClient) ignoring brokered description for peer: MESH_1\n",
-            "3 (HappnerClient) ignoring brokered description for peer: MESH_1\n",
-            "3 (HappnerClient) ignoring brokered description for peer: MESH_2\n"
+            '1 (HappnerClient) ignoring brokered description for peer: MESH_2\n',
+            '2 (HappnerClient) ignoring brokered description for peer: MESH_1\n',
+            '3 (HappnerClient) ignoring brokered description for peer: MESH_1\n',
+            '3 (HappnerClient) ignoring brokered description for peer: MESH_2\n'
           ]);
           process.env.LOG_LEVEL = previousLogLevel;
           setTimeout(done, 2000);

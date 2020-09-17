@@ -1,16 +1,16 @@
-const HappnerCluster = require("../..");
-var Promise = require("bluebird");
-var expect = require("expect.js");
+const HappnerCluster = require('../..');
+var Promise = require('bluebird');
+var expect = require('expect.js');
 
-var libDir = require("../_lib/lib-dir");
-var baseConfig = require("../_lib/base-config");
-var stopCluster = require("../_lib/stop-cluster");
-var users = require("../_lib/users");
-var testclient = require("../_lib/client");
+var libDir = require('../_lib/lib-dir');
+var baseConfig = require('../_lib/base-config');
+var stopCluster = require('../_lib/stop-cluster');
+var users = require('../_lib/users');
+var testclient = require('../_lib/client');
 
-var clearMongoCollection = require("../_lib/clear-mongo-collection");
+var clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
-describe(require("../_lib/test-helper").testName(__filename, 3), function() {
+describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(40000);
 
   var servers = [];
@@ -18,14 +18,14 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
   function localInstanceConfig(seq, sync, dynamic) {
     var config = baseConfig(seq, sync, true);
     let brokerComponentPath = dynamic
-      ? libDir + "integration-10-broker-component-dynamic"
-      : libDir + "integration-09-broker-component";
+      ? libDir + 'integration-10-broker-component-dynamic'
+      : libDir + 'integration-09-broker-component';
 
     config.cluster = config.cluster || {};
     config.cluster.dependenciesSatisfiedDeferListen = true;
     config.modules = {
       localComponent: {
-        path: libDir + "integration-09-local-component"
+        path: libDir + 'integration-09-local-component'
       },
       brokerComponent: {
         path: brokerComponentPath
@@ -33,12 +33,12 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     };
     config.components = {
       localComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       },
       brokerComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       }
     };
     return config;
@@ -48,39 +48,39 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq, sync, true);
     config.modules = {
       remoteComponent: {
-        path: libDir + "integration-09-remote-component"
+        path: libDir + 'integration-09-remote-component'
       },
       remoteComponent1: {
-        path: libDir + "integration-09-remote-component-1"
+        path: libDir + 'integration-09-remote-component-1'
       }
     };
     config.components = {
       remoteComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       },
       remoteComponent1: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       }
     };
     return config;
   }
 
-  beforeEach("clear mongo collection", function(done) {
+  beforeEach('clear mongo collection', function(done) {
     stopCluster(servers, function(e) {
       if (e) return done(e);
       servers = [];
-      clearMongoCollection("mongodb://localhost", "happn-cluster", function() {
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
         done();
       });
     });
   });
 
-  afterEach("stop cluster", function(done) {
+  afterEach('stop cluster', function(done) {
     if (!servers) return done();
     stopCluster(servers, function() {
-      clearMongoCollection("mongodb://localhost", "happn-cluster", function() {
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
         done();
       });
     });
@@ -108,8 +108,8 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     });
   }
 
-  context("exchange", function() {
-    it("starts the cluster broker first, fails to connect a client to the broker instance because listening is deferred, we start the internal brokered node, the client is now able to connect as we have the full API dynamically loaded", function(done) {
+  context('exchange', function() {
+    it('starts the cluster broker first, fails to connect a client to the broker instance because listening is deferred, we start the internal brokered node, the client is now able to connect as we have the full API dynamically loaded', function(done) {
       var thisClient;
       var gotToFinalAttempt = false;
       var edgeInstance;
@@ -119,15 +119,15 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           edgeInstance = instance;
           return new Promise((resolve, reject) => {
             testclient
-              .create("username", "password", 55001)
+              .create('username', 'password', 55001)
               .then(() => {
-                reject(new Error("not meant to happen"));
+                reject(new Error('not meant to happen'));
               })
               .catch(e => {
-                if (e.message.indexOf("connect ECONNREFUSED") !== 0)
-                  return reject("unexpected error: " + e.message);
+                if (e.message.indexOf('connect ECONNREFUSED') !== 0)
+                  return reject('unexpected error: ' + e.message);
                 users
-                  .add(edgeInstance, "username", "password")
+                  .add(edgeInstance, 'username', 'password')
                   .then(() => {
                     resolve();
                   })
@@ -139,28 +139,13 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           return startInternal(2, 2);
         })
         .then(function() {
-          return users.allowMethod(
-            edgeInstance,
-            "username",
-            "brokerComponent",
-            "directMethod"
-          );
+          return users.allowMethod(edgeInstance, 'username', 'brokerComponent', 'directMethod');
         })
         .then(function() {
-          return users.allowMethod(
-            edgeInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethod1"
-          );
+          return users.allowMethod(edgeInstance, 'username', 'remoteComponent', 'brokeredMethod1');
         })
         .then(function() {
-          return users.allowMethod(
-            edgeInstance,
-            "username",
-            "remoteComponent1",
-            "brokeredMethod1"
-          );
+          return users.allowMethod(edgeInstance, 'username', 'remoteComponent1', 'brokeredMethod1');
         })
         .then(function() {
           return new Promise(resolve => {
@@ -168,7 +153,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create("username", "password", 55001);
+          return testclient.create('username', 'password', 55001);
         })
         .then(function(client) {
           thisClient = client;
@@ -176,22 +161,17 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           return thisClient.exchange.brokerComponent.directMethod();
         })
         .then(function(result) {
-          expect(result).to.be("MESH_1:brokerComponent:directMethod");
+          expect(result).to.be('MESH_1:brokerComponent:directMethod');
           //call an injected method
           return thisClient.exchange.remoteComponent.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be("MESH_2:remoteComponent:brokeredMethod1");
+          expect(result).to.be('MESH_2:remoteComponent:brokeredMethod1');
           return thisClient.exchange.remoteComponent1.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be("MESH_2:remoteComponent1:brokeredMethod1");
-          return users.denyMethod(
-            edgeInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethod1"
-          );
+          expect(result).to.be('MESH_2:remoteComponent1:brokeredMethod1');
+          return users.denyMethod(edgeInstance, 'username', 'remoteComponent', 'brokeredMethod1');
         })
         .then(function() {
           gotToFinalAttempt = true;
@@ -199,7 +179,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
         .catch(function(e) {
           expect(gotToFinalAttempt).to.be(true);
-          expect(e.toString()).to.be("AccessDenied: unauthorized");
+          expect(e.toString()).to.be('AccessDenied: unauthorized');
           setTimeout(done, 2000);
         });
     });

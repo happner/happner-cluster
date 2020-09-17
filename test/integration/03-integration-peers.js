@@ -1,13 +1,13 @@
-var HappnerCluster = require("../..");
-var Promise = require("bluebird");
-var expect = require("expect.js");
-var unique = require("array-unique");
+var HappnerCluster = require('../..');
+var Promise = require('bluebird');
+var expect = require('expect.js');
+var unique = require('array-unique');
 
-var libDir = require("../_lib/lib-dir");
-var baseConfig = require("../_lib/base-config");
-var stopCluster = require("../_lib/stop-cluster");
+var libDir = require('../_lib/lib-dir');
+var baseConfig = require('../_lib/base-config');
+var stopCluster = require('../_lib/stop-cluster');
 
-describe(require("../_lib/test-helper").testName(__filename, 3), function() {
+describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
 
   var servers, localInstance;
@@ -16,7 +16,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq);
     config.modules = {
       localComponent1: {
-        path: libDir + "integration-03-local-component1"
+        path: libDir + 'integration-03-local-component1'
       }
     };
     config.components = {
@@ -29,10 +29,10 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq);
     config.modules = {
       remoteComponent2: {
-        path: libDir + "integration-03-remote-component2"
+        path: libDir + 'integration-03-remote-component2'
       },
       remoteComponent3: {
-        path: libDir + "integration-03-remote-component3"
+        path: libDir + 'integration-03-remote-component3'
       }
     };
     config.components = {
@@ -42,7 +42,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     return config;
   }
 
-  beforeEach("start cluster", function(done) {
+  beforeEach('start cluster', function(done) {
     this.timeout(20000);
 
     Promise.all([
@@ -59,42 +59,27 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  afterEach("stop cluster", function(done) {
+  afterEach('stop cluster', function(done) {
     if (!servers) return done();
     stopCluster(servers, done);
   });
 
-  it("removes implementation on peer departure", function(done) {
+  it('removes implementation on peer departure', function(done) {
     this.timeout(4000);
 
     Promise.all([
-      localInstance.exchange.localComponent1.callDependency(
-        "remoteComponent3",
-        "method1"
-      ),
-      localInstance.exchange.localComponent1.callDependency(
-        "remoteComponent3",
-        "method1"
-      ),
-      localInstance.exchange.localComponent1.callDependency(
-        "remoteComponent3",
-        "method1"
-      ),
-      localInstance.exchange.localComponent1.callDependency(
-        "remoteComponent3",
-        "method1"
-      ),
-      localInstance.exchange.localComponent1.callDependency(
-        "remoteComponent3",
-        "method1"
-      )
+      localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+      localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+      localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+      localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+      localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1')
     ])
       .then(function(replies) {
         var list = unique(replies).sort();
         expect(list).to.eql([
-          "MESH_2:component3:method1",
-          "MESH_3:component3:method1",
-          "MESH_4:component3:method1"
+          'MESH_2:component3:method1',
+          'MESH_3:component3:method1',
+          'MESH_4:component3:method1'
         ]);
       })
       .then(function() {
@@ -106,70 +91,37 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       })
       .then(function() {
         return Promise.all([
-          localInstance.exchange.localComponent1.callDependency(
-            "remoteComponent3",
-            "method1"
-          ),
-          localInstance.exchange.localComponent1.callDependency(
-            "remoteComponent3",
-            "method1"
-          ),
-          localInstance.exchange.localComponent1.callDependency(
-            "remoteComponent3",
-            "method1"
-          ),
-          localInstance.exchange.localComponent1.callDependency(
-            "remoteComponent3",
-            "method1"
-          ),
-          localInstance.exchange.localComponent1.callDependency(
-            "remoteComponent3",
-            "method1"
-          )
+          localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+          localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+          localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+          localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+          localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1')
         ]);
       })
       .then(function(replies) {
         var list = unique(replies).sort();
-        expect(list).to.eql([
-          "MESH_2:component3:method1",
-          "MESH_3:component3:method1"
-        ]);
+        expect(list).to.eql(['MESH_2:component3:method1', 'MESH_3:component3:method1']);
         done();
       })
       .catch(done);
   });
 
-  it("adds implementation on peer arrival", function(done) {
+  it('adds implementation on peer arrival', function(done) {
     this.timeout(10000);
 
     Promise.all([
-      localInstance.exchange.localComponent1.callDependency(
-        "remoteComponent3",
-        "method1"
-      ),
-      localInstance.exchange.localComponent1.callDependency(
-        "remoteComponent3",
-        "method1"
-      ),
-      localInstance.exchange.localComponent1.callDependency(
-        "remoteComponent3",
-        "method1"
-      ),
-      localInstance.exchange.localComponent1.callDependency(
-        "remoteComponent3",
-        "method1"
-      ),
-      localInstance.exchange.localComponent1.callDependency(
-        "remoteComponent3",
-        "method1"
-      )
+      localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+      localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+      localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+      localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+      localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1')
     ])
       .then(function(replies) {
         var list = unique(replies).sort();
         expect(list).to.eql([
-          "MESH_2:component3:method1",
-          "MESH_3:component3:method1",
-          "MESH_4:component3:method1"
+          'MESH_2:component3:method1',
+          'MESH_3:component3:method1',
+          'MESH_4:component3:method1'
         ]);
       })
       .then(function() {
@@ -183,43 +135,22 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       })
       .then(function() {
         return Promise.all([
-          localInstance.exchange.localComponent1.callDependency(
-            "remoteComponent3",
-            "method1"
-          ),
-          localInstance.exchange.localComponent1.callDependency(
-            "remoteComponent3",
-            "method1"
-          ),
-          localInstance.exchange.localComponent1.callDependency(
-            "remoteComponent3",
-            "method1"
-          ),
-          localInstance.exchange.localComponent1.callDependency(
-            "remoteComponent3",
-            "method1"
-          ),
-          localInstance.exchange.localComponent1.callDependency(
-            "remoteComponent3",
-            "method1"
-          ),
-          localInstance.exchange.localComponent1.callDependency(
-            "remoteComponent3",
-            "method1"
-          ),
-          localInstance.exchange.localComponent1.callDependency(
-            "remoteComponent3",
-            "method1"
-          )
+          localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+          localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+          localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+          localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+          localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+          localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1'),
+          localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1')
         ]);
       })
       .then(function(replies) {
         var list = unique(replies).sort();
         expect(list).to.eql([
-          "MESH_2:component3:method1",
-          "MESH_3:component3:method1",
-          "MESH_4:component3:method1",
-          "MESH_5:component3:method1"
+          'MESH_2:component3:method1',
+          'MESH_3:component3:method1',
+          'MESH_4:component3:method1',
+          'MESH_5:component3:method1'
         ]);
         done();
       })

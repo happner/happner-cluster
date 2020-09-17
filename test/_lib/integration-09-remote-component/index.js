@@ -11,35 +11,29 @@ Component.prototype.stop = function($happn, callback) {
 };
 
 Component.prototype.brokeredMethod1 = function($happn, callback) {
-  callback(null, $happn.info.mesh.name + ":remoteComponent:brokeredMethod1");
+  callback(null, $happn.info.mesh.name + ':remoteComponent:brokeredMethod1');
 };
 
 Component.prototype.brokeredMethod2 = function($happn, callback) {
-  callback(null, $happn.info.mesh.name + ":remoteComponent:brokeredMethod2");
+  callback(null, $happn.info.mesh.name + ':remoteComponent:brokeredMethod2');
 };
 
 Component.prototype.brokeredMethod3 = function($happn, testArgument, callback) {
-  callback(
-    null,
-    $happn.info.mesh.name + ":remoteComponent:brokeredMethod3:" + testArgument
-  );
+  callback(null, $happn.info.mesh.name + ':remoteComponent:brokeredMethod3:' + testArgument);
 };
 
 Component.prototype.brokeredMethod4 = function($happn, testArgument, callback) {
-  callback(
-    null,
-    $happn.info.mesh.name + ":remoteComponent:brokeredMethod4:" + testArgument
-  );
+  callback(null, $happn.info.mesh.name + ':remoteComponent:brokeredMethod4:' + testArgument);
 };
 
 Component.prototype.brokeredMethodFail = function($happn, callback) {
-  callback(new Error("test error"));
+  callback(new Error('test error'));
 };
 
 Component.prototype.brokeredMethodTimeout = function() {};
 
 Component.prototype.brokeredEventEmitMethod = function($happn, callback) {
-  $happn.emit("/brokered/event", {
+  $happn.emit('/brokered/event', {
     brokered: {
       event: {
         data: {
@@ -48,10 +42,7 @@ Component.prototype.brokeredEventEmitMethod = function($happn, callback) {
       }
     }
   });
-  callback(
-    null,
-    $happn.info.mesh.name + ":remoteComponent:brokeredEventEmitMethod"
-  );
+  callback(null, $happn.info.mesh.name + ':remoteComponent:brokeredEventEmitMethod');
 };
 
 Component.prototype.attachToEvent = function($happn, callback) {

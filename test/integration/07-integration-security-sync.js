@@ -1,16 +1,16 @@
-var Happner = require("happner-2");
-var HappnerCluster = require("../..");
-var Promise = require("bluebird");
-var expect = require("expect.js");
+var Happner = require('happner-2');
+var HappnerCluster = require('../..');
+var Promise = require('bluebird');
+var expect = require('expect.js');
 
-var libDir = require("../_lib/lib-dir");
-var baseConfig = require("../_lib/base-config");
-var stopCluster = require("../_lib/stop-cluster");
-var clearMongoCollection = require("../_lib/clear-mongo-collection");
-var users = require("../_lib/users");
-var client = require("../_lib/client");
+var libDir = require('../_lib/lib-dir');
+var baseConfig = require('../_lib/base-config');
+var stopCluster = require('../_lib/stop-cluster');
+var clearMongoCollection = require('../_lib/clear-mongo-collection');
+var users = require('../_lib/users');
+var client = require('../_lib/client');
 
-describe(require("../_lib/test-helper").testName(__filename, 3), function() {
+describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
 
   var servers = [],
@@ -21,7 +21,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq, minPeers, true);
     config.modules = {
       component1: {
-        path: libDir + "integration-07-component"
+        path: libDir + 'integration-07-component'
       }
     };
     config.components = {
@@ -30,11 +30,11 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     return config;
   }
 
-  before("clear mongo collection", function(done) {
-    clearMongoCollection("mongodb://localhost", "happn-cluster", done);
+  before('clear mongo collection', function(done) {
+    clearMongoCollection('mongodb://localhost', 'happn-cluster', done);
   });
 
-  before("start cluster", function(done) {
+  before('start cluster', function(done) {
     this.timeout(20000);
     HappnerCluster.create(serverConfig(1, 1))
       .then(function(server) {
@@ -43,7 +43,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       })
       .then(function(server) {
         servers.push(server);
-        return users.add(servers[0], "username", "password");
+        return users.add(servers[0], 'username', 'password');
       })
       .then(function() {
         //wait for stabilisation
@@ -52,9 +52,9 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  before("start client1", function(done) {
+  before('start client1', function(done) {
     client
-      .create("username", "password", 55001)
+      .create('username', 'password', 55001)
       .then(function(client) {
         client1 = client;
         done();
@@ -62,9 +62,9 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  before("start client2", function(done) {
+  before('start client2', function(done) {
     client
-      .create("username", "password", 55002)
+      .create('username', 'password', 55002)
       .then(function(client) {
         client2 = client;
         done();
@@ -72,65 +72,117 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  after("stop client 1", function(done) {
+  after('stop client 1', function(done) {
     client1.disconnect(done);
   });
 
-  after("stop client 2", function(done) {
+  after('stop client 2', function(done) {
     client2.disconnect(done);
   });
 
-  after("stop cluster", function(done) {
+  after('stop cluster', function(done) {
     if (!servers) return done();
     stopCluster(servers, done);
   });
 
-  it("handles security sync for methods", function(done) {
+  it('handles security sync for methods', function(done) {
     this.timeout(20 * 1000);
 
     Promise.all([
-      client.callMethod(1, client1, "component1", "method1"),
-      client.callMethod(2, client1, "component1", "method2"),
-      client.callMethod(3, client2, "component1", "method1"),
-      client.callMethod(4, client2, "component1", "method2")
+      client.callMethod(1, client1, 'component1', 'method1'),
+      client.callMethod(2, client1, 'component1', 'method2'),
+      client.callMethod(3, client2, 'component1', 'method1'),
+      client.callMethod(4, client2, 'component1', 'method2')
     ])
 
       .then(function(results) {
         expect(results).to.eql([
           {
             seq: 1,
-            user: "username",
-            component: "component1",
-            method: "method1",
-            error: "unauthorized"
+            user: 'username',
+            component: 'component1',
+            method: 'method1',
+            error: 'unauthorized'
           },
           {
             seq: 2,
-            user: "username",
-            component: "component1",
-            method: "method2",
-            error: "unauthorized"
+            user: 'username',
+            component: 'component1',
+            method: 'method2',
+            error: 'unauthorized'
           },
           {
             seq: 3,
-            user: "username",
-            component: "component1",
-            method: "method1",
-            error: "unauthorized"
+            user: 'username',
+            component: 'component1',
+            method: 'method1',
+            error: 'unauthorized'
           },
           {
             seq: 4,
-            user: "username",
-            component: "component1",
-            method: "method2",
-            error: "unauthorized"
+            user: 'username',
+            component: 'component1',
+            method: 'method2',
+            error: 'unauthorized'
+          }
+        ]);
+      })
+
+      .then(function() {
+        return Promise.all([users.allowMethod(servers[0], 'username', 'component1', 'method1')]);
+      })
+
+      .then(function() {
+        // await sync
+        return Promise.delay(300);
+      })
+
+      .then(function() {
+        return Promise.all([
+          client.callMethod(1, client1, 'component1', 'method1'),
+          client.callMethod(2, client1, 'component1', 'method2'),
+          client.callMethod(3, client2, 'component1', 'method1'),
+          client.callMethod(4, client2, 'component1', 'method2')
+        ]);
+      })
+
+      .then(function(results) {
+        expect(results).to.eql([
+          {
+            seq: 1,
+            user: 'username',
+            component: 'component1',
+            method: 'method1',
+            result: true
+          },
+          {
+            seq: 2,
+            user: 'username',
+            component: 'component1',
+            method: 'method2',
+            error: 'unauthorized'
+          },
+          {
+            seq: 3,
+            user: 'username',
+            component: 'component1',
+            method: 'method1',
+            result: true
+          },
+          {
+            seq: 4,
+            user: 'username',
+            component: 'component1',
+            method: 'method2',
+            error: 'unauthorized'
           }
         ]);
       })
 
       .then(function() {
         return Promise.all([
-          users.allowMethod(servers[0], "username", "component1", "method1")
+          users.denyMethod(servers[0], 'username', 'component1', 'method1'),
+          users.allowMethod(servers[0], 'username', 'component1', 'method2')
         ]);
       })
 
@@ -141,10 +193,10 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
 
       .then(function() {
         return Promise.all([
-          client.callMethod(1, client1, "component1", "method1"),
-          client.callMethod(2, client1, "component1", "method2"),
-          client.callMethod(3, client2, "component1", "method1"),
-          client.callMethod(4, client2, "component1", "method2")
+          client.callMethod(1, client1, 'component1', 'method1'),
+          client.callMethod(2, client1, 'component1', 'method2'),
+          client.callMethod(3, client2, 'component1', 'method1'),
+          client.callMethod(4, client2, 'component1', 'method2')
         ]);
       })
 
@@ -152,84 +204,30 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         expect(results).to.eql([
           {
             seq: 1,
-            user: "username",
-            component: "component1",
-            method: "method1",
-            result: true
+            user: 'username',
+            component: 'component1',
+            method: 'method1',
+            error: 'unauthorized'
           },
           {
             seq: 2,
-            user: "username",
-            component: "component1",
-            method: "method2",
-            error: "unauthorized"
-          },
-          {
-            seq: 3,
-            user: "username",
-            component: "component1",
-            method: "method1",
-            result: true
-          },
-          {
-            seq: 4,
-            user: "username",
-            component: "component1",
-            method: "method2",
-            error: "unauthorized"
-          }
-        ]);
-      })
-
-      .then(function() {
-        return Promise.all([
-          users.denyMethod(servers[0], "username", "component1", "method1"),
-          users.allowMethod(servers[0], "username", "component1", "method2")
-        ]);
-      })
-
-      .then(function() {
-        // await sync
-        return Promise.delay(300);
-      })
-
-      .then(function() {
-        return Promise.all([
-          client.callMethod(1, client1, "component1", "method1"),
-          client.callMethod(2, client1, "component1", "method2"),
-          client.callMethod(3, client2, "component1", "method1"),
-          client.callMethod(4, client2, "component1", "method2")
-        ]);
-      })
-
-      .then(function(results) {
-        expect(results).to.eql([
-          {
-            seq: 1,
-            user: "username",
-            component: "component1",
-            method: "method1",
-            error: "unauthorized"
-          },
-          {
-            seq: 2,
-            user: "username",
-            component: "component1",
-            method: "method2",
+            user: 'username',
+            component: 'component1',
+            method: 'method2',
             result: true
           },
           {
             seq: 3,
-            user: "username",
-            component: "component1",
-            method: "method1",
-            error: "unauthorized"
+            user: 'username',
+            component: 'component1',
+            method: 'method1',
+            error: 'unauthorized'
           },
           {
             seq: 4,
-            user: "username",
-            component: "component1",
-            method: "method2",
+            user: 'username',
+            component: 'component1',
+            method: 'method2',
             result: true
           }
         ]);
@@ -242,7 +240,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  it("handles security sync for events", function(done) {
+  it('handles security sync for events', function(done) {
     this.timeout(20 * 1000);
 
     var events = {};
@@ -254,25 +252,25 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     }
 
     Promise.all([
-      client.subscribe(1, client1, "component1", "event1", createHandler(1)),
-      client.subscribe(2, client1, "component1", "event2", createHandler(2)),
-      client.subscribe(3, client2, "component1", "event1", createHandler(3)),
-      client.subscribe(4, client2, "component1", "event2", createHandler(4))
+      client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
+      client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
+      client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
+      client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
     ])
 
       .then(function(results) {
         expect(results).to.eql([
-          { seq: 1, error: "unauthorized" },
-          { seq: 2, error: "unauthorized" },
-          { seq: 3, error: "unauthorized" },
-          { seq: 4, error: "unauthorized" }
+          { seq: 1, error: 'unauthorized' },
+          { seq: 2, error: 'unauthorized' },
+          { seq: 3, error: 'unauthorized' },
+          { seq: 4, error: 'unauthorized' }
         ]);
       })
 
       .then(function() {
         return Promise.all([
-          users.allowEvent(servers[0], "username", "component1", "event1"),
-          users.allowEvent(servers[0], "username", "component1", "event2")
+          users.allowEvent(servers[0], 'username', 'component1', 'event1'),
+          users.allowEvent(servers[0], 'username', 'component1', 'event2')
         ]);
       })
 
@@ -283,28 +281,10 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
 
       .then(function() {
         return Promise.all([
-          client.subscribe(
-            1,
-            client1,
-            "component1",
-            "event1",
-            createHandler(1)
-          ),
-          client.subscribe(
-            2,
-            client1,
-            "component1",
-            "event2",
-            createHandler(2)
-          ),
-          client.subscribe(
-            3,
-            client2,
-            "component1",
-            "event1",
-            createHandler(3)
-          ),
-          client.subscribe(4, client2, "component1", "event2", createHandler(4))
+          client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
+          client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
+          client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
+          client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
         ]);
       })
 
@@ -328,17 +308,15 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
 
       .then(function() {
         expect(events).to.eql({
-          1: "event1",
-          2: "event2",
-          3: "event1",
-          4: "event2"
+          1: 'event1',
+          2: 'event2',
+          3: 'event1',
+          4: 'event2'
         });
       })
 
       .then(function() {
-        return Promise.all([
-          users.denyEvent(servers[0], "username", "component1", "event1")
-        ]);
+        return Promise.all([users.denyEvent(servers[0], 'username', 'component1', 'event1')]);
       })
 
       .then(function() {
@@ -359,44 +337,26 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .then(function() {
         expect(events).to.eql({
           // 1: 'event1',
-          2: "event2",
+          2: 'event2',
           // 3: 'event1',
-          4: "event2"
+          4: 'event2'
         });
       })
 
       .then(function() {
         return Promise.all([
-          client.subscribe(
-            1,
-            client1,
-            "component1",
-            "event1",
-            createHandler(1)
-          ),
-          client.subscribe(
-            2,
-            client1,
-            "component1",
-            "event2",
-            createHandler(2)
-          ),
-          client.subscribe(
-            3,
-            client2,
-            "component1",
-            "event1",
-            createHandler(3)
-          ),
-          client.subscribe(4, client2, "component1", "event2", createHandler(4))
+          client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
+          client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
+          client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
+          client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
         ]);
       })
 
       .then(function(results) {
         expect(results).to.eql([
-          { seq: 1, error: "unauthorized" },
+          { seq: 1, error: 'unauthorized' },
           { seq: 2, result: true },
-          { seq: 3, error: "unauthorized" },
+          { seq: 3, error: 'unauthorized' },
           { seq: 4, result: true }
         ]);
       })
@@ -408,18 +368,18 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  context("full spectrum security operations", function() {
+  context('full spectrum security operations', function() {
     function performAction(port, username, component, method) {
       return new Promise(function(resolve, reject) {
         var client = new Happner.MeshClient({
-          hostname: "localhost",
+          hostname: 'localhost',
           port: port
         });
 
         client
           .login({
             username: username,
-            password: "password"
+            password: 'password'
           })
 
           .then(function() {
@@ -438,19 +398,19 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       });
     }
 
-    it("handles sync for add user and group and link and add permission and unlink group", function(done) {
+    it('handles sync for add user and group and link and add permission and unlink group', function(done) {
       var user, group;
 
       servers[0].exchange.security
         .upsertUser({
-          username: "username1",
-          password: "password"
+          username: 'username1',
+          password: 'password'
         })
 
         .then(function(_user) {
           user = _user;
           return servers[0].exchange.security.upsertGroup({
-            name: "group1"
+            name: 'group1'
           });
         })
 
@@ -460,9 +420,9 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
 
         .then(function() {
-          return servers[0].exchange.security.addGroupPermissions("group1", {
+          return servers[0].exchange.security.addGroupPermissions('group1', {
             methods: {
-              "/DOMAIN_NAME/component1/method1": { authorized: true }
+              '/DOMAIN_NAME/component1/method1': { authorized: true }
             }
           });
         })
@@ -472,7 +432,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
 
         .then(function() {
-          return performAction(55002, "username1", "component1", "method1");
+          return performAction(55002, 'username1', 'component1', 'method1');
         })
 
         .then(function() {
@@ -485,15 +445,15 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
 
         .then(function() {
           return new Promise(function(resolve, reject) {
-            performAction(55002, "username1", "component1", "method1")
+            performAction(55002, 'username1', 'component1', 'method1')
               .then(function() {
-                reject(new Error("missing AccessDeniedError 1"));
+                reject(new Error('missing AccessDeniedError 1'));
               })
               .catch(function(e) {
-                if (e.message === "unauthorized" && e.name === "AccessDenied") {
+                if (e.message === 'unauthorized' && e.name === 'AccessDenied') {
                   return resolve();
                 }
-                reject(new Error("missing AccessDeniedError 2"));
+                reject(new Error('missing AccessDeniedError 2'));
               });
           });
         })
@@ -505,19 +465,19 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .catch(done);
     });
 
-    it("handles sync for delete group", function(done) {
+    it('handles sync for delete group', function(done) {
       var user, group;
 
       servers[0].exchange.security
         .upsertUser({
-          username: "username2",
-          password: "password"
+          username: 'username2',
+          password: 'password'
         })
 
         .then(function(_user) {
           user = _user;
           return servers[0].exchange.security.upsertGroup({
-            name: "group2"
+            name: 'group2'
           });
         })
 
@@ -527,9 +487,9 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
 
         .then(function() {
-          return servers[0].exchange.security.addGroupPermissions("group2", {
+          return servers[0].exchange.security.addGroupPermissions('group2', {
             methods: {
-              "/DOMAIN_NAME/component1/method1": { authorized: true }
+              '/DOMAIN_NAME/component1/method1': { authorized: true }
             }
           });
         })
@@ -539,7 +499,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
 
         .then(function() {
-          return performAction(55002, "username2", "component1", "method1");
+          return performAction(55002, 'username2', 'component1', 'method1');
         })
 
         .then(function() {
@@ -552,15 +512,15 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
 
         .then(function() {
           return new Promise(function(resolve, reject) {
-            performAction(55002, "username2", "component1", "method1")
+            performAction(55002, 'username2', 'component1', 'method1')
               .then(function() {
-                reject(new Error("missing AccessDeniedError 1"));
+                reject(new Error('missing AccessDeniedError 1'));
               })
               .catch(function(e) {
-                if (e.message === "unauthorized" && e.name === "AccessDenied") {
+                if (e.message === 'unauthorized' && e.name === 'AccessDenied') {
                   return resolve();
                 }
-                reject(new Error("missing AccessDeniedError 2"));
+                reject(new Error('missing AccessDeniedError 2'));
               });
           });
         })
@@ -572,19 +532,19 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .catch(done);
     });
 
-    it("handles sync for delete user", function(done) {
+    it('handles sync for delete user', function(done) {
       var user, group;
 
       servers[0].exchange.security
         .upsertUser({
-          username: "username3",
-          password: "password"
+          username: 'username3',
+          password: 'password'
         })
 
         .then(function(_user) {
           user = _user;
           return servers[0].exchange.security.upsertGroup({
-            name: "group3"
+            name: 'group3'
           });
         })
 
@@ -594,9 +554,9 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
 
         .then(function() {
-          return servers[0].exchange.security.addGroupPermissions("group3", {
+          return servers[0].exchange.security.addGroupPermissions('group3', {
             methods: {
-              "/DOMAIN_NAME/component1/method1": { authorized: true }
+              '/DOMAIN_NAME/component1/method1': { authorized: true }
             }
           });
         })
@@ -606,7 +566,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
 
         .then(function() {
-          return performAction(55002, "username3", "component1", "method1");
+          return performAction(55002, 'username3', 'component1', 'method1');
         })
 
         .then(function() {
@@ -619,18 +579,15 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
 
         .then(function() {
           return new Promise(function(resolve, reject) {
-            performAction(55002, "username3", "component1", "method1")
+            performAction(55002, 'username3', 'component1', 'method1')
               .then(function() {
-                reject(new Error("missing AccessDeniedError 1"));
+                reject(new Error('missing AccessDeniedError 1'));
               })
               .catch(function(e) {
-                if (
-                  e.message === "Invalid credentials" &&
-                  e.name === "AccessDenied"
-                ) {
+                if (e.message === 'Invalid credentials' && e.name === 'AccessDenied') {
                   return resolve();
                 }
-                reject(new Error("missing AccessDeniedError 2"));
+                reject(new Error('missing AccessDeniedError 2'));
               });
           });
         })
