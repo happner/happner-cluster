@@ -171,5 +171,5 @@
 
 9.0.9 2020-09-10
 ----------------
-  - patch: brokered flag in description prevents brokers being brokered or referred to by cluster peers - JIRA: SMC-989
+  - patch: mesh description is updated in the rest component when an element is updated in the mesh - JIRA:SMC-1074 happner-cluster #199
 
