@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const HappnerCluster = require("../..");
 const HappnerClient = require("happner-client");
 var Promise = require("bluebird");
@@ -128,6 +129,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         capturedLogs.push(txt);
       });
       var thisClient;
+      var thisLocalClient;
       var gotToFinalAttempt = false;
       var edgeInstance;
 
@@ -180,11 +182,41 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           );
         })
         .then(function() {
+          return users.allowEvent(
+            edgeInstance[0],
+            "username",
+            "remoteComponent1",
+            "test/event"
+          );
+        })
+        .then(function() {
+          return users.allowMethod(
+            edgeInstance[0],
+            "username",
+            "remoteComponent",
+            "attachToEvent"
+          );
+        })
+        .then(function() {
           return new Promise(resolve => {
             setTimeout(resolve, 5000);
           });
         })
         .then(function() {
+          return testclient.create("username", "password", 55003);
+        })
+        .then(function(client) {
+          thisLocalClient = client;
+          //first test our broker components methods are directly callable
+          return thisLocalClient.event.remoteComponent1.on("test/event");
+        })
+        .then(function(handle) {
+          console.log(handle);
+          return thisLocalClient.exchange.remoteComponent.attachToEvent();
+        })
+        .then(function(handle) {
+          console.log(handle);
+          thisLocalClient.disconnect();
           return testclient.create("username", "password", 55001);
         })
         .then(function(client) {

@@ -167,6 +167,74 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     });
   });
 
+  context("rest", function() {
+    it("does a rest call", function(done) {
+      var thisClient;
+      startClusterInternalFirst()
+        .then(function() {
+          return users.allowMethod(
+            localInstance,
+            "username",
+            "remoteComponent1",
+            "brokeredMethod1"
+          );
+        })
+        .then(function() {
+          //wait for mesh to stabilise - deferListen not true
+          return new Promise(resolve => {
+            setTimeout(resolve, 3000);
+          });
+        })
+        .then(function() {
+          return testclient.create("username", "password", 55002);
+        })
+        .then(function(client) {
+          thisClient = client;
+          return testRestCall(
+            thisClient.data.session.token,
+            55002,
+            "remoteComponent1",
+            "brokeredMethod1",
+            null,
+            "MESH_1:remoteComponent1:brokeredMethod1:true"
+          );
+        })
+        .then(done);
+    });
+  });
+
+  function testRestCall(
+    token,
+    port,
+    component,
+    method,
+    params,
+    expectedResponse
+  ) {
+    return new Promise((resolve, reject) => {
+      var restClient = require("restler");
+
+      var operation = {
+        parameters: params || {}
+      };
+
+      var options = { headers: {} };
+      options.headers.authorization = "Bearer " + token;
+
+      restClient
+        .postJson(
+          `http://localhost:${port}/rest/method/${component}/${method}`,
+          operation,
+          options
+        )
+        .on("complete", function(result) {
+          if (result.error) return reject(new Error(result.error));
+          expect(result.data).to.eql(expectedResponse);
+          resolve();
+        });
+    });
+  }
+
   context("exchange", function() {
     it("starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker", function(done) {
       var thisClient;

@@ -94,38 +94,6 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .catch(done);
     });
 
-    function testRestCall(
-      token,
-      port,
-      component,
-      method,
-      params,
-      expectedResponse
-    ) {
-      return new Promise((resolve, reject) => {
-        var restClient = require("restler");
-
-        var operation = {
-          parameters: params || {}
-        };
-
-        var options = { headers: {} };
-        options.headers.authorization = "Bearer " + token;
-
-        restClient
-          .postJson(
-            `http://localhost:${port}/rest/method/${component}/${method}`,
-            operation,
-            options
-          )
-          .on("complete", function(result) {
-            if (result.error) return reject(new Error(result.error));
-            expect(result.data).to.eql(expectedResponse);
-            resolve();
-          });
-      });
-    }
-
     it("starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker, check we cannot access denied methods", function(done) {
       var thisClient;
 
@@ -181,7 +149,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
             "remoteComponent1",
             "brokeredMethod1",
             null,
-            "MESH_1:remoteComponent1:brokeredMethod1"
+            "MESH_1:remoteComponent1:brokeredMethod1:true"
           );
         })
         .then(function() {
@@ -821,6 +789,36 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     });
   });
 
+  context("rest", function() {
+    it("does a rest call", function(done) {
+      var thisClient;
+      startClusterInternalFirst()
+        .then(function() {
+          return users.allowMethod(
+            localInstance,
+            "username",
+            "remoteComponent1",
+            "brokeredMethod1"
+          );
+        })
+        .then(function() {
+          return testclient.create("username", "password", 55002);
+        })
+        .then(function(client) {
+          thisClient = client;
+          return testRestCall(
+            thisClient.data.session.token,
+            55002,
+            "remoteComponent1",
+            "brokeredMethod1",
+            null,
+            "MESH_1:remoteComponent1:brokeredMethod1:true"
+          );
+        })
+        .then(done);
+    });
+  });
+
   function doRequest(path, token, port, callback) {
     var request = require("request");
     var options;
@@ -834,6 +832,38 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         response,
         body
       });
+    });
+  }
+
+  function testRestCall(
+    token,
+    port,
+    component,
+    method,
+    params,
+    expectedResponse
+  ) {
+    return new Promise((resolve, reject) => {
+      var restClient = require("restler");
+
+      var operation = {
+        parameters: params || {}
+      };
+
+      var options = { headers: {} };
+      options.headers.authorization = "Bearer " + token;
+
+      restClient
+        .postJson(
+          `http://localhost:${port}/rest/method/${component}/${method}`,
+          operation,
+          options
+        )
+        .on("complete", function(result) {
+          if (result.error) return reject(new Error(result.error));
+          expect(result.data).to.eql(expectedResponse);
+          resolve();
+        });
     });
   }
 

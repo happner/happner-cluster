@@ -12,13 +12,21 @@ Component.prototype.stop = function($happn, callback) {
   callback();
 };
 
-Component.prototype.brokeredMethod1 = function($happn, callback) {
+Component.prototype.brokeredMethod1 = function($happn, $req_headers, callback) {
+  let headers = "";
+  if (typeof $req_headers === "function") {
+    callback = $req_headers;
+  } else headers = ":true";
+
   methodCalls++;
   $happn.emit(`test/${methodCalls}`, {}, () => {
     if (methodCalls % 1000 === 0)
       // eslint-disable-next-line no-console
       console.log(`brokeredMethod1 call count:::${methodCalls}`);
-    callback(null, $happn.info.mesh.name + ":remoteComponent1:brokeredMethod1");
+    callback(
+      null,
+      `${$happn.info.mesh.name}:remoteComponent1:brokeredMethod1${headers}`
+    );
   });
 };
 

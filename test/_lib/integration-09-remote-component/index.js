@@ -53,3 +53,7 @@ Component.prototype.brokeredEventEmitMethod = function($happn, callback) {
     $happn.info.mesh.name + ":remoteComponent:brokeredEventEmitMethod"
   );
 };
+
+Component.prototype.attachToEvent = function($happn, callback) {
+  $happn.event.remoteComponent1.on("test/path", () => {}, callback);
+};
