@@ -46,5 +46,5 @@ Component.prototype.brokeredEventEmitMethod = function($happn, callback) {
 };
 
 Component.prototype.attachToEvent = function($happn, callback) {
-  $happn.event.remoteComponent1.on("test/path", () => {}, callback);
+  $happn.event.remoteComponent1.on('test/path', () => {}, callback);
 };
