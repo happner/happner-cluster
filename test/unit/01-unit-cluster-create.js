@@ -1,10 +1,10 @@
-var HappnerCluster = require("../..");
-var Happner = require("happner-2");
-var HappnCluster = require("happn-cluster");
-var Promise = require("bluebird");
-var expect = require("expect.js");
+var HappnerCluster = require('../..');
+var Happner = require('happner-2');
+var HappnCluster = require('happn-cluster');
+var Promise = require('bluebird');
+var expect = require('expect.js');
 
-describe("01 - unit - cluster create", function() {
+describe('01 - unit - cluster create', function() {
   beforeEach(function() {
     this.originalCreate = Happner.create;
   });
@@ -13,7 +13,7 @@ describe("01 - unit - cluster create", function() {
     Happner.create = this.originalCreate;
   });
 
-  it("switches the datalayer definition", function(done) {
+  it('switches the datalayer definition', function(done) {
     Happner.create = function() {
       return Promise.resolve({
         _mesh: {
@@ -36,7 +36,7 @@ describe("01 - unit - cluster create", function() {
     done();
   });
 
-  it("calls happner create", function(done) {
+  it('calls happner create', function(done) {
     Happner.create = function() {
       return Promise.resolve({
         _mesh: {
@@ -58,19 +58,19 @@ describe("01 - unit - cluster create", function() {
     HappnerCluster.create({});
   });
 
-  it("defines replication path", function(done) {
+  it('defines replication path', function(done) {
     Happner.create = function(config) {
       expect(config.happn.services.orchestrator.config.replicate).to.eql([
-        "/_events/*",
-        "/_events/*/*",
-        "/_events/*/*/*",
-        "/_events/*/*/*/*",
-        "/_events/*/*/*/*/*",
-        "/_events/*/*/*/*/*/*",
-        "/_events/*/*/*/*/*/*/*",
-        "/_events/*/*/*/*/*/*/*/*",
-        "/_events/*/*/*/*/*/*/*/*/*",
-        "/_events/*/*/*/*/*/*/*/*/*/*"
+        '/_events/*',
+        '/_events/*/*',
+        '/_events/*/*/*',
+        '/_events/*/*/*/*',
+        '/_events/*/*/*/*/*',
+        '/_events/*/*/*/*/*/*',
+        '/_events/*/*/*/*/*/*/*',
+        '/_events/*/*/*/*/*/*/*/*',
+        '/_events/*/*/*/*/*/*/*/*/*',
+        '/_events/*/*/*/*/*/*/*/*/*/*'
       ]);
       return Promise.resolve({
         _mesh: {
@@ -92,16 +92,16 @@ describe("01 - unit - cluster create", function() {
     HappnerCluster.create({});
   });
 
-  it("assigns private nedb datastore config if missing", function(done) {
+  it('assigns private nedb datastore config if missing', function(done) {
     Happner.create = function(config) {
       expect(config.happn.services.data.config.datastores).to.eql([
         {
-          name: "nedb-own-schema",
+          name: 'nedb-own-schema',
           settings: {},
           patterns: [
-            "/mesh/schema/*",
-            "/_SYSTEM/_NETWORK/_SETTINGS/NAME",
-            "/_SYSTEM/_SECURITY/_SETTINGS/KEYPAIR"
+            '/mesh/schema/*',
+            '/_SYSTEM/_NETWORK/_SETTINGS/NAME',
+            '/_SYSTEM/_SECURITY/_SETTINGS/KEYPAIR'
           ]
         }
       ]);
@@ -125,16 +125,16 @@ describe("01 - unit - cluster create", function() {
     HappnerCluster.create({});
   });
 
-  it("it ammends private nedb datastore config if missing entries", function(done) {
+  it('it ammends private nedb datastore config if missing entries', function(done) {
     Happner.create = function(config) {
       expect(config.happn.services.data.config.datastores).to.eql([
         {
-          name: "alternative-name",
+          name: 'alternative-name',
           settings: {},
           patterns: [
-            "/mesh/schema/*",
-            "/_SYSTEM/_NETWORK/_SETTINGS/NAME",
-            "/_SYSTEM/_SECURITY/_SETTINGS/KEYPAIR"
+            '/mesh/schema/*',
+            '/_SYSTEM/_NETWORK/_SETTINGS/NAME',
+            '/_SYSTEM/_SECURITY/_SETTINGS/KEYPAIR'
           ]
         }
       ]);
@@ -162,9 +162,9 @@ describe("01 - unit - cluster create", function() {
             config: {
               datastores: [
                 {
-                  name: "alternative-name",
+                  name: 'alternative-name',
                   settings: {},
-                  patterns: ["/mesh/schema/*"]
+                  patterns: ['/mesh/schema/*']
                 }
               ]
             }

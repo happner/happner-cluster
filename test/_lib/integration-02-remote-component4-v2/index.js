@@ -11,9 +11,9 @@ Component.prototype.stop = function($happn, callback) {
 };
 
 Component.prototype.method1 = function($happn, callback) {
-  callback(null, $happn.info.mesh.name + ":component4-v2:method1");
+  callback(null, $happn.info.mesh.name + ':component4-v2:method1');
 };
 
 Component.prototype.method2 = function($happn, callback) {
-  callback(null, $happn.info.mesh.name + ":component4-v2:method2");
+  callback(null, $happn.info.mesh.name + ':component4-v2:method2');
 };

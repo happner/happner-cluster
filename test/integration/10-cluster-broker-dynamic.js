@@ -1,69 +1,59 @@
-const HappnerCluster = require("../..");
-const HappnerClient = require("happner-client");
-var Promise = require("bluebird");
-var expect = require("expect.js");
+const HappnerCluster = require('../..');
+const HappnerClient = require('happner-client');
+var Promise = require('bluebird');
+var expect = require('expect.js');
 
-const libDir = require("../_lib/lib-dir");
-const baseConfig = require("../_lib/base-config");
-const stopCluster = require("../_lib/stop-cluster");
-const users = require("../_lib/users");
-const testclient = require("../_lib/client");
-const delay = require("await-delay");
+const libDir = require('../_lib/lib-dir');
+const baseConfig = require('../_lib/base-config');
+const stopCluster = require('../_lib/stop-cluster');
+const users = require('../_lib/users');
+const testclient = require('../_lib/client');
+const delay = require('await-delay');
 
-const clearMongoCollection = require("../_lib/clear-mongo-collection");
+const clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
-describe(require("../_lib/test-helper").testName(__filename, 3), function() {
+describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   const servers = [];
   let localInstance;
   this.timeout(20000);
 
-  beforeEach("clear mongo collection", function(done) {
+  beforeEach('clear mongo collection', function(done) {
     this.timeout(20000);
     stopCluster(servers, function(e) {
       if (e) return done(e);
       servers.splice(0, servers.length);
-      clearMongoCollection("mongodb://localhost", "happn-cluster", function() {
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
         done();
       });
     });
   });
 
-  after("stop cluster", function(done) {
+  after('stop cluster', function(done) {
     this.timeout(20000);
     stopCluster(servers, function() {
-      clearMongoCollection("mongodb://localhost", "happn-cluster", function() {
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
         done();
       });
     });
   });
 
-  context("exchange", function() {
-    it("starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker", function(done) {
+  context('exchange', function() {
+    it('starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker', function(done) {
       var thisClient;
 
       startClusterInternalFirst(false)
         .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "brokerComponent",
-            "directMethod"
-          );
+          return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+        })
+        .then(function() {
+          return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
         })
         .then(function() {
           return users.allowMethod(
             localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethod1"
-          );
-        })
-        .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "remoteComponent1",
-            "brokeredMethod1"
+            'username',
+            'remoteComponent1',
+            'brokeredMethod1'
           );
         })
         .then(function() {
@@ -72,7 +62,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create("username", "password", 55002);
+          return testclient.create('username', 'password', 55002);
         })
         .then(function(client) {
           thisClient = client;
@@ -80,84 +70,42 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           return thisClient.exchange.brokerComponent.directMethod();
         })
         .then(function(result) {
-          expect(result).to.be("MESH_2:brokerComponent:directMethod");
+          expect(result).to.be('MESH_2:brokerComponent:directMethod');
           return thisClient.exchange.remoteComponent1.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be("MESH_1:remoteComponent1:brokeredMethod1");
+          expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod1');
           return thisClient.exchange.remoteComponent.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be("MESH_1:remoteComponent:brokeredMethod1");
+          expect(result).to.be('MESH_1:remoteComponent:brokeredMethod1');
           setTimeout(done, 2000);
         })
         .catch(done);
     });
 
-    function testRestCall(
-      token,
-      port,
-      component,
-      method,
-      params,
-      expectedResponse
-    ) {
-      return new Promise((resolve, reject) => {
-        var restClient = require("restler");
-
-        var operation = {
-          parameters: params || {}
-        };
-
-        var options = { headers: {} };
-        options.headers.authorization = "Bearer " + token;
-
-        restClient
-          .postJson(
-            `http://localhost:${port}/rest/method/${component}/${method}`,
-            operation,
-            options
-          )
-          .on("complete", function(result) {
-            if (result.error) return reject(new Error(result.error));
-            expect(result.data).to.eql(expectedResponse);
-            resolve();
-          });
-      });
-    }
-
-    it("starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker, check we cannot access denied methods", function(done) {
+    it('starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker, check we cannot access denied methods', function(done) {
       var thisClient;
 
       var gotToFinalAttempt = false;
 
       startClusterInternalFirst()
         .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "brokerComponent",
-            "directMethod"
-          );
+          return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+        })
+        .then(function() {
+          return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
         })
         .then(function() {
           return users.allowMethod(
             localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethod1"
+            'username',
+            'remoteComponent1',
+            'brokeredMethod1'
           );
         })
         .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "remoteComponent1",
-            "brokeredMethod1"
-          );
-        })
-        .then(function() {
-          return testclient.create("username", "password", 55002);
+          return testclient.create('username', 'password', 55002);
         })
         .then(function(client) {
           thisClient = client;
@@ -165,32 +113,27 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           return thisClient.exchange.brokerComponent.directMethod();
         })
         .then(function(result) {
-          expect(result).to.be("MESH_2:brokerComponent:directMethod");
+          expect(result).to.be('MESH_2:brokerComponent:directMethod');
           //call an injected method
           return thisClient.exchange.remoteComponent.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be("MESH_1:remoteComponent:brokeredMethod1");
+          expect(result).to.be('MESH_1:remoteComponent:brokeredMethod1');
           return thisClient.exchange.remoteComponent1.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be("MESH_1:remoteComponent1:brokeredMethod1");
+          expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod1');
           return testRestCall(
             thisClient.data.session.token,
             55002,
-            "remoteComponent1",
-            "brokeredMethod1",
+            'remoteComponent1',
+            'brokeredMethod1',
             null,
-            "MESH_1:remoteComponent1:brokeredMethod1"
+            'MESH_1:remoteComponent1:brokeredMethod1:true'
           );
         })
         .then(function() {
-          return users.denyMethod(
-            localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethod1"
-          );
+          return users.denyMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
         })
         .then(function() {
           gotToFinalAttempt = true;
@@ -198,28 +141,18 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
         .catch(function(e) {
           expect(gotToFinalAttempt).to.be(true);
-          expect(e.toString()).to.be("AccessDenied: unauthorized");
+          expect(e.toString()).to.be('AccessDenied: unauthorized');
           setTimeout(done, 2000);
         });
     });
 
-    it("starts up the edge cluster node first, we than start the internal node (with brokered component), pause and then assert we are able to run the brokered method", function(done) {
+    it('starts up the edge cluster node first, we than start the internal node (with brokered component), pause and then assert we are able to run the brokered method', function(done) {
       startClusterEdgeFirst()
         .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "brokerComponent",
-            "directMethod"
-          );
+          return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
         })
         .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethod1"
-          );
+          return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
         })
         .then(function() {
           return new Promise(function(resolve) {
@@ -227,20 +160,17 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create("username", "password", 55001);
+          return testclient.create('username', 'password', 55001);
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
           client.exchange.brokerComponent.directMethod(function(e, result) {
             expect(e).to.be(null);
-            expect(result).to.be("MESH_1:brokerComponent:directMethod");
+            expect(result).to.be('MESH_1:brokerComponent:directMethod');
             //call an injected method
-            client.exchange.remoteComponent.brokeredMethod1(function(
-              e,
-              result
-            ) {
+            client.exchange.remoteComponent.brokeredMethod1(function(e, result) {
               expect(e).to.be(null);
-              expect(result).to.be("MESH_2:remoteComponent:brokeredMethod1");
+              expect(result).to.be('MESH_2:remoteComponent:brokeredMethod1');
               setTimeout(done, 2000);
             });
           });
@@ -248,22 +178,46 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .catch(done);
     });
 
-    it("starts up the edge cluster node first, we then start the internal node (with brokered component), pause and then assert we are able to run a brokered method with an argument", function(done) {
+    it('starts up the edge cluster node first, we then start the internal node (with brokered component), pause and then assert we are able to run a brokered method with an argument', function(done) {
       startClusterEdgeFirst()
         .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "brokerComponent",
-            "directMethod"
-          );
+          return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+        })
+        .then(function() {
+          return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod3');
+        })
+        .then(function() {
+          return new Promise(function(resolve) {
+            setTimeout(resolve, 5000);
+          });
+        })
+        .then(function() {
+          return testclient.create('username', 'password', 55001);
+        })
+        .then(function(client) {
+          client.exchange.remoteComponent.brokeredMethod3('test', function(e, result) {
+            expect(e).to.be(null);
+            expect(result).to.be('MESH_2:remoteComponent:brokeredMethod3:test');
+            setTimeout(done, 2000);
+          });
+        })
+        .catch(done);
+    });
+
+    it('starts up the edge cluster node first, we then start the internal node (with brokered component), pause and then assert we are able to run a brokered method with an argument, with the correct origin', function(done) {
+      startClusterEdgeFirst()
+        .then(function() {
+          return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+        })
+        .then(function() {
+          return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod3');
         })
         .then(function() {
           return users.allowMethod(
             localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethod3"
+            'username',
+            'remoteComponent1',
+            'brokeredMethod3'
           );
         })
         .then(function() {
@@ -272,94 +226,32 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create("username", "password", 55001);
+          return testclient.create('username', 'password', 55001);
         })
         .then(function(client) {
-          client.exchange.remoteComponent.brokeredMethod3("test", function(
-            e,
-            result
-          ) {
+          client.exchange.remoteComponent1.brokeredMethod3('test', function(e, result) {
             expect(e).to.be(null);
-            expect(result).to.be("MESH_2:remoteComponent:brokeredMethod3:test");
+            expect(result).to.be('MESH_2:remoteComponent1:brokeredMethod3:test:username');
             setTimeout(done, 2000);
           });
         })
         .catch(done);
     });
 
-    it("starts up the edge cluster node first, we then start the internal node (with brokered component), pause and then assert we are able to run a brokered method with an argument, with the correct origin", function(done) {
-      startClusterEdgeFirst()
-        .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "brokerComponent",
-            "directMethod"
-          );
-        })
-        .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethod3"
-          );
-        })
-        .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "remoteComponent1",
-            "brokeredMethod3"
-          );
-        })
-        .then(function() {
-          return new Promise(function(resolve) {
-            setTimeout(resolve, 5000);
-          });
-        })
-        .then(function() {
-          return testclient.create("username", "password", 55001);
-        })
-        .then(function(client) {
-          client.exchange.remoteComponent1.brokeredMethod3("test", function(
-            e,
-            result
-          ) {
-            expect(e).to.be(null);
-            expect(result).to.be(
-              "MESH_2:remoteComponent1:brokeredMethod3:test:username"
-            );
-            setTimeout(done, 2000);
-          });
-        })
-        .catch(done);
-    });
-
-    it("starts up the internal cluster node first, we then start the internal node (with brokered component), pause and then assert we are able to run a brokered method with an argument, with the correct origin", function(done) {
+    it('starts up the internal cluster node first, we then start the internal node (with brokered component), pause and then assert we are able to run a brokered method with an argument, with the correct origin', function(done) {
       startClusterInternalFirst()
         .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "brokerComponent",
-            "directMethod"
-          );
+          return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+        })
+        .then(function() {
+          return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod3');
         })
         .then(function() {
           return users.allowMethod(
             localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethod3"
-          );
-        })
-        .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "remoteComponent1",
-            "brokeredMethod3"
+            'username',
+            'remoteComponent1',
+            'brokeredMethod3'
           );
         })
         .then(function() {
@@ -368,49 +260,34 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create("username", "password", 55001);
+          return testclient.create('username', 'password', 55001);
         })
         .then(function(client) {
-          client.exchange.remoteComponent1.brokeredMethod3("test", function(
-            e,
-            result
-          ) {
+          client.exchange.remoteComponent1.brokeredMethod3('test', function(e, result) {
             expect(e).to.be(null);
-            expect(result).to.be(
-              "MESH_1:remoteComponent1:brokeredMethod3:test:username"
-            );
+            expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod3:test:username');
             setTimeout(done, 2000);
           });
         })
         .catch(done);
     });
 
-    it("starts up the internal cluster node first, we then start the internal node (with brokered component), pause and then assert we are able to run a brokered method, we then shutdown the brokered instance, run the same method and get the correct error", function(done) {
+    it('starts up the internal cluster node first, we then start the internal node (with brokered component), pause and then assert we are able to run a brokered method, we then shutdown the brokered instance, run the same method and get the correct error', function(done) {
       let testClient;
 
       startClusterInternalFirst()
         .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "brokerComponent",
-            "directMethod"
-          );
+          return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+        })
+        .then(function() {
+          return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod3');
         })
         .then(function() {
           return users.allowMethod(
             localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethod3"
-          );
-        })
-        .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "remoteComponent1",
-            "brokeredMethod3"
+            'username',
+            'remoteComponent1',
+            'brokeredMethod3'
           );
         })
         .then(function() {
@@ -419,16 +296,14 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create("username", "password", 55002);
+          return testclient.create('username', 'password', 55002);
         })
         .then(function(client) {
           testClient = client;
-          return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+          return testClient.exchange.remoteComponent1.brokeredMethod3('test');
         })
         .then(function(result) {
-          expect(result).to.be(
-            "MESH_1:remoteComponent1:brokeredMethod3:test:username"
-          );
+          expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod3:test:username');
           return new Promise((resolve, reject) => {
             localInstance.stop(e => {
               if (e) return reject(e);
@@ -437,43 +312,31 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+          return testClient.exchange.remoteComponent1.brokeredMethod3('test');
         })
         .catch(function(e) {
-          expect(e.message).to.be(
-            "Not implemented remoteComponent1:^2.0.0:brokeredMethod3"
-          );
+          expect(e.message).to.be('Not implemented remoteComponent1:^2.0.0:brokeredMethod3');
           done();
         });
     });
 
-    it("starts up the internal cluster node first, we then start 2 the internal nodes in a high availability configuration, pause and then assert we are able to run a brokered methods and they are load balanced, we then shutdown a brokered instance, and are able to run the same method on the remaining instance", function(done) {
+    it('starts up the internal cluster node first, we then start 2 the internal nodes in a high availability configuration, pause and then assert we are able to run a brokered methods and they are load balanced, we then shutdown a brokered instance, and are able to run the same method on the remaining instance', function(done) {
       let testClient,
         results = [];
 
       startClusterEdgeFirstHighAvailable()
         .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "brokerComponent",
-            "directMethod"
-          );
+          return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+        })
+        .then(function() {
+          return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod3');
         })
         .then(function() {
           return users.allowMethod(
             localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethod3"
-          );
-        })
-        .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "remoteComponent1",
-            "brokeredMethod3"
+            'username',
+            'remoteComponent1',
+            'brokeredMethod3'
           );
         })
         .then(function() {
@@ -482,23 +345,23 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create("username", "password", 55001);
+          return testclient.create('username', 'password', 55001);
         })
         .then(function(client) {
           testClient = client;
-          return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+          return testClient.exchange.remoteComponent1.brokeredMethod3('test');
         })
         .then(function(result) {
           results.push(result);
-          return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+          return testClient.exchange.remoteComponent1.brokeredMethod3('test');
         })
         .then(function(result) {
           results.push(result);
-          return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+          return testClient.exchange.remoteComponent1.brokeredMethod3('test');
         })
         .then(function(result) {
           results.push(result);
-          return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+          return testClient.exchange.remoteComponent1.brokeredMethod3('test');
         })
         .then(function() {
           return new Promise((resolve, reject) => {
@@ -509,39 +372,39 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+          return testClient.exchange.remoteComponent1.brokeredMethod3('test');
         })
         .then(function(result) {
           results.push(result);
-          return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+          return testClient.exchange.remoteComponent1.brokeredMethod3('test');
         })
         .then(function(result) {
           results.push(result);
-          return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+          return testClient.exchange.remoteComponent1.brokeredMethod3('test');
         })
         .then(function(result) {
           results.push(result);
-          return testClient.exchange.remoteComponent1.brokeredMethod3("test");
+          return testClient.exchange.remoteComponent1.brokeredMethod3('test');
         })
         .then(function(result) {
           results.push(result);
           expect(results).to.eql([
             //round robin happening
-            "MESH_2:remoteComponent1:brokeredMethod3:test:username",
-            "MESH_3:remoteComponent1:brokeredMethod3:test:username",
-            "MESH_2:remoteComponent1:brokeredMethod3:test:username",
-            "MESH_3:remoteComponent1:brokeredMethod3:test:username",
+            'MESH_2:remoteComponent1:brokeredMethod3:test:username',
+            'MESH_3:remoteComponent1:brokeredMethod3:test:username',
+            'MESH_2:remoteComponent1:brokeredMethod3:test:username',
+            'MESH_3:remoteComponent1:brokeredMethod3:test:username',
             //now only mesh 3 is up, so it handles all method calls
-            "MESH_3:remoteComponent1:brokeredMethod3:test:username",
-            "MESH_3:remoteComponent1:brokeredMethod3:test:username",
-            "MESH_3:remoteComponent1:brokeredMethod3:test:username"
+            'MESH_3:remoteComponent1:brokeredMethod3:test:username',
+            'MESH_3:remoteComponent1:brokeredMethod3:test:username',
+            'MESH_3:remoteComponent1:brokeredMethod3:test:username'
           ]);
           done();
         })
         .catch(done);
     });
 
-    it("injects the correct amount of brokered elements, even when brokered cluster nodes are dropped and restarted", function(done) {
+    it('injects the correct amount of brokered elements, even when brokered cluster nodes are dropped and restarted', function(done) {
       this.timeout(40000);
 
       startClusterEdgeFirstHighAvailable()
@@ -549,11 +412,11 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           return Promise.delay(5000);
         })
         .then(function() {
-          expect(getInjectedElements("MESH_1").length).to.be(4);
-          expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
-          expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
-          expect(getInjectedElements("MESH_1")[2].meshName != null).to.be(true);
-          expect(getInjectedElements("MESH_1")[3].meshName != null).to.be(true);
+          expect(getInjectedElements('MESH_1').length).to.be(4);
+          expect(getInjectedElements('MESH_1')[0].meshName != null).to.be(true);
+          expect(getInjectedElements('MESH_1')[1].meshName != null).to.be(true);
+          expect(getInjectedElements('MESH_1')[2].meshName != null).to.be(true);
+          expect(getInjectedElements('MESH_1')[3].meshName != null).to.be(true);
           return stopServer(servers[1]);
         })
         .then(() => {
@@ -561,9 +424,9 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
         .then(function() {
           //we check injected components is 1
-          expect(getInjectedElements("MESH_1").length).to.be(2);
-          expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
-          expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
+          expect(getInjectedElements('MESH_1').length).to.be(2);
+          expect(getInjectedElements('MESH_1')[0].meshName != null).to.be(true);
+          expect(getInjectedElements('MESH_1')[1].meshName != null).to.be(true);
           return stopServer(servers[2]);
         })
         .then(() => {
@@ -571,9 +434,9 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
         .then(function() {
           //we check injected components is still 1 and injected component meshName is null
-          expect(getInjectedElements("MESH_1").length).to.be(2);
-          expect(getInjectedElements("MESH_1")[0].meshName == null).to.be(true);
-          expect(getInjectedElements("MESH_1")[1].meshName == null).to.be(true);
+          expect(getInjectedElements('MESH_1').length).to.be(2);
+          expect(getInjectedElements('MESH_1')[0].meshName == null).to.be(true);
+          expect(getInjectedElements('MESH_1')[1].meshName == null).to.be(true);
           return startInternal(2, 2);
         })
         .then(() => {
@@ -581,9 +444,9 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
         .then(function() {
           //we check injected components is still 1 and injected component meshName is null
-          expect(getInjectedElements("MESH_1").length).to.be(2);
-          expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
-          expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
+          expect(getInjectedElements('MESH_1').length).to.be(2);
+          expect(getInjectedElements('MESH_1')[0].meshName != null).to.be(true);
+          expect(getInjectedElements('MESH_1')[1].meshName != null).to.be(true);
           return startInternal(3, 3);
         })
         .then(() => {
@@ -592,69 +455,55 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .then(function() {
           //we check injected components is 2
           //we check injected components is still 1 and injected component meshName is null
-          expect(getInjectedElements("MESH_1").length).to.be(4);
-          expect(getInjectedElements("MESH_1")[0].meshName != null).to.be(true);
-          expect(getInjectedElements("MESH_1")[1].meshName != null).to.be(true);
+          expect(getInjectedElements('MESH_1').length).to.be(4);
+          expect(getInjectedElements('MESH_1')[0].meshName != null).to.be(true);
+          expect(getInjectedElements('MESH_1')[1].meshName != null).to.be(true);
           done();
         })
         .catch(done);
     });
   });
 
-  context("events", function() {
-    it("connects a client to the local instance, and is able to access the remote component events via the broker", function(done) {
+  context('events', function() {
+    it('connects a client to the local instance, and is able to access the remote component events via the broker', function(done) {
       startClusterInternalFirst()
         .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "brokerComponent",
-            "directMethod"
-          );
+          return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
         })
         .then(function() {
           return users.allowMethod(
             localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredEventEmitMethod"
+            'username',
+            'remoteComponent',
+            'brokeredEventEmitMethod'
           );
         })
         .then(function() {
-          return users.allowEvent(
-            localInstance,
-            "username",
-            "remoteComponent",
-            "/brokered/event"
-          );
+          return users.allowEvent(localInstance, 'username', 'remoteComponent', '/brokered/event');
         })
         .then(function() {
-          return testclient.create("username", "password", 55002);
+          return testclient.create('username', 'password', 55002);
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
           client.exchange.brokerComponent.directMethod(function(e, result) {
             expect(e).to.be(null);
-            expect(result).to.be("MESH_2:brokerComponent:directMethod");
+            expect(result).to.be('MESH_2:brokerComponent:directMethod');
 
             client.event.remoteComponent.on(
-              "/brokered/event",
+              '/brokered/event',
               function(data) {
                 expect(data).to.eql({
-                  brokered: { event: { data: { from: "MESH_1" } } }
+                  brokered: { event: { data: { from: 'MESH_1' } } }
                 });
                 setTimeout(done, 2000);
               },
               function(e) {
                 expect(e).to.be(null);
-                client.exchange.remoteComponent.brokeredEventEmitMethod(
-                  function(e, result) {
-                    expect(e).to.be(null);
-                    expect(result).to.be(
-                      "MESH_1:remoteComponent:brokeredEventEmitMethod"
-                    );
-                  }
-                );
+                client.exchange.remoteComponent.brokeredEventEmitMethod(function(e, result) {
+                  expect(e).to.be(null);
+                  expect(result).to.be('MESH_1:remoteComponent:brokeredEventEmitMethod');
+                });
               }
             );
           });
@@ -662,8 +511,8 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .catch(done);
     });
   });
-  context("happner-client", function() {
-    it("does a comprehensive test using the happner-client", function(done) {
+  context('happner-client', function() {
+    it('does a comprehensive test using the happner-client', function(done) {
       startClusterEdgeFirst()
         .then(function() {
           return delay(5000);
@@ -671,28 +520,19 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .then(function() {
           return users.allowMethod(
             localInstance,
-            "username",
-            "remoteComponent1",
-            "brokeredMethod1"
+            'username',
+            'remoteComponent1',
+            'brokeredMethod1'
           );
         })
         .then(function() {
-          return users.allowWebMethod(
-            localInstance,
-            "username",
-            "/remoteComponent1/testJSON"
-          );
+          return users.allowWebMethod(localInstance, 'username', '/remoteComponent1/testJSON');
         })
         .then(function() {
-          return users.allowEvent(
-            localInstance,
-            "username",
-            "remoteComponent1",
-            "test/*"
-          );
+          return users.allowEvent(localInstance, 'username', 'remoteComponent1', 'test/*');
         })
         .then(function() {
-          return connectHappnerClient("username", "password", 55001);
+          return connectHappnerClient('username', 'password', 55001);
         })
         .then(function(client) {
           return testHappnerClient(client);
@@ -703,126 +543,146 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .catch(done);
     });
   });
-  context("errors", function() {
-    it("ensures an error is raised if we are injecting internal components with duplicate names", function(done) {
+  context('errors', function() {
+    it('ensures an error is raised if we are injecting internal components with duplicate names', function(done) {
       HappnerCluster.create(errorInstanceConfigDuplicateBrokered(1, 1))
         .then(function() {
-          done(new Error("unexpected success"));
+          done(new Error('unexpected success'));
         })
         .catch(function(e) {
           expect(e.toString()).to.be(
-            "Error: Duplicate attempts to broker the remoteComponent component by brokerComponent & brokerComponentDuplicate"
+            'Error: Duplicate attempts to broker the remoteComponent component by brokerComponent & brokerComponentDuplicate'
           );
           setTimeout(done, 2000);
         });
     });
 
-    it("ensures an error is handled and returned accordingly if we execute an internal components failing method using a callback", function(done) {
+    it('ensures an error is handled and returned accordingly if we execute an internal components failing method using a callback', function(done) {
       startClusterInternalFirst()
         .then(function() {
           return users.allowMethod(
             localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethodFail"
+            'username',
+            'remoteComponent',
+            'brokeredMethodFail'
           );
         })
         .then(function() {
-          return testclient.create("username", "password", 55002);
+          return testclient.create('username', 'password', 55002);
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
           client.exchange.remoteComponent.brokeredMethodFail(function(e) {
-            expect(e.toString()).to.be("Error: test error");
+            expect(e.toString()).to.be('Error: test error');
             setTimeout(done, 2000);
           });
         })
         .catch(done);
     });
 
-    it("ensures an error is handled and returned accordingly if we execute an internal components failing method using a promise", function(done) {
+    it('ensures an error is handled and returned accordingly if we execute an internal components failing method using a promise', function(done) {
       startClusterInternalFirst()
         .then(function() {
           return users.allowMethod(
             localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethodFail"
+            'username',
+            'remoteComponent',
+            'brokeredMethodFail'
           );
         })
         .then(function() {
-          return testclient.create("username", "password", 55002);
+          return testclient.create('username', 'password', 55002);
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
           return client.exchange.remoteComponent.brokeredMethodFail();
         })
         .catch(function(e) {
-          expect(e.toString()).to.be("Error: test error");
+          expect(e.toString()).to.be('Error: test error');
           done();
         });
     });
 
-    it("ensures an error is handled and returned accordingly if we execute an internal components method that times out", function(done) {
+    it('ensures an error is handled and returned accordingly if we execute an internal components method that times out', function(done) {
       this.timeout(20000);
 
       startClusterInternalFirst()
         .then(function() {
           return users.allowMethod(
             localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethodTimeout"
+            'username',
+            'remoteComponent',
+            'brokeredMethodTimeout'
           );
         })
         .then(function() {
-          return testclient.create("username", "password", 55002);
+          return testclient.create('username', 'password', 55002);
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
           return client.exchange.remoteComponent.brokeredMethodTimeout();
         })
         .catch(function(e) {
-          expect(e.toString()).to.be("Request timed out");
+          expect(e.toString()).to.be('Request timed out');
           done();
         });
     });
 
-    it("ensures an error is handled and returned accordingly if we execute a method that does not exist on the cluster mesh yet", function(done) {
+    it('ensures an error is handled and returned accordingly if we execute a method that does not exist on the cluster mesh yet', function(done) {
       startClusterEdgeFirst()
         .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "brokerComponent",
-            "directMethod"
-          );
+          return users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
         })
         .then(function() {
-          return users.allowMethod(
-            localInstance,
-            "username",
-            "remoteComponent",
-            "brokeredMethod1"
-          );
+          return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
         })
         .then(function() {
-          return testclient.create("username", "password", 55001);
+          return testclient.create('username', 'password', 55001);
         })
         .then(function(client) {
           return client.exchange.remoteComponent.brokeredMethod1();
         })
         .catch(function(e) {
           expect(e.toString()).to.be(
-            "Error: Not implemented remoteComponent:^2.0.0:brokeredMethod1"
+            'Error: Not implemented remoteComponent:^2.0.0:brokeredMethod1'
           );
           setTimeout(done, 2000);
         });
     });
   });
 
+  context('rest', function() {
+    it('does a rest call', function(done) {
+      var thisClient;
+      startClusterInternalFirst()
+        .then(function() {
+          return users.allowMethod(
+            localInstance,
+            'username',
+            'remoteComponent1',
+            'brokeredMethod1'
+          );
+        })
+        .then(function() {
+          return testclient.create('username', 'password', 55002);
+        })
+        .then(function(client) {
+          thisClient = client;
+          return testRestCall(
+            thisClient.data.session.token,
+            55002,
+            'remoteComponent1',
+            'brokeredMethod1',
+            null,
+            'MESH_1:remoteComponent1:brokeredMethod1:true'
+          );
+        })
+        .then(done);
+    });
+  });
+
   function doRequest(path, token, port, callback) {
-    var request = require("request");
+    var request = require('request');
     var options;
 
     options = {
@@ -834,6 +694,27 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         response,
         body
       });
+    });
+  }
+
+  function testRestCall(token, port, component, method, params, expectedResponse) {
+    return new Promise((resolve, reject) => {
+      var restClient = require('restler');
+
+      var operation = {
+        parameters: params || {}
+      };
+
+      var options = { headers: {} };
+      options.headers.authorization = 'Bearer ' + token;
+
+      restClient
+        .postJson(`http://localhost:${port}/rest/method/${component}/${method}`, operation, options)
+        .on('complete', function(result) {
+          if (result.error) return reject(new Error(result.error));
+          expect(result.data).to.eql(expectedResponse);
+          resolve();
+        });
     });
   }
 
@@ -856,14 +737,14 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .then(schema => {
           api.happner = client.construct(schema.components);
           api.token = api.data.session.token;
-          api.happner.event.remoteComponent1.on("test/*", () => {
+          api.happner.event.remoteComponent1.on('test/*', () => {
             resolve(client);
           });
-          return testWebCall(api, "/remoteComponent1/testJSON", 55001);
+          return testWebCall(api, '/remoteComponent1/testJSON', 55001);
         })
         .then(result => {
           expect(JSON.parse(result.body)).to.eql({
-            test: "data"
+            test: 'data'
           });
           return api.happner.exchange.remoteComponent1.brokeredMethod1();
         })
@@ -873,7 +754,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
 
   function getDescription(api) {
     return new Promise((resolve, reject) => {
-      api.data.get("/mesh/schema/description", (e, schema) => {
+      api.data.get('/mesh/schema/description', (e, schema) => {
         if (e) return reject(e);
         return resolve(schema);
       });
@@ -910,11 +791,11 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq, sync, true);
     config.authorityDelegationOn = true;
     let brokerComponentPath = dynamic
-      ? libDir + "integration-10-broker-component-dynamic"
-      : libDir + "integration-09-broker-component";
+      ? libDir + 'integration-10-broker-component-dynamic'
+      : libDir + 'integration-09-broker-component';
     config.modules = {
       localComponent: {
-        path: libDir + "integration-09-local-component"
+        path: libDir + 'integration-09-local-component'
       },
       brokerComponent: {
         path: brokerComponentPath
@@ -922,12 +803,12 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     };
     config.components = {
       localComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       },
       brokerComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       }
     };
     return config;
@@ -937,27 +818,27 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq, sync, true);
     config.modules = {
       localComponent: {
-        path: libDir + "integration-09-local-component"
+        path: libDir + 'integration-09-local-component'
       },
       brokerComponent: {
-        path: libDir + "integration-09-broker-component"
+        path: libDir + 'integration-09-broker-component'
       },
       brokerComponentDuplicate: {
-        path: libDir + "integration-09-broker-component-1"
+        path: libDir + 'integration-09-broker-component-1'
       }
     };
     config.components = {
       localComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       },
       brokerComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       },
       brokerComponentDuplicate: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       }
     };
     return config;
@@ -967,24 +848,24 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq, sync, true);
     config.modules = {
       remoteComponent: {
-        path: libDir + "integration-09-remote-component"
+        path: libDir + 'integration-09-remote-component'
       },
       remoteComponent1: {
-        path: libDir + "integration-09-remote-component-1"
+        path: libDir + 'integration-09-remote-component-1'
       }
     };
     config.components = {
       remoteComponent: {
-        startMethod: "start",
-        stopMethod: "stop"
+        startMethod: 'start',
+        stopMethod: 'stop'
       },
       remoteComponent1: {
-        startMethod: "start",
-        stopMethod: "stop",
+        startMethod: 'start',
+        stopMethod: 'stop',
         web: {
           routes: {
-            testJSON: ["testJSON"],
-            testJSONSticky: ["testJSONSticky"]
+            testJSON: ['testJSON'],
+            testJSONSticky: ['testJSONSticky']
           }
         }
       }
@@ -993,17 +874,13 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
   }
 
   async function startInternal(id, clusterMin) {
-    const server = await HappnerCluster.create(
-      remoteInstanceConfig(id, clusterMin)
-    );
+    const server = await HappnerCluster.create(remoteInstanceConfig(id, clusterMin));
     servers.push(server);
     return server;
   }
 
   async function startEdge(id, clusterMin, dynamic) {
-    const server = await HappnerCluster.create(
-      localInstanceConfig(id, clusterMin, dynamic)
-    );
+    const server = await HappnerCluster.create(localInstanceConfig(id, clusterMin, dynamic));
     servers.push(server);
     return server;
   }
@@ -1019,7 +896,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           return startInternal(3, 3);
         })
         .then(function() {
-          return users.add(localInstance, "username", "password");
+          return users.add(localInstance, 'username', 'password');
         })
         .then(resolve)
         .catch(reject);
@@ -1034,7 +911,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           return startEdge(2, 2, dynamic);
         })
         .then(function() {
-          return users.add(localInstance, "username", "password");
+          return users.add(localInstance, 'username', 'password');
         })
         .then(function() {
           setTimeout(resolve, 2000);
@@ -1051,7 +928,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         })
         .then(function(server) {
           localInstance = server;
-          return users.add(localInstance, "username", "password");
+          return users.add(localInstance, 'username', 'password');
         })
         .then(resolve)
         .catch(reject);
@@ -1059,7 +936,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
   }
 
   function getInjectedElements(meshName) {
-    const brokerageInstance = require("../../lib/brokerage").instance(meshName);
+    const brokerageInstance = require('../../lib/brokerage').instance(meshName);
     if (!brokerageInstance) return null;
     return brokerageInstance.__injectedElements;
   }

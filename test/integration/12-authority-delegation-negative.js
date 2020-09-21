@@ -1,16 +1,16 @@
-var HappnerCluster = require("../..");
-var Promise = require("bluebird");
+var HappnerCluster = require('../..');
+var Promise = require('bluebird');
 
-var libDir = require("../_lib/lib-dir");
-var baseConfig = require("../_lib/base-config");
-var stopCluster = require("../_lib/stop-cluster");
+var libDir = require('../_lib/lib-dir');
+var baseConfig = require('../_lib/base-config');
+var stopCluster = require('../_lib/stop-cluster');
 
-var users = require("../_lib/users");
-var testclient = require("../_lib/client");
-var clearMongoCollection = require("../_lib/clear-mongo-collection");
+var users = require('../_lib/users');
+var testclient = require('../_lib/client');
+var clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
 
-describe(require("../_lib/test-helper").testName(__filename, 3), function() {
+describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
 
   var servers, localInstance;
@@ -19,7 +19,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq, undefined, true);
     config.modules = {
       localComponent1: {
-        path: libDir + "integration-10-local-component1"
+        path: libDir + 'integration-10-local-component1'
       }
     };
     config.components = {
@@ -32,10 +32,10 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     var config = baseConfig(seq, undefined, true);
     config.modules = {
       remoteComponent2: {
-        path: libDir + "integration-10-remote-component2"
+        path: libDir + 'integration-10-remote-component2'
       },
       remoteComponent3: {
-        path: libDir + "integration-10-remote-component3"
+        path: libDir + 'integration-10-remote-component3'
       }
     };
     config.components = {
@@ -45,13 +45,13 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     return config;
   }
 
-  beforeEach("clear mongo", function(done) {
-    clearMongoCollection("mongodb://localhost", "happn-cluster", function(e) {
+  beforeEach('clear mongo', function(done) {
+    clearMongoCollection('mongodb://localhost', 'happn-cluster', function(e) {
       done(e);
     });
   });
 
-  beforeEach("start cluster", function(done) {
+  beforeEach('start cluster', function(done) {
     this.timeout(20000);
 
     HappnerCluster.create(localInstanceConfig(1, 1)).then(function(local) {
@@ -67,7 +67,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
         .then(function(_servers) {
           servers = _servers;
           //localInstance = servers[0];
-          return users.add(servers[0], "username", "password");
+          return users.add(servers[0], 'username', 'password');
         })
         .then(function() {
           done();
@@ -76,7 +76,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
     }, 2000);
   });
 
-  afterEach("stop cluster", function(done) {
+  afterEach('stop cluster', function(done) {
     if (!servers) return done();
     stopCluster(servers.concat(localInstance), done);
   });
@@ -85,25 +85,20 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
   //   setTimeout(log, 5000);
   // })
 
-  it("ensures a happner client without the correct permissions is unable to execute a remote components method", function(done) {
+  it('ensures a happner client without the correct permissions is unable to execute a remote components method', function(done) {
     this.timeout(4000);
 
     users
-      .allowMethod(
-        localInstance,
-        "username",
-        "localComponent1",
-        "localMethodToRemoteMethod"
-      )
+      .allowMethod(localInstance, 'username', 'localComponent1', 'localMethodToRemoteMethod')
       .then(function() {
-        return testclient.create("username", "password", 55001);
+        return testclient.create('username', 'password', 55001);
       })
       .then(function(client) {
         let thisClient = client;
         //first test our broker components methods are directly callable
         return thisClient.exchange.localComponent1.localMethodToRemoteMethod(
-          "remoteComponent2",
-          "method1"
+          'remoteComponent2',
+          'method1'
         );
       })
       .then(function() {
@@ -112,18 +107,13 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  it("ensures a happner client without the correct permissions is unable to subscribe to a remote components event", function(done) {
+  it('ensures a happner client without the correct permissions is unable to subscribe to a remote components event', function(done) {
     this.timeout(4000);
 
     users
-      .allowMethod(
-        localInstance,
-        "username",
-        "localComponent1",
-        "localMethodToRemoteEvent"
-      )
+      .allowMethod(localInstance, 'username', 'localComponent1', 'localMethodToRemoteEvent')
       .then(function() {
-        return testclient.create("username", "password", 55001);
+        return testclient.create('username', 'password', 55001);
       })
       .then(function(client) {
         let thisClient = client;
@@ -136,18 +126,13 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
       .catch(done);
   });
 
-  it("ensures a happner client without the correct permissions is unable to modify a remote components data", function(done) {
+  it('ensures a happner client without the correct permissions is unable to modify a remote components data', function(done) {
     this.timeout(4000);
 
     users
-      .allowMethod(
-        localInstance,
-        "username",
-        "localComponent1",
-        "localMethodToData"
-      )
+      .allowMethod(localInstance, 'username', 'localComponent1', 'localMethodToData')
       .then(function() {
-        return testclient.create("username", "password", 55001);
+        return testclient.create('username', 'password', 55001);
       })
       .then(function(client) {
         let thisClient = client;

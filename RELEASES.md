@@ -168,3 +168,8 @@
 9.0.8 2020-07-30
 ----------------
   - feature / fix: broker does not re-publish mesh description if deferrListen is true JIRA: SMC-617
+
+9.0.9 2020-09-10
+----------------
+  - patch: mesh description is updated in the rest component when an element is updated in the mesh - JIRA:SMC-1074 happner-cluster #199
+

@@ -1,26 +1,26 @@
-var HappnerCluster = require("../..");
-var Happner = require("happner-2");
+var HappnerCluster = require('../..');
+var Happner = require('happner-2');
 
-describe(require("../_lib/test-helper").testName(__filename, 3), function() {
+describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
 
   var server, client;
 
-  after("stop server", function(done) {
+  after('stop server', function(done) {
     if (!server) return done();
     server.stop({ reconnect: false }, done);
   });
 
-  after("stop client", function(done) {
+  after('stop client', function(done) {
     if (!client) return done();
     client.disconnect(done);
   });
 
-  it("starts", function(done) {
+  it('starts', function(done) {
     this.timeout(20000);
 
     HappnerCluster.create({
-      domain: "DOMAIN_NAME",
+      domain: 'DOMAIN_NAME',
       happn: {
         secure: false,
         cluster: {
@@ -36,7 +36,7 @@ describe(require("../_lib/test-helper").testName(__filename, 3), function() {
           membership: {
             config: {
               seed: true,
-              hosts: ["127.0.0.1:55000"]
+              hosts: ['127.0.0.1:55000']
             }
           }
         }

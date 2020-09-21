@@ -14,7 +14,7 @@ Component.prototype.listTestEvents = function($happn, callback) {
   var events = {};
 
   $happn.event.remoteComponent3.on(
-    "testevent/*",
+    'testevent/*',
     function(data, meta) {
       events[meta.path] = 1;
     },
@@ -35,7 +35,7 @@ Component.prototype.listTestCompatibleEvents = function($happn, callback) {
   var events = {};
 
   $happn.event.remoteComponent5.on(
-    "testevent/*/*",
+    'testevent/*/*',
     function(data, meta) {
       events[meta.path] = 1;
     },

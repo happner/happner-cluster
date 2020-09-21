@@ -1,10 +1,10 @@
-var Happner = require("happner-2");
-var Promise = require("bluebird");
+var Happner = require('happner-2');
+var Promise = require('bluebird');
 
 module.exports.create = function(username, password, port) {
   return new Promise(function(resolve, reject) {
     var client = new Happner.MeshClient({
-      hostname: "localhost",
+      hostname: 'localhost',
       port: port
     });
 
