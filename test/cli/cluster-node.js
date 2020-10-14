@@ -1,6 +1,6 @@
 var HappnerCluster = require('../..');
 var mongoUrl = 'mongodb://127.0.0.1:27017';
-var mongoCollection = 'happn-cluster-test';
+var mongoCollection = 'happn-cluster';
 
 var processarguments = {};
 
@@ -29,6 +29,9 @@ if (!processarguments.clusterName) processarguments.clusterName = 'happn-cluster
 if (processarguments.seed == null) processarguments.seed = true;
 else processarguments.seed = processarguments.seed === 'true';
 
+if (processarguments.secure == null) processarguments.secure = false;
+else processarguments.secure = processarguments.secure === 'true';
+
 processarguments.persistMembers = processarguments.persistMembers === 'true';
 
 if (processarguments.seedWait == null) processarguments.seedWait = 0;
@@ -42,11 +45,11 @@ if (processarguments.maxDgramSize == null) processarguments.maxDgramSize = 512;
 if (processarguments.disseminationFactor == null) processarguments.disseminationFactor = 15;
 
 var config = {
-  // was "datalayer"
   name: processarguments.membername,
   domain: processarguments.domain,
   port: processarguments.port,
   happn: {
+    secure: processarguments.secure,
     services: {
       data: {
         config: {
@@ -64,6 +67,11 @@ var config = {
           ]
         }
       },
+      security: {
+        config: {
+          sessionTokenSecret: 'TEST-SESSION-TOKEN-SECRET'
+        }
+      },
       membership: {
         config: {
           persistMembers: processarguments.persistMembers,
@@ -74,7 +82,7 @@ var config = {
           host: processarguments.host, // defaults to first public IPv4 address
           port: processarguments.membershipport,
           hosts: processarguments.hosts,
-          joinTimeout: processarguments.joinTimeout,
+          joinTimeout: 5000,
           pingInterval: processarguments.pingInterval,
           pingTimeout: processarguments.pingTimeout,
           pingReqTimeout: processarguments.pingReqTimeout,
@@ -93,6 +101,12 @@ var config = {
         }
       }
     }
+  }
+};
+
+config.happn.services.orchestrator = {
+  config: {
+    replicate: ['test/**']
   }
 };
 

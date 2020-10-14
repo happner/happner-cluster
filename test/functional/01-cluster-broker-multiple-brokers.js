@@ -9,13 +9,16 @@ var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 var users = require('../_lib/users');
 var testclient = require('../_lib/client');
+var path = require('path');
 
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
+const { delay } = require('bluebird');
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
-  this.timeout(40000);
+  this.timeout(600000);
   const previousLogLevel = process.env.LOG_LEVEL;
   process.env.LOG_LEVEL = 'info';
   var servers = [];
+  let currentProc;
 
   function localInstanceConfig(seq, sync, dynamic) {
     var config = baseConfig(seq, sync, true);
@@ -31,6 +34,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       },
       brokerComponent: {
         path: brokerComponentPath
+      }
+    };
+    config.happn.services.orchestrator = {
+      config: {
+        replicate: ['test/**']
       }
     };
     config.components = {
@@ -54,6 +62,13 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       },
       remoteComponent1: {
         path: libDir + 'integration-09-remote-component-1'
+      }
+    };
+    config.cluster = config.cluster || {};
+    config.cluster.dependenciesSatisfiedDeferListen = true;
+    config.happn.services.orchestrator = {
+      config: {
+        replicate: ['test/**']
       }
     };
     config.components = {
@@ -83,17 +98,30 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     if (!servers) return done();
     stopCluster(servers, function() {
       clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
-        done();
+        if (currentProc) currentProc.kill();
+        setTimeout(() => {
+          console.log('disconnected _ADMIN sessions', adminUserDisconnectionsOnProcess - adminUserDisconnectionsOnProcessAfterLoginChurn);
+          done();
+        }, 5000)
       });
     });
   });
 
-  function startInternal(id, clusterMin) {
+  function startInternal(id, clusterMin, dynamic) {
     return new Promise((resolve, reject) => {
-      return HappnerCluster.create(remoteInstanceConfig(id, clusterMin))
+      const instances = [];
+      return HappnerCluster.create(remoteInstanceConfig(id, clusterMin, dynamic))
         .then(function(instance) {
           servers.push(instance);
-          resolve(instance);
+          instances.push(instance);
+          return HappnerCluster.create(remoteInstanceConfig(id + 1, clusterMin + 1, dynamic));
+        })
+        .then(function(instance) {
+          servers.push(instance);
+          instances.push(instance);
+          setTimeout(() => {
+            resolve(instances);
+          }, 2000);
         })
         .catch(reject);
     });
@@ -119,8 +147,61 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     });
   }
 
+  function getRandomArbitary (min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  async function randomlyStartStopProcess(params, attempts) {
+    let lastProc;
+      attempts = attempts || 1;
+      for (var i = 0; i < attempts; i++) {
+        lastProc = await startProcess(params, getRandomArbitary(500, 5000));
+      }
+      return lastProc;
+  }
+
+  async function linearStartStopProcess(params, attempts, interval) {
+    let lastProc;
+      attempts = attempts || 1;
+      for (var i = 0; i < attempts; i++) {
+        lastProc = await startProcess(params, interval);
+      }
+      return lastProc;
+  }
+
+  var adminUserDisconnectionsOnProcess = 0;
+  var adminUserDisconnectionsOnProcessAfterLoginChurn = 0;
+
+  function startProcess(params, timeout) {
+    return new Promise(function(resolve, reject) {
+      try {
+        if (currentProc) currentProc.kill();
+        var cp = require('child_process');
+        var paramsSplit = params.split('membername=');
+        var processParams = paramsSplit[0] + 'host=127.0.0.1';
+
+        var forkPath = path.resolve(['test', 'cli', 'cluster-node.js'].join(path.sep));
+
+        currentProc = cp.fork(forkPath, processParams.split(' '), {
+          silent: true
+        });
+
+        currentProc.stdout.on('data', function(data) {
+          var dataString = data.toString();
+          console.log('DATA:::', dataString);
+          if (dataString.indexOf("'_ADMIN' disconnected") > -1) adminUserDisconnectionsOnProcess++;
+        });
+        return setTimeout(function() {
+          resolve(currentProc);
+        }, timeout);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
   context('exchange', function() {
-    it('starts the cluster broker first, fails to connect a client to the broker instance because listening is deferred, we start the internal brokered node, the client is now able to connect as we have the full API dynamically loaded', function(done) {
+    it('we test brokered descriptions are ignored', function(done) {
       const capturedLogs = [];
       const intercept = require('intercept-stdout');
       const unhook_intercept = intercept(function(txt) {
@@ -281,6 +362,159 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           process.env.LOG_LEVEL = previousLogLevel;
           setTimeout(done, 2000);
         });
+    });
+
+    it('we tests brokered data events - client through internal', function(done) {
+      var thisLocalClient;
+      var edgeInstance;
+      var eventData = [];
+
+      startEdge(1, 1)
+        .then(instance => {
+          edgeInstance = instance;
+          return users.add(edgeInstance[0], 'username', 'password');
+        })
+        .then(function() {
+          return startInternal(3, 3);
+        })
+        .then(function() {
+          return users.allowDataPath(edgeInstance[0], 'username', 'test/event');
+        })
+        .then(function() {
+          return new Promise(resolve => {
+            setTimeout(resolve, 2000);
+          });
+        })
+        .then(function() {
+          return testclient.create('username', 'password', 55003);
+        })
+        .then(function(client) {
+          thisLocalClient = client;
+          //first test our broker components methods are directly callable
+          return thisLocalClient.data.on('test/event', data => {
+            eventData.push(data);
+          });
+        })
+        .then(function() {
+          return thisLocalClient.data.set('test/event', { test: 'data' });
+        })
+        .then(function() {
+          return new Promise(resolve => {
+            setTimeout(resolve, 2000);
+          });
+        })
+        .then(function() {
+          expect(eventData.length).to.be(1);
+          done();
+        })
+        .catch(done);
+    });
+
+    it.only('we tests brokered data events -  internal originator replicated to broker', function(done) {
+      var internalClient, brokerClient, brokerClient1, processClient;
+      var edgeInstance;
+      var internalEventData = [];
+      var brokerEventData = [];
+      var brokerEventData1 = [];
+      var processEventData = [];
+
+      startEdge(1, 1)
+        .then(instance => {
+          edgeInstance = instance;
+          return users.add(edgeInstance[0], 'username', 'password');
+        })
+        .then(function() {
+          return startInternal(3, 3);
+        })
+        .then(function() {
+          console.log('STARTED UP TEST CLUSTER:::');
+          return new Promise(resolve => {
+            setTimeout(resolve, 5000);
+          });
+        })
+        .then(function() {
+          return users.allowDataPath(edgeInstance[0], 'username', 'test/event/*');
+        })
+        .then(function() {
+          return linearStartStopProcess(
+            'hosts=127.0.0.1:56001 port=55005 proxyport=57005 membershipport=56005 seed=false secure=true membername=external-1',
+            20,
+            2000
+          );
+        })
+        .then(function() {
+          console.log('STARTED UP PROCESS CLUSTER:::');
+          adminUserDisconnectionsOnProcessAfterLoginChurn = adminUserDisconnectionsOnProcess;
+          return new Promise(resolve => {
+            setTimeout(resolve, 5000);
+          });
+        })
+        .then(function() {
+          console.log('CONNECT PROCESS CLIENT');
+          return testclient.create('username', 'password', 55005);
+        })
+        .then(function(client) {
+          processClient = client;
+          //first test our broker components methods are directly callable
+          return processClient.data.on('test/event/*', data => {
+            processEventData.push(data);
+          });
+        })
+        .then(function() {
+          return testclient.create('username', 'password', 55003);
+        })
+        .then(function(client) {
+          internalClient = client;
+          //first test our broker components methods are directly callable
+          return internalClient.data.on('test/event/*', data => {
+            internalEventData.push(data);
+          });
+        })
+        .then(function() {
+          return testclient.create('username', 'password', 55001);
+        })
+        .then(function(client) {
+          brokerClient = client;
+          //first test our broker components methods are directly callable
+          return brokerClient.data.on('test/event/*', (data, meta) => {
+            brokerEventData.push(data);
+          });
+        })
+        .then(function() {
+          return testclient.create('username', 'password', 55002);
+        })
+        .then(function(client) {
+          brokerClient1 = client;
+          //first test our broker components methods are directly callable
+          return brokerClient1.data.on('test/event/*', (data, meta) => {
+            brokerEventData1.push(data);
+          });
+        })
+        .then(function() {
+          return new Promise(resolve => {
+            setTimeout(resolve, 2000);
+          });
+        })
+        .then(function() {
+          return internalClient.data.set('test/event/1', { test: 'data-1' });
+        })
+        .then(function() {
+          return brokerClient.data.set('test/event/2', { test: 'data-2' });
+        })
+        .then(function() {
+          return new Promise(resolve => {
+            setTimeout(resolve, 5000);
+          });
+        })
+        .then(function() {
+          console.log(JSON.stringify([internalEventData, brokerEventData, brokerEventData1], null, 2));
+          expect(brokerEventData.length).to.be(2);
+          expect(brokerEventData1.length).to.be(2);
+          expect(internalEventData.length).to.be(2);
+          expect(processEventData.length).to.be(2);
+          done();
+        })
+        .catch(done);
     });
   });
 });
