@@ -179,16 +179,12 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         var cp = require('child_process');
         var paramsSplit = params.split('membername=');
         var processParams = paramsSplit[0] + 'host=127.0.0.1';
-
         var forkPath = path.resolve(['test', 'cli', 'cluster-node.js'].join(path.sep));
-
         currentProc = cp.fork(forkPath, processParams.split(' '), {
           silent: true
         });
-
         currentProc.stdout.on('data', function(data) {
           var dataString = data.toString();
-          console.log('DATA:::', dataString);
           if (dataString.indexOf("'_ADMIN' disconnected") > -1) adminUserDisconnectionsOnProcess++;
         });
         return setTimeout(function() {
@@ -437,8 +433,8 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         })
         .then(function() {
           return linearStartStopProcess(
-            'hosts=127.0.0.1:56001 port=55005 proxyport=57005 membershipport=56005 seed=false secure=true membername=external-1',
-            20,
+            'hosts=127.0.0.1:56001 port=55005 proxyport=57005 membershipport=56005 seed=false secure=true joinTimeout=300 membername=external-1',
+            10,
             2000
           );
         })

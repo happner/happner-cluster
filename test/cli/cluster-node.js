@@ -82,7 +82,7 @@ var config = {
           host: processarguments.host, // defaults to first public IPv4 address
           port: processarguments.membershipport,
           hosts: processarguments.hosts,
-          joinTimeout: 5000,
+          joinTimeout: processarguments.joinTimeout,
           pingInterval: processarguments.pingInterval,
           pingTimeout: processarguments.pingTimeout,
           pingReqTimeout: processarguments.pingReqTimeout,
