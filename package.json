@@ -1,6 +1,6 @@
 {
   "name": "happner-cluster",
-  "version": "9.0.9",
+  "version": "9.0.10",
   "description": "Extends happner with clustering capabilities",
   "main": "index.js",
   "scripts": {
@@ -41,9 +41,9 @@
   },
   "dependencies": {
     "bluebird": "^3.5.0",
-    "happn-cluster": "^9.0.5",
-    "happner-2": "^11.4.4",
-    "happner-client": "^11.1.4",
+    "happn-cluster": "^9.0.6",
+    "happner-2": "^11.4.6",
+    "happner-client": "^11.1.6",
     "hashring": "^3.2.0",
     "node-http-proxy": "^0.2.3",
     "semver": "^5.3.0"

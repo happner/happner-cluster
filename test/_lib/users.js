@@ -184,3 +184,45 @@ module.exports.denyEvent = function(server, username, component, event) {
     );
   });
 };
+
+module.exports.allowDataPath = function(server, username, path) {
+  var group = username + '_group';
+  var permissions = { data: {} };
+  permissions.data[path] = { actions: ['*'] };
+
+  return new Promise(function(resolve, reject) {
+    queue.push(
+      {
+        server: server,
+        group: group,
+        permissions: permissions,
+        method: 'addGroupPermissions'
+      },
+      function(err) {
+        if (err) return reject(err);
+        resolve();
+      }
+    );
+  });
+};
+
+module.exports.denyDataPath = function(server, username, path) {
+  var group = username + '_group';
+  var permissions = { data: {} };
+  permissions.data[path] = { authorized: false };
+
+  return new Promise(function(resolve, reject) {
+    queue.push(
+      {
+        server: server,
+        group: group,
+        permissions: permissions,
+        method: 'removeGroupPermissions'
+      },
+      function(err) {
+        if (err) return reject(err);
+        resolve();
+      }
+    );
+  });
+};
