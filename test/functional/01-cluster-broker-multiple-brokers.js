@@ -12,7 +12,6 @@ var testclient = require('../_lib/client');
 var path = require('path');
 
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
-const { delay } = require('bluebird');
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(600000);
   const previousLogLevel = process.env.LOG_LEVEL;
@@ -100,9 +99,12 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
         if (currentProc) currentProc.kill();
         setTimeout(() => {
-          console.log('disconnected _ADMIN sessions', adminUserDisconnectionsOnProcess - adminUserDisconnectionsOnProcessAfterLoginChurn);
+          console.log(
+            'disconnected _ADMIN sessions',
+            adminUserDisconnectionsOnProcess - adminUserDisconnectionsOnProcessAfterLoginChurn
+          );
           done();
-        }, 5000)
+        }, 5000);
       });
     });
   });
@@ -147,26 +149,13 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     });
   }
 
-  function getRandomArbitary (min, max) {
-    return Math.random() * (max - min) + min;
-  }
-
-  async function randomlyStartStopProcess(params, attempts) {
-    let lastProc;
-      attempts = attempts || 1;
-      for (var i = 0; i < attempts; i++) {
-        lastProc = await startProcess(params, getRandomArbitary(500, 5000));
-      }
-      return lastProc;
-  }
-
   async function linearStartStopProcess(params, attempts, interval) {
     let lastProc;
-      attempts = attempts || 1;
-      for (var i = 0; i < attempts; i++) {
-        lastProc = await startProcess(params, interval);
-      }
-      return lastProc;
+    attempts = attempts || 1;
+    for (var i = 0; i < attempts; i++) {
+      lastProc = await startProcess(params, interval);
+    }
+    return lastProc;
   }
 
   var adminUserDisconnectionsOnProcess = 0;
@@ -353,7 +342,9 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
             '1 (HappnerClient) ignoring brokered description for peer: MESH_2\n',
             '2 (HappnerClient) ignoring brokered description for peer: MESH_1\n',
             '3 (HappnerClient) ignoring brokered description for peer: MESH_1\n',
-            '3 (HappnerClient) ignoring brokered description for peer: MESH_2\n'
+            '3 (HappnerClient) ignoring brokered description for peer: MESH_2\n',
+            '4 (HappnerClient) ignoring brokered description for peer: MESH_1\n',
+            '4 (HappnerClient) ignoring brokered description for peer: MESH_2\n'
           ]);
           process.env.LOG_LEVEL = previousLogLevel;
           setTimeout(done, 2000);
@@ -406,7 +397,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         .catch(done);
     });
 
-    it.only('we tests brokered data events -  internal originator replicated to broker', function(done) {
+    it('we tests brokered data events -  internal originator replicated to broker', function(done) {
       var internalClient, brokerClient, brokerClient1, processClient;
       var edgeInstance;
       var internalEventData = [];
@@ -472,7 +463,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         .then(function(client) {
           brokerClient = client;
           //first test our broker components methods are directly callable
-          return brokerClient.data.on('test/event/*', (data, meta) => {
+          return brokerClient.data.on('test/event/*', data => {
             brokerEventData.push(data);
           });
         })
@@ -482,7 +473,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         .then(function(client) {
           brokerClient1 = client;
           //first test our broker components methods are directly callable
-          return brokerClient1.data.on('test/event/*', (data, meta) => {
+          return brokerClient1.data.on('test/event/*', data => {
             brokerEventData1.push(data);
           });
         })
@@ -503,7 +494,9 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          console.log(JSON.stringify([internalEventData, brokerEventData, brokerEventData1], null, 2));
+          console.log(
+            JSON.stringify([internalEventData, brokerEventData, brokerEventData1], null, 2)
+          );
           expect(brokerEventData.length).to.be(2);
           expect(brokerEventData1.length).to.be(2);
           expect(internalEventData.length).to.be(2);

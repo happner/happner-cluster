@@ -176,4 +176,5 @@
 9.0.10 2020-10-04
 -----------------
   - happn-3 patch: selective security cache clearing and concurrency 1 queue on dataChanged event - SMC-1189
+  - happn-cluster patch: SMC-1252 - cluster member restarts cause leak of peer admin
 
