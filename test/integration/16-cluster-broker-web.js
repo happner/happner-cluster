@@ -40,6 +40,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         stopMethod: 'stop'
       }
     };
+    config.happn.services.replicator = {
+      config: {
+        securityChangesetReplicateInterval: 100 // 10 per second
+      }
+    };
     return config;
   }
 
@@ -67,6 +72,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
             testJSONSticky: ['testJSONSticky']
           }
         }
+      }
+    };
+    config.happn.services.replicator = {
+      config: {
+        securityChangesetReplicateInterval: 100 // 10 per second
       }
     };
     return config;
