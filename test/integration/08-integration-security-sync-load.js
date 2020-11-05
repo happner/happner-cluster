@@ -45,6 +45,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       component4: {},
       component5: {}
     };
+    config.happn.services.replicator = {
+      config: {
+        securityChangesetReplicateInterval: 10 // 100 per second
+      }
+    };
     return config;
   }
 
