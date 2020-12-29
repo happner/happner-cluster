@@ -63,4 +63,5 @@ describe(helpers.test.testName(__filename, 3), function() {
 
   xit('starts up a cluster with interdependencies, we inject a component with dependencies - ensure it starts because its existing dependencies are there', async () => {});
   xit('starts up a cluster with interdependencies, we inject a component with dependencies - ensure it start is delayed as it depends on a follow on injected component', async () => {});
+  xit('starts up a cluster with interdependencies, we ensure that members with unsatisfied dependencies are not accessible', async () => {});
 });
