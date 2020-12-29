@@ -30,6 +30,7 @@
     "expect.js": "^0.3.1",
     "happn-service-mongo-2": "^2.0.0",
     "intercept-stdout": "^0.1.2",
+    "lodash": "^4.17.20",
     "mocha": "^3.5.0",
     "mongodb": "^3.0.5",
     "nyc": "^14.1.1",
