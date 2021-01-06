@@ -8,11 +8,27 @@ module.exports = class Configuration extends require('./helper') {
     return new Configuration();
   }
 
+  extract(test, index, name) {
+    const configuration = this.get(test, index);
+    return {
+      module: {
+        name,
+        config: configuration.modules[name]
+      },
+      component: {
+        name,
+        config: configuration.components[name]
+      }
+    };
+  }
+
+  get(test, index) {
+    return require(`../configurations/${test}/${index}`);
+  }
+
   construct(test, index, secure = true, minPeers, hosts, joinTimeout, replicate) {
-    const specified = require(`../configurations/${test}/${index}`);
     const base = this.base(index, secure, minPeers, hosts, joinTimeout, replicate);
-    const merged = _.defaultsDeep(base, specified);
-    return merged;
+    return _.defaultsDeep(base, this.get(test, index));
   }
 
   base(index, secure = true, minPeers, hosts, joinTimeout, replicate) {

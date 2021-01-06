@@ -2,10 +2,17 @@ module.exports = {
   modules: {
     component2: {
       instance: {
-        initialize: async () => {},
-        start: async () => {},
+        initialize: async () => {
+          this.state = { initialized: true };
+        },
+        start: async () => {
+          this.state.started = true;
+        },
         use: async () => {
           return 2;
+        },
+        is: async () => {
+          return this.state;
         }
       }
     }
