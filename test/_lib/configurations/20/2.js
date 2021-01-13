@@ -3,20 +3,17 @@ module.exports = {
     component2: {
       instance: {
         initialize: async () => {
-          console.log("INIT")
           this.state = { initialized: true };
         },
         start: async () => {
-          console.log("START")
-
-          this.state = this.state || {}
+          this.state = this.state || {};
           this.state.started = true;
         },
         use: async () => {
           return 2;
         },
         is: async () => {
-          if (!this.state) this.state ={}
+          if (!this.state) this.state = {};
           return this.state;
         }
       }

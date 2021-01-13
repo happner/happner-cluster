@@ -37,15 +37,15 @@ module.exports = class Cluster extends Helper {
     return new Cluster();
   }
   async destroy() {
-    this.instances.sort((a,b)  => {a._mesh.config.name - b._mesh.config.name})
+    this.instances.sort((a, b) => {
+      a._mesh.config.name - b._mesh.config.name;
+    });
     for (let instance of this.instances) {
-      
       if (instance.stop) {
+        // console.log("descr:",  instance.describe())
 
-      // console.log("descr:",  instance.describe())
-
-      await instance.stop();
+        await instance.stop();
+      }
     }
-  }
   }
 };

@@ -10,7 +10,6 @@ const helpers = {
 describe(helpers.test.testName(__filename, 3), function() {
   this.timeout(60000);
 
-
   it('starts up a cluster with no interdependencies, happy path, we ensure we can start and teardown the cluster', async () => {
     const cluster = helpers.cluster.create();
 
@@ -25,7 +24,6 @@ describe(helpers.test.testName(__filename, 3), function() {
     await helpers.client.destroy(client);
     await cluster.destroy();
     helpers.test.expect(null).to.be.null;
-
   });
 
   it('starts up a cluster with interdependencies, happy path, we ensure the startup order is correct', async () => {
@@ -82,7 +80,7 @@ describe(helpers.test.testName(__filename, 3), function() {
       //check member 2 is not accessible - as member 4 has not been started
       await helpers.client.create(username, password, 55002);
     } catch (e) {
-      error = e.message;      
+      error = e.message;
     }
     helpers.test.expect(error).to.be('connect ECONNREFUSED 127.0.0.1:55002');
 
@@ -98,9 +96,8 @@ describe(helpers.test.testName(__filename, 3), function() {
     await cluster.member.start(helpers.configuration.construct(20, 5), 2000);
     await helpers.test.delay(2000);
 
-    
     await cluster.destroy();
-    helpers.test.expect(null).to.be.null
+    helpers.test.expect(null).to.be.null;
   });
 
   it('starts up a cluster, we inject a component with dependencies - ensure it starts because its existing dependencies are there', async () => {
@@ -119,7 +116,7 @@ describe(helpers.test.testName(__filename, 3), function() {
     helpers.test.expect(result).to.be(2);
     await helpers.client.destroy(client);
     await cluster.destroy();
-    helpers.test.expect(null).to.be.null
+    helpers.test.expect(null).to.be.null;
   });
 
   it('starts up a cluster with interdependencies, we inject a component with dependencies - ensure it start is delayed as it depends on a follow on injected component', async () => {
@@ -145,12 +142,11 @@ describe(helpers.test.testName(__filename, 3), function() {
     client = await helpers.client.create(username, password, 55001);
     await helpers.test.delay(2000);
 
-    helpers.test.expect(client.exchange.component2).to.be.ok
+    helpers.test.expect(client.exchange.component2).to.be.ok;
 
     helpers.test.expect((await client.exchange.component2.is()).initialized).to.be(true);
     helpers.test.expect((await client.exchange.component2.is()).started).to.be(true);
     await helpers.client.destroy(client);
     await cluster.destroy();
-
   });
 });
