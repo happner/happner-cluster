@@ -155,7 +155,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     for (var i = 0; i < attempts; i++) {
       lastProc = await startProcess(params, interval);
     }
-    return lastProc;
+    return lastProc; 
   }
 
   var adminUserDisconnectionsOnProcess = 0;
