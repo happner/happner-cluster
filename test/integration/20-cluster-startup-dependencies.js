@@ -23,7 +23,6 @@ describe(helpers.test.testName(__filename, 3), function() {
     helpers.test.expect(result).to.be(1);
     await helpers.client.destroy(client);
     await cluster.destroy();
-    helpers.test.expect(null).to.be.null;
   });
 
   it('starts up a cluster with interdependencies, happy path, we ensure the startup order is correct', async () => {
@@ -59,7 +58,6 @@ describe(helpers.test.testName(__filename, 3), function() {
     ]);
     await helpers.client.destroy(client);
     await cluster.destroy();
-    helpers.test.expect(null).to.be.null;
   });
 
   it('starts up a cluster with interdependencies, we ensure that members with unsatisfied dependencies are not accessible', async () => {
@@ -97,7 +95,6 @@ describe(helpers.test.testName(__filename, 3), function() {
     await helpers.test.delay(2000);
 
     await cluster.destroy();
-    helpers.test.expect(null).to.be.null;
   });
 
   it('starts up a cluster, we inject a component with dependencies - ensure it starts because its existing dependencies are there', async () => {
@@ -116,7 +113,6 @@ describe(helpers.test.testName(__filename, 3), function() {
     helpers.test.expect(result).to.be(2);
     await helpers.client.destroy(client);
     await cluster.destroy();
-    helpers.test.expect(null).to.be.null;
   });
 
   it('starts up a cluster with interdependencies, we inject a component with dependencies - ensure it start is delayed as it depends on a follow on injected component', async () => {
@@ -124,26 +120,19 @@ describe(helpers.test.testName(__filename, 3), function() {
 
     await cluster.member.start(helpers.configuration.construct(20, 0), 2000);
     await cluster.member.start(helpers.configuration.construct(20, 1), 2000);
-    await cluster.member.start(helpers.configuration.construct(20, 5), 5000);
+    await cluster.member.start(helpers.configuration.construct(20, 5), 2000);
     //dont await this - as it will hold up the  test
     cluster.component.inject(1, helpers.configuration.extract(20, 2, 'component2'));
 
-    await helpers.test.delay(5000);
+    await helpers.test.delay(2000);
 
     //check component2 (depending on member 4) is not accessible
     let client = await helpers.client.create(username, password, 55001);
     helpers.test.expect(client.exchange.component2).to.be(undefined);
     await helpers.client.destroy(client);
-    await helpers.test.delay(2000);
-
     await cluster.member.start(helpers.configuration.construct(20, 4), 5000);
-    await helpers.test.delay(8000);
 
     client = await helpers.client.create(username, password, 55001);
-    await helpers.test.delay(2000);
-
-    helpers.test.expect(client.exchange.component2).to.be.ok;
-
     helpers.test.expect((await client.exchange.component2.is()).initialized).to.be(true);
     helpers.test.expect((await client.exchange.component2.is()).started).to.be(true);
     await helpers.client.destroy(client);
