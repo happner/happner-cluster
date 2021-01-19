@@ -13,8 +13,8 @@ module.exports = function(url, collectionName, callback) {
     MongoClient.connect(url, function(err, client) {
       if (err) return rejectInternal(err);
       var db = client.db(collectionName);
-      var collection = db.collection(collectionName);
-      collection.drop(function(err) {
+      // var collection = db.collection(collectionName);
+      db.dropCollection(collectionName, function(err) {
         if (err && err.message !== 'ns not found')
           //eslint-disable-next-line
           console.log("error clearing mongodb: " + err.message);

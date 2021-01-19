@@ -22,7 +22,7 @@ describe(helpers.test.testName(__filename, 3), function() {
     const result = await client.exchange.component1.use();
     helpers.test.expect(result).to.be(1);
     await helpers.client.destroy(client);
-    await cluster.destroy();
+    return cluster.destroy();
   });
 
   it('starts up a cluster with interdependencies, happy path, we ensure the startup order is correct', async () => {
@@ -57,7 +57,7 @@ describe(helpers.test.testName(__filename, 3), function() {
       { key: 'member-started', value: 'MESH_3' }
     ]);
     await helpers.client.destroy(client);
-    await cluster.destroy();
+    return cluster.destroy();
   });
 
   it('starts up a cluster with interdependencies, we ensure that members with unsatisfied dependencies are not accessible', async () => {
@@ -89,12 +89,11 @@ describe(helpers.test.testName(__filename, 3), function() {
     const result = await client.exchange.component2.use();
     helpers.test.expect(result).to.be(2);
     await helpers.client.destroy(client);
-
     //start member 5 up So that we can cleanly destroy cluster
     await cluster.member.start(helpers.configuration.construct(20, 5), 2000);
     await helpers.test.delay(2000);
 
-    await cluster.destroy();
+    return cluster.destroy();
   });
 
   it('starts up a cluster, we inject a component with dependencies - ensure it starts because its existing dependencies are there', async () => {
@@ -112,7 +111,7 @@ describe(helpers.test.testName(__filename, 3), function() {
     const result = await client.exchange.component2.use();
     helpers.test.expect(result).to.be(2);
     await helpers.client.destroy(client);
-    await cluster.destroy();
+    return cluster.destroy();
   });
 
   it('starts up a cluster with interdependencies, we inject a component with dependencies - ensure it start is delayed as it depends on a follow on injected component', async () => {
@@ -136,6 +135,6 @@ describe(helpers.test.testName(__filename, 3), function() {
     helpers.test.expect((await client.exchange.component2.is()).initialized).to.be(true);
     helpers.test.expect((await client.exchange.component2.is()).started).to.be(true);
     await helpers.client.destroy(client);
-    await cluster.destroy();
+    return cluster.destroy();
   });
 });
