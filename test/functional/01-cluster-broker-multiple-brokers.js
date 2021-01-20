@@ -87,11 +87,8 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   }
 
   beforeEach('clear mongo collection', function(done) {
-    stopCluster(servers, function(/*e*/) {
-      // if (e) {
-      //   //Should still clear mongo, so we ignore the error.
-      //   // console.log(e);
-      // }
+    stopCluster(servers, function() {
+      // this should still clear mongo, so we ignore any error in callback
       servers = [];
       clearMongoCollection('mongodb://localhost', 'happn-cluster', function(e) {
         if (e) console.log(e);
