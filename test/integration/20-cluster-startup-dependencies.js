@@ -22,7 +22,7 @@ describe(helpers.test.testName(__filename, 3), function() {
     const result = await client.exchange.component1.use();
     helpers.test.expect(result).to.be(1);
     await helpers.client.destroy(client);
-    await cluster.destroy();
+    return cluster.destroy();
   });
 
   it('starts up a cluster with interdependencies, happy path, we ensure the startup order is correct', async () => {
@@ -57,7 +57,7 @@ describe(helpers.test.testName(__filename, 3), function() {
       { key: 'member-started', value: 'MESH_3' }
     ]);
     await helpers.client.destroy(client);
-    await cluster.destroy();
+    return cluster.destroy();
   });
 
   it('starts up a cluster with interdependencies, we ensure that members with unsatisfied dependencies are not accessible', async () => {
@@ -88,49 +88,53 @@ describe(helpers.test.testName(__filename, 3), function() {
     const client = await helpers.client.create(username, password, 55002);
     const result = await client.exchange.component2.use();
     helpers.test.expect(result).to.be(2);
-
     await helpers.client.destroy(client);
-    await cluster.destroy();
+    //start member 5 up So that we can cleanly destroy cluster
+    await cluster.member.start(helpers.configuration.construct(20, 5), 2000);
+    await helpers.test.delay(2000);
+
+    return cluster.destroy();
   });
 
-  xit('starts up a cluster, we inject a component with dependencies - ensure it starts because its existing dependencies are there', async () => {
+  it('starts up a cluster, we inject a component with dependencies - ensure it starts because its existing dependencies are there', async () => {
     const cluster = helpers.cluster.create();
 
     await cluster.member.start(helpers.configuration.construct(20, 0), 2000);
     await cluster.member.start(helpers.configuration.construct(20, 1), 2000);
     await cluster.member.start(helpers.configuration.construct(20, 4), 7000);
     await cluster.component.inject(1, helpers.configuration.extract(20, 2, 'component2'));
-
-    await helpers.test.delay(2000);
+    await helpers.test.delay(4000);
 
     //check member 2 (depending on member 4) is accessible
     const client = await helpers.client.create(username, password, 55001);
+    await helpers.test.delay(4000);
     const result = await client.exchange.component2.use();
     helpers.test.expect(result).to.be(2);
     await helpers.client.destroy(client);
-    await cluster.destroy();
+    return cluster.destroy();
   });
 
-  xit('starts up a cluster with interdependencies, we inject a component with dependencies - ensure it start is delayed as it depends on a follow on injected component', async () => {
+  it('starts up a cluster with interdependencies, we inject a component with dependencies - ensure it start is delayed as it depends on a follow on injected component', async () => {
     const cluster = helpers.cluster.create();
 
     await cluster.member.start(helpers.configuration.construct(20, 0), 2000);
     await cluster.member.start(helpers.configuration.construct(20, 1), 2000);
-    await cluster.member.start(helpers.configuration.construct(20, 5), 5000);
+    await cluster.member.start(helpers.configuration.construct(20, 5), 2000);
     //dont await this - as it will hold up the  test
     cluster.component.inject(1, helpers.configuration.extract(20, 2, 'component2'));
 
-    await helpers.test.delay(5000);
+    await helpers.test.delay(2000);
 
     //check component2 (depending on member 4) is not accessible
     let client = await helpers.client.create(username, password, 55001);
     helpers.test.expect(client.exchange.component2).to.be(undefined);
     await helpers.client.destroy(client);
     await cluster.member.start(helpers.configuration.construct(20, 4), 5000);
+
     client = await helpers.client.create(username, password, 55001);
     helpers.test.expect((await client.exchange.component2.is()).initialized).to.be(true);
     helpers.test.expect((await client.exchange.component2.is()).started).to.be(true);
     await helpers.client.destroy(client);
-    await cluster.destroy();
+    return cluster.destroy();
   });
 });

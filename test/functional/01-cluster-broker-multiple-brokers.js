@@ -12,9 +12,12 @@ var testclient = require('../_lib/client');
 var path = require('path');
 
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
+
+// const { instance } = require('../../lib/broker-web-proxy');
+
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(600000);
-  const previousLogLevel = process.env.LOG_LEVEL;
+  const previousLogLevel = process.env.LOG_LEVEL || 'info';
   process.env.LOG_LEVEL = 'info';
   var servers = [];
   let currentProc;
@@ -84,18 +87,21 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   }
 
   beforeEach('clear mongo collection', function(done) {
-    stopCluster(servers, function(e) {
-      if (e) return done(e);
+    stopCluster(servers, function() {
+      // this should still clear mongo, so we ignore any error in callback
       servers = [];
-      clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
+      clearMongoCollection('mongodb://localhost', 'happn-cluster', function(e) {
+        if (e) console.log(e);
+        console.log('CLEARED');
         done();
       });
     });
   });
 
-  afterEach('stop cluster', function(done) {
-    if (!servers) return done();
+  function stopAndCount(callback, requireResult = false) {
+    if (!servers) return callback();
     stopCluster(servers, function() {
+      servers.forEach(instance => instance.stop());
       clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
         if (currentProc) currentProc.kill();
         setTimeout(() => {
@@ -103,11 +109,15 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
             'disconnected _ADMIN sessions',
             adminUserDisconnectionsOnProcess - adminUserDisconnectionsOnProcessAfterLoginChurn
           );
-          done();
+          let disconnected =
+            adminUserDisconnectionsOnProcess - adminUserDisconnectionsOnProcessAfterLoginChurn;
+          return requireResult ? callback(disconnected) : callback();
         }, 5000);
       });
     });
-  });
+  }
+
+  afterEach('stop cluster', stopAndCount);
 
   function startInternal(id, clusterMin, dynamic) {
     return new Promise((resolve, reject) => {
@@ -169,6 +179,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         var paramsSplit = params.split('membername=');
         var processParams = paramsSplit[0] + 'host=127.0.0.1';
         var forkPath = path.resolve(['test', 'cli', 'cluster-node.js'].join(path.sep));
+
         currentProc = cp.fork(forkPath, processParams.split(' '), {
           silent: true
         });
@@ -192,10 +203,10 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       const unhook_intercept = intercept(function(txt) {
         capturedLogs.push(txt);
       });
+      var edgeInstance;
       var thisClient;
       var thisLocalClient;
       var gotToFinalAttempt = false;
-      var edgeInstance;
 
       startEdge(1, 1)
         .then(instance => {
@@ -259,8 +270,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           //first test our broker components methods are directly callable
           return thisLocalClient.event.remoteComponent1.on('test/event');
         })
-        .then(function(handle) {
-          console.log(handle);
+        .then(function() {
           return thisLocalClient.exchange.remoteComponent.attachToEvent();
         })
         .then(function(handle) {
@@ -276,6 +286,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         .then(function(result) {
           expect(result).to.be('MESH_1:brokerComponent:directMethod');
           //call an injected method
+
           return thisClient.exchange.remoteComponent.brokeredMethod1();
         })
         .then(function(result) {
@@ -329,6 +340,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           expect(gotToFinalAttempt).to.be(true);
           expect(e.toString()).to.be('AccessDenied: unauthorized');
           unhook_intercept();
+
           expect(
             capturedLogs
               .filter(txt => {
@@ -347,6 +359,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
             '4 (HappnerClient) ignoring brokered description for peer: MESH_2\n'
           ]);
           process.env.LOG_LEVEL = previousLogLevel;
+          thisClient.disconnect();
           setTimeout(done, 2000);
         });
     });
@@ -494,14 +507,41 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          console.log(
-            JSON.stringify([internalEventData, brokerEventData, brokerEventData1], null, 2)
-          );
+          console.log('HERE');
+          expect([internalEventData, brokerEventData, brokerEventData1]).to.eql([
+            [
+              {
+                test: 'data-1'
+              },
+              {
+                test: 'data-2'
+              }
+            ],
+            [
+              {
+                test: 'data-1'
+              },
+              {
+                test: 'data-2'
+              }
+            ],
+            [
+              {
+                test: 'data-1'
+              },
+              {
+                test: 'data-2'
+              }
+            ]
+          ]);
           expect(brokerEventData.length).to.be(2);
           expect(brokerEventData1.length).to.be(2);
           expect(internalEventData.length).to.be(2);
           expect(processEventData.length).to.be(2);
-          done();
+          stopAndCount(disconnects => {
+            expect(disconnects).to.be(5);
+            done();
+          }, true);
         })
         .catch(done);
     });

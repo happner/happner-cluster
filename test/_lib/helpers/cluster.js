@@ -23,6 +23,10 @@ module.exports = class Cluster extends Helper {
     };
     this.component = {
       inject: (index, configuration) => {
+        this.instances.sort((a, b) => {
+          if (a._mesh.config.name < b._mesh.config.name) return -1;
+          return 1;
+        });
         const instances = this.instances;
         return new Promise((resolve, reject) => {
           instances[index]._mesh._createElement(configuration, true, e => {
@@ -37,6 +41,14 @@ module.exports = class Cluster extends Helper {
     return new Cluster();
   }
   async destroy() {
-    for (let instance of this.instances) if (instance.stop) await instance.stop();
+    this.instances.sort((a, b) => {
+      if (a._mesh.config.name < b._mesh.config.name) return -1;
+      return 1;
+    });
+    for (let instance of this.instances) {
+      if (instance.stop) {
+        await instance.stop();
+      }
+    }
   }
 };

@@ -18,6 +18,7 @@ module.exports = function(
     name: 'MESH_' + seq,
     domain: 'DOMAIN_NAME',
     port: 57000 + seq,
+    ignoreDependenciesOnStartup: true,
     cluster: {
       requestTimeout: clusterRequestTimeout,
       responseTimeout: clusterResponseTimeout
