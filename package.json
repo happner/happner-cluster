@@ -43,8 +43,8 @@
   "dependencies": {
     "bluebird": "^3.5.0",
     "happn-cluster": "^10.0.0",
-    "happner-2": "SMC-917",
-    "happner-client": "SMC-917",
+    "happner-2": "^11.5.0",
+    "happner-client": "^11.2.0",
     "hashring": "^3.2.0",
     "node-http-proxy": "^0.2.3",
     "semver": "^5.3.0"
