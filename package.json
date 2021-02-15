@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "bluebird": "^3.5.0",
-    "happn-cluster": "^10.0.0",
-    "happner-2": "11.6.0-prerelease-1",
+    "happn-cluster": "^10.1.0",
+    "happner-2": "^11.6.0",
     "happner-client": "^11.2.0",
     "hashring": "^3.2.0",
     "node-http-proxy": "^0.2.3",
