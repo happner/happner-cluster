@@ -195,4 +195,11 @@
   - SMC-917: Removed unecessary relay of startup/dependencies/satisfied e… …
   - SMC-917: updated dependencies
   - SMC-917: re-added package-lock
+  - SMC-1645: updated package
+  - SMC-1645: refactor, completed tests
+  - SMC-1645: test setup
+  - SMC-1256: Added tests for data events on clusters
+  - SMC-917: updated version and RELEASES
+  
+
 
