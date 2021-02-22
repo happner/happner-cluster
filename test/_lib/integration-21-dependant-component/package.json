@@ -1,0 +1,11 @@
+{
+  "name": "dependant-component",
+  "version": "2.2.0",
+  "happner":{
+    "dependencies": {
+      "remoteComponent":
+      {"version":"2.2.0"
+      }
+    }
+  }
+}

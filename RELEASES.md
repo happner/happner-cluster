@@ -182,3 +182,24 @@
 -----------------
   - happn-cluster upgrade - SMC-1356 - batching of security updates
 
+10.1.0 2021-01-21
+-----------------
+  - SMC-917: initial happy path tests, modifications to cluster-plugin
+  - SMC-917: updated tests
+  - SMC-917 - failing tests on component injection
+  - SMC-917: increased timeouts in test 20-cluster-startup-dependencies. … …
+  - SMC-917: Added unit tests for changes. Lots of other tests failing
+  - SMC-917: All tests passing
+  - SMC-917: Reverted clear-mongo-collection test helper to original version
+  - SMC-917: Review fixes
+  - SMC-917: Removed unecessary relay of startup/dependencies/satisfied e… …
+  - SMC-917: updated dependencies
+  - SMC-917: re-added package-lock
+  - SMC-1645: updated package
+  - SMC-1645: refactor, completed tests
+  - SMC-1645: test setup
+  - SMC-1256: Added tests for data events on clusters
+  - SMC-917: updated version and RELEASES
+  
+
+
