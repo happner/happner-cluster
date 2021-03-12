@@ -245,7 +245,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       .catch(done);
   });
 
-  it.only('handles security sync for events', function(done) {
+  it('handles security sync for events', function(done) {
     this.timeout(20 * 1000);
 
     var events = {};
