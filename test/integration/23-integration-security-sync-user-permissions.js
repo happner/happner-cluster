@@ -1,4 +1,3 @@
-var Happner = require('happner-2');
 var HappnerCluster = require('../..');
 var Promise = require('bluebird');
 var expect = require('expect.js');
@@ -7,7 +6,7 @@ var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
-var users = require('../_lib/users');
+var users = require('../_lib/user-permissions');
 var client = require('../_lib/client');
 
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
@@ -134,12 +133,12 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       })
 
       .then(function() {
-        return Promise.all([users.allowMethod(servers[0], 'username', 'component1', 'method1')]);
+        return users.allowMethod(servers[0], 'username', 'component1', 'method1');
       })
 
       .then(function() {
         // await sync
-        return Promise.delay(300);
+        return Promise.delay(3000);
       })
 
       .then(function() {
@@ -245,7 +244,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       .catch(done);
   });
 
-  it.only('handles security sync for events', function(done) {
+  it('handles security sync for events', function(done) {
     this.timeout(20 * 1000);
 
     var events = {};
@@ -326,7 +325,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
       .then(function() {
         // await sync
-        return Promise.delay(300);
+        return Promise.delay(3000);
       })
 
       .then(function() {
@@ -336,9 +335,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
       .then(function() {
         // await emit
-        return Promise.delay(200);
+        return Promise.delay(2000);
       })
-
+      .then(() => {
+        return users.getUser(servers[0], 'username');
+      })
       .then(function() {
         expect(events).to.eql({
           // 1: 'event1',
@@ -347,7 +348,6 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           4: 'event2'
         });
       })
-
       .then(function() {
         return Promise.all([
           client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
@@ -371,237 +371,5 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       })
 
       .catch(done);
-  });
-
-  context('full spectrum security operations', function() {
-    function performAction(port, username, component, method) {
-      return new Promise(function(resolve, reject) {
-        var client = new Happner.MeshClient({
-          hostname: 'localhost',
-          port: port
-        });
-
-        client
-          .login({
-            username: username,
-            password: 'password'
-          })
-
-          .then(function() {
-            return client.exchange[component][method]();
-          })
-
-          .then(function() {
-            client.disconnect(function() {});
-            resolve();
-          })
-
-          .catch(function(e) {
-            client.disconnect(function() {});
-            reject(e);
-          });
-      });
-    }
-
-    it('handles sync for add user and group and link and add permission and unlink group', function(done) {
-      var user, group;
-
-      servers[0].exchange.security
-        .upsertUser({
-          username: 'username1',
-          password: 'password'
-        })
-
-        .then(function(_user) {
-          user = _user;
-          return servers[0].exchange.security.upsertGroup({
-            name: 'group1'
-          });
-        })
-
-        .then(function(_group) {
-          group = _group;
-          return servers[0].exchange.security.linkGroup(group, user);
-        })
-
-        .then(function() {
-          return servers[0].exchange.security.addGroupPermissions('group1', {
-            methods: {
-              '/DOMAIN_NAME/component1/method1': { authorized: true }
-            }
-          });
-        })
-
-        .then(function() {
-          return Promise.delay(400);
-        })
-
-        .then(function() {
-          return performAction(55002, 'username1', 'component1', 'method1');
-        })
-
-        .then(function() {
-          return servers[0].exchange.security.unlinkGroup(group, user);
-        })
-
-        .then(function() {
-          return Promise.delay(400);
-        })
-
-        .then(function() {
-          return new Promise(function(resolve, reject) {
-            performAction(55002, 'username1', 'component1', 'method1')
-              .then(function() {
-                reject(new Error('missing AccessDeniedError 1'));
-              })
-              .catch(function(e) {
-                if (e.message === 'unauthorized' && e.name === 'AccessDenied') {
-                  return resolve();
-                }
-                reject(new Error('missing AccessDeniedError 2'));
-              });
-          });
-        })
-
-        .then(function() {
-          done();
-        })
-
-        .catch(done);
-    });
-
-    it('handles sync for delete group', function(done) {
-      var user, group;
-
-      servers[0].exchange.security
-        .upsertUser({
-          username: 'username2',
-          password: 'password'
-        })
-
-        .then(function(_user) {
-          user = _user;
-          return servers[0].exchange.security.upsertGroup({
-            name: 'group2'
-          });
-        })
-
-        .then(function(_group) {
-          group = _group;
-          return servers[0].exchange.security.linkGroup(group, user);
-        })
-
-        .then(function() {
-          return servers[0].exchange.security.addGroupPermissions('group2', {
-            methods: {
-              '/DOMAIN_NAME/component1/method1': { authorized: true }
-            }
-          });
-        })
-
-        .then(function() {
-          return Promise.delay(400);
-        })
-
-        .then(function() {
-          return performAction(55002, 'username2', 'component1', 'method1');
-        })
-
-        .then(function() {
-          return servers[0].exchange.security.deleteGroup(group);
-        })
-
-        .then(function() {
-          return Promise.delay(400);
-        })
-
-        .then(function() {
-          return new Promise(function(resolve, reject) {
-            performAction(55002, 'username2', 'component1', 'method1')
-              .then(function() {
-                reject(new Error('missing AccessDeniedError 1'));
-              })
-              .catch(function(e) {
-                if (e.message === 'unauthorized' && e.name === 'AccessDenied') {
-                  return resolve();
-                }
-                reject(new Error('missing AccessDeniedError 2'));
-              });
-          });
-        })
-
-        .then(function() {
-          done();
-        })
-
-        .catch(done);
-    });
-
-    it('handles sync for delete user', function(done) {
-      var user, group;
-
-      servers[0].exchange.security
-        .upsertUser({
-          username: 'username3',
-          password: 'password'
-        })
-
-        .then(function(_user) {
-          user = _user;
-          return servers[0].exchange.security.upsertGroup({
-            name: 'group3'
-          });
-        })
-
-        .then(function(_group) {
-          group = _group;
-          return servers[0].exchange.security.linkGroup(group, user);
-        })
-
-        .then(function() {
-          return servers[0].exchange.security.addGroupPermissions('group3', {
-            methods: {
-              '/DOMAIN_NAME/component1/method1': { authorized: true }
-            }
-          });
-        })
-
-        .then(function() {
-          return Promise.delay(400);
-        })
-
-        .then(function() {
-          return performAction(55002, 'username3', 'component1', 'method1');
-        })
-
-        .then(function() {
-          return servers[0].exchange.security.deleteUser(user);
-        })
-
-        .then(function() {
-          return Promise.delay(400);
-        })
-
-        .then(function() {
-          return new Promise(function(resolve, reject) {
-            performAction(55002, 'username3', 'component1', 'method1')
-              .then(function() {
-                reject(new Error('missing AccessDeniedError 1'));
-              })
-              .catch(function(e) {
-                if (e.message === 'Invalid credentials' && e.name === 'AccessDenied') {
-                  return resolve();
-                }
-                reject(new Error('missing AccessDeniedError 2'));
-              });
-          });
-        })
-
-        .then(function() {
-          done();
-        })
-
-        .catch(done);
-    });
   });
 });
