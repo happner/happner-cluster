@@ -200,6 +200,10 @@
   - SMC-1645: test setup
   - SMC-1256: Added tests for data events on clusters
   - SMC-917: updated version and RELEASES
+
+10.2.0 2021-03-31
+-----------------
+  - SMC-1808: user permissions
   
 
 
