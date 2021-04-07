@@ -1,20 +1,16 @@
-var HappnerCluster = require('../..');
-var Promise = require('bluebird');
-var expect = require('expect.js');
+const HappnerCluster = require('../..');
+const libDir = require('../_lib/lib-dir');
+const baseConfig = require('../_lib/base-config');
+const stopCluster = require('../_lib/stop-cluster');
+const clearMongoCollection = require('../_lib/clear-mongo-collection');
+const users = require('../_lib/user-permissions');
+const client = require('../_lib/client');
+const test = require('../_lib/test-helper');
 
-var libDir = require('../_lib/lib-dir');
-var baseConfig = require('../_lib/base-config');
-var stopCluster = require('../_lib/stop-cluster');
-var clearMongoCollection = require('../_lib/clear-mongo-collection');
-var users = require('../_lib/user-permissions');
-var client = require('../_lib/client');
-
-describe(require('../_lib/test-helper').testName(__filename, 3), function() {
+describe(test.testName(__filename, 3), function() {
   this.timeout(20000);
 
-  var servers = [],
-    client1,
-    client2;
+  let servers, client1, client2;
 
   function serverConfig(seq, minPeers) {
     var config = baseConfig(seq, minPeers, true);
@@ -38,50 +34,25 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     clearMongoCollection('mongodb://localhost', 'happn-cluster', done);
   });
 
-  before('start cluster', function(done) {
-    this.timeout(20000);
-    HappnerCluster.create(serverConfig(1, 1))
-      .then(function(server) {
-        servers.push(server);
-        return HappnerCluster.create(serverConfig(2, 2));
-      })
-      .then(function(server) {
-        servers.push(server);
-        return users.add(servers[0], 'username', 'password');
-      })
-      .then(function() {
-        //wait for stabilisation
-        setTimeout(done, 5000);
-      })
-      .catch(done);
+  before('start cluster', async () => {
+    servers = [];
+    servers.push(await HappnerCluster.create(serverConfig(1, 1)));
+    servers.push(await HappnerCluster.create(serverConfig(2, 2)));
+    await users.add(servers[0], 'username', 'password');
+    await test.delay(5000);
   });
 
-  before('start client1', function(done) {
-    client
-      .create('username', 'password', 55001)
-      .then(function(client) {
-        client1 = client;
-        done();
-      })
-      .catch(done);
+  before('start client1', async () => {
+    client1 = await client.create('username', 'password', 55001);
   });
 
-  before('start client2', function(done) {
-    client
-      .create('username', 'password', 55002)
-      .then(function(client) {
-        client2 = client;
-        done();
-      })
-      .catch(done);
+  before('start client2', async () => {
+    client2 = await client.create('username', 'password', 55002);
   });
 
-  after('stop client 1', function(done) {
-    client1.disconnect(done);
-  });
-
-  after('stop client 2', function(done) {
-    client2.disconnect(done);
+  after('stop clients', async () => {
+    if (client1) await client1.disconnect();
+    if (client2) await client2.disconnect();
   });
 
   after('stop cluster', function(done) {
@@ -89,287 +60,230 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     stopCluster(servers, done);
   });
 
-  it('handles security sync for methods', function(done) {
-    this.timeout(20 * 1000);
-
-    Promise.all([
-      client.callMethod(1, client1, 'component1', 'method1'),
-      client.callMethod(2, client1, 'component1', 'method2'),
-      client.callMethod(3, client2, 'component1', 'method1'),
-      client.callMethod(4, client2, 'component1', 'method2')
-    ])
-
-      .then(function(results) {
-        expect(results).to.eql([
-          {
-            seq: 1,
-            user: 'username',
-            component: 'component1',
-            method: 'method1',
-            error: 'unauthorized'
-          },
-          {
-            seq: 2,
-            user: 'username',
-            component: 'component1',
-            method: 'method2',
-            error: 'unauthorized'
-          },
-          {
-            seq: 3,
-            user: 'username',
-            component: 'component1',
-            method: 'method1',
-            error: 'unauthorized'
-          },
-          {
-            seq: 4,
-            user: 'username',
-            component: 'component1',
-            method: 'method2',
-            error: 'unauthorized'
-          }
-        ]);
-      })
-
-      .then(function() {
-        return users.allowMethod(servers[0], 'username', 'component1', 'method1');
-      })
-
-      .then(function() {
-        // await sync
-        return Promise.delay(3000);
-      })
-
-      .then(function() {
-        return Promise.all([
+  it('handles security sync for methods', async () => {
+    test
+      .expect(
+        await Promise.all([
           client.callMethod(1, client1, 'component1', 'method1'),
           client.callMethod(2, client1, 'component1', 'method2'),
           client.callMethod(3, client2, 'component1', 'method1'),
           client.callMethod(4, client2, 'component1', 'method2')
-        ]);
-      })
+        ])
+      )
+      .to.eql([
+        {
+          seq: 1,
+          user: 'username',
+          component: 'component1',
+          method: 'method1',
+          error: 'unauthorized'
+        },
+        {
+          seq: 2,
+          user: 'username',
+          component: 'component1',
+          method: 'method2',
+          error: 'unauthorized'
+        },
+        {
+          seq: 3,
+          user: 'username',
+          component: 'component1',
+          method: 'method1',
+          error: 'unauthorized'
+        },
+        {
+          seq: 4,
+          user: 'username',
+          component: 'component1',
+          method: 'method2',
+          error: 'unauthorized'
+        }
+      ]);
 
-      .then(function(results) {
-        expect(results).to.eql([
-          {
-            seq: 1,
-            user: 'username',
-            component: 'component1',
-            method: 'method1',
-            result: true
-          },
-          {
-            seq: 2,
-            user: 'username',
-            component: 'component1',
-            method: 'method2',
-            error: 'unauthorized'
-          },
-          {
-            seq: 3,
-            user: 'username',
-            component: 'component1',
-            method: 'method1',
-            result: true
-          },
-          {
-            seq: 4,
-            user: 'username',
-            component: 'component1',
-            method: 'method2',
-            error: 'unauthorized'
-          }
-        ]);
-      })
+    await users.allowMethod(servers[0], 'username', 'component1', 'method1');
+    await test.delay(2000);
 
-      .then(function() {
-        return Promise.all([
-          users.denyMethod(servers[0], 'username', 'component1', 'method1'),
-          users.allowMethod(servers[0], 'username', 'component1', 'method2')
-        ]);
-      })
-
-      .then(function() {
-        // await sync
-        return Promise.delay(300);
-      })
-
-      .then(function() {
-        return Promise.all([
+    test
+      .expect(
+        await Promise.all([
           client.callMethod(1, client1, 'component1', 'method1'),
           client.callMethod(2, client1, 'component1', 'method2'),
           client.callMethod(3, client2, 'component1', 'method1'),
           client.callMethod(4, client2, 'component1', 'method2')
-        ]);
-      })
+        ])
+      )
+      .to.eql([
+        {
+          seq: 1,
+          user: 'username',
+          component: 'component1',
+          method: 'method1',
+          result: true
+        },
+        {
+          seq: 2,
+          user: 'username',
+          component: 'component1',
+          method: 'method2',
+          error: 'unauthorized'
+        },
+        {
+          seq: 3,
+          user: 'username',
+          component: 'component1',
+          method: 'method1',
+          result: true
+        },
+        {
+          seq: 4,
+          user: 'username',
+          component: 'component1',
+          method: 'method2',
+          error: 'unauthorized'
+        }
+      ]);
 
-      .then(function(results) {
-        expect(results).to.eql([
-          {
-            seq: 1,
-            user: 'username',
-            component: 'component1',
-            method: 'method1',
-            error: 'unauthorized'
-          },
-          {
-            seq: 2,
-            user: 'username',
-            component: 'component1',
-            method: 'method2',
-            result: true
-          },
-          {
-            seq: 3,
-            user: 'username',
-            component: 'component1',
-            method: 'method1',
-            error: 'unauthorized'
-          },
-          {
-            seq: 4,
-            user: 'username',
-            component: 'component1',
-            method: 'method2',
-            result: true
-          }
-        ]);
-      })
+    await Promise.all([
+      users.denyMethod(servers[0], 'username', 'component1', 'method1'),
+      users.allowMethod(servers[0], 'username', 'component1', 'method2')
+    ]);
 
-      .then(function() {
-        done();
-      })
+    await test.delay(2000);
 
-      .catch(done);
+    test
+      .expect(
+        await Promise.all([
+          client.callMethod(1, client1, 'component1', 'method1'),
+          client.callMethod(2, client1, 'component1', 'method2'),
+          client.callMethod(3, client2, 'component1', 'method1'),
+          client.callMethod(4, client2, 'component1', 'method2')
+        ])
+      )
+      .to.eql([
+        {
+          seq: 1,
+          user: 'username',
+          component: 'component1',
+          method: 'method1',
+          error: 'unauthorized'
+        },
+        {
+          seq: 2,
+          user: 'username',
+          component: 'component1',
+          method: 'method2',
+          result: true
+        },
+        {
+          seq: 3,
+          user: 'username',
+          component: 'component1',
+          method: 'method1',
+          error: 'unauthorized'
+        },
+        {
+          seq: 4,
+          user: 'username',
+          component: 'component1',
+          method: 'method2',
+          result: true
+        }
+      ]);
   });
 
-  it('handles security sync for events', function(done) {
-    this.timeout(20 * 1000);
+  it('handles security sync for events', async () => {
+    let events = {};
+    test
+      .expect(
+        await Promise.all([
+          client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
+          client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
+          client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
+          client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
+        ])
+      )
+      .to.eql([
+        { seq: 1, error: 'unauthorized' },
+        { seq: 2, error: 'unauthorized' },
+        { seq: 3, error: 'unauthorized' },
+        { seq: 4, error: 'unauthorized' }
+      ]);
 
-    var events = {};
+    await Promise.all([
+      users.allowEvent(servers[0], 'username', 'component1', 'event1'),
+      users.allowEvent(servers[0], 'username', 'component1', 'event2')
+    ]);
+
+    await test.delay(1000);
+
+    test
+      .expect(
+        await Promise.all([
+          client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
+          client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
+          client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
+          client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
+        ])
+      )
+      .to.eql([
+        { seq: 1, result: true },
+        { seq: 2, result: true },
+        { seq: 3, result: true },
+        { seq: 4, result: true }
+      ]);
+
+    await servers[0].exchange.component1.emitEvents();
+
+    await test.delay(500);
+
+    test.expect(popEvents()).to.eql({
+      1: 'event1',
+      2: 'event2',
+      3: 'event1',
+      4: 'event2'
+    });
+
+    await users.denyEvent(servers[0], 'username', 'component1', 'event1');
+    await test.delay(1000);
+
+    await servers[0].exchange.component1.emitEvents();
+
+    await test.delay(500);
+
+    test.expect(popEvents()).to.eql({
+      // 1: 'event1',
+      2: 'event2',
+      // 3: 'event1',
+      4: 'event2'
+    });
+
+    test
+      .expect(
+        await Promise.all([
+          client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
+          client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
+          client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
+          client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
+        ])
+      )
+      .to.eql([
+        { seq: 1, error: 'unauthorized' },
+        { seq: 2, result: true },
+        { seq: 3, error: 'unauthorized' },
+        { seq: 4, result: true }
+      ]);
+
+    function popEvents() {
+      let cloned = JSON.parse(JSON.stringify(events));
+      events = {};
+      return cloned;
+    }
 
     function createHandler(seq) {
       return function(data) {
         events[seq] = data.value;
       };
     }
-
-    Promise.all([
-      client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
-      client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
-      client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
-      client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
-    ])
-
-      .then(function(results) {
-        expect(results).to.eql([
-          { seq: 1, error: 'unauthorized' },
-          { seq: 2, error: 'unauthorized' },
-          { seq: 3, error: 'unauthorized' },
-          { seq: 4, error: 'unauthorized' }
-        ]);
-      })
-
-      .then(function() {
-        return Promise.all([
-          users.allowEvent(servers[0], 'username', 'component1', 'event1'),
-          users.allowEvent(servers[0], 'username', 'component1', 'event2')
-        ]);
-      })
-
-      .then(function() {
-        // await sync
-        return Promise.delay(300);
-      })
-
-      .then(function() {
-        return Promise.all([
-          client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
-          client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
-          client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
-          client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
-        ]);
-      })
-
-      .then(function(results) {
-        expect(results).to.eql([
-          { seq: 1, result: true },
-          { seq: 2, result: true },
-          { seq: 3, result: true },
-          { seq: 4, result: true }
-        ]);
-      })
-
-      .then(function() {
-        return servers[0].exchange.component1.emitEvents();
-      })
-
-      .then(function() {
-        // await emit
-        return Promise.delay(200);
-      })
-
-      .then(function() {
-        expect(events).to.eql({
-          1: 'event1',
-          2: 'event2',
-          3: 'event1',
-          4: 'event2'
-        });
-      })
-
-      .then(function() {
-        return Promise.all([users.denyEvent(servers[0], 'username', 'component1', 'event1')]);
-      })
-
-      .then(function() {
-        // await sync
-        return Promise.delay(3000);
-      })
-
-      .then(function() {
-        events = {};
-        return servers[0].exchange.component1.emitEvents();
-      })
-
-      .then(function() {
-        // await emit
-        return Promise.delay(2000);
-      })
-      .then(() => {
-        return users.getUser(servers[0], 'username');
-      })
-      .then(function() {
-        expect(events).to.eql({
-          // 1: 'event1',
-          2: 'event2',
-          // 3: 'event1',
-          4: 'event2'
-        });
-      })
-      .then(function() {
-        return Promise.all([
-          client.subscribe(1, client1, 'component1', 'event1', createHandler(1)),
-          client.subscribe(2, client1, 'component1', 'event2', createHandler(2)),
-          client.subscribe(3, client2, 'component1', 'event1', createHandler(3)),
-          client.subscribe(4, client2, 'component1', 'event2', createHandler(4))
-        ]);
-      })
-
-      .then(function(results) {
-        expect(results).to.eql([
-          { seq: 1, error: 'unauthorized' },
-          { seq: 2, result: true },
-          { seq: 3, error: 'unauthorized' },
-          { seq: 4, result: true }
-        ]);
-      })
-
-      .then(function() {
-        done();
-      })
-
-      .catch(done);
   });
 });

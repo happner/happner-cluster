@@ -48,19 +48,11 @@ module.exports.allowMethod = function(server, username, component, method) {
   var permissions = { methods: {} };
   permissions.methods[path] = { authorized: true };
 
-  return new Promise(function(resolve, reject) {
-    queue.push(
-      {
-        server: server,
-        username,
-        permissions: permissions,
-        method: 'addUserPermissions'
-      },
-      function(err) {
-        if (err) return reject(err);
-        resolve();
-      }
-    );
+  return queue.push({
+    server: server,
+    username,
+    permissions: permissions,
+    method: 'addUserPermissions'
   });
 };
 
@@ -69,19 +61,11 @@ module.exports.denyMethod = function(server, username, component, method) {
   var permissions = { methods: {} };
   permissions.methods[path] = {};
 
-  return new Promise(function(resolve, reject) {
-    queue.push(
-      {
-        server: server,
-        username,
-        permissions: permissions,
-        method: 'removeUserPermissions'
-      },
-      function(err) {
-        if (err) return reject(err);
-        resolve();
-      }
-    );
+  return queue.push({
+    server: server,
+    username,
+    permissions: permissions,
+    method: 'removeUserPermissions'
   });
 };
 
@@ -91,19 +75,11 @@ module.exports.allowWebMethod = function(server, username, path) {
     actions: ['get', 'put', 'post'],
     description: 'a test web permission'
   };
-  return new Promise(function(resolve, reject) {
-    queue.push(
-      {
-        server: server,
-        username,
-        permissions: permissions,
-        method: 'addUserPermissions'
-      },
-      function(err) {
-        if (err) return reject(err);
-        resolve();
-      }
-    );
+  return queue.push({
+    server: server,
+    username,
+    permissions: permissions,
+    method: 'addUserPermissions'
   });
 };
 
@@ -111,19 +87,11 @@ module.exports.denyWebMethod = function(server, username, path) {
   var permissions = { web: {} };
   permissions.web[path] = {};
 
-  return new Promise(function(resolve, reject) {
-    queue.push(
-      {
-        server: server,
-        username,
-        permissions: permissions,
-        method: 'removeUserPermissions'
-      },
-      function(err) {
-        if (err) return reject(err);
-        resolve();
-      }
-    );
+  return queue.push({
+    server: server,
+    username,
+    permissions: permissions,
+    method: 'removeUserPermissions'
   });
 };
 
@@ -132,19 +100,11 @@ module.exports.allowEvent = function(server, username, component, event) {
   var permissions = { events: {} };
   permissions.events[path] = { authorized: true };
 
-  return new Promise(function(resolve, reject) {
-    queue.push(
-      {
-        server: server,
-        username,
-        permissions: permissions,
-        method: 'addUserPermissions'
-      },
-      function(err) {
-        if (err) return reject(err);
-        resolve();
-      }
-    );
+  return queue.push({
+    server: server,
+    username,
+    permissions: permissions,
+    method: 'addUserPermissions'
   });
 };
 
@@ -153,19 +113,11 @@ module.exports.denyEvent = function(server, username, component, event) {
   var permissions = { events: {} };
   permissions.events[path] = {};
 
-  return new Promise(function(resolve, reject) {
-    queue.push(
-      {
-        server: server,
-        username,
-        permissions: permissions,
-        method: 'removeUserPermissions'
-      },
-      function(err) {
-        if (err) return reject(err);
-        resolve();
-      }
-    );
+  return queue.push({
+    server: server,
+    username,
+    permissions: permissions,
+    method: 'removeUserPermissions'
   });
 };
 
@@ -173,19 +125,11 @@ module.exports.allowDataPath = function(server, username, path) {
   var permissions = { data: {} };
   permissions.data[path] = { actions: ['*'] };
 
-  return new Promise(function(resolve, reject) {
-    queue.push(
-      {
-        server: server,
-        username,
-        permissions: permissions,
-        method: 'addUserPermissions'
-      },
-      function(err) {
-        if (err) return reject(err);
-        resolve();
-      }
-    );
+  return queue.push({
+    server: server,
+    username,
+    permissions: permissions,
+    method: 'addUserPermissions'
   });
 };
 
@@ -193,27 +137,14 @@ module.exports.denyDataPath = function(server, username, path) {
   var permissions = { data: {} };
   permissions.data[path] = { authorized: false };
 
-  return new Promise(function(resolve, reject) {
-    queue.push(
-      {
-        server: server,
-        username,
-        permissions: permissions,
-        method: 'removeUserPermissions'
-      },
-      function(err) {
-        if (err) return reject(err);
-        resolve();
-      }
-    );
+  return queue.push({
+    server: server,
+    username,
+    permissions: permissions,
+    method: 'removeUserPermissions'
   });
 };
 
 module.exports.getUser = function(server, username) {
-  return new Promise((res, rej) => {
-    server.exchange.security.getUser(username, (e, user) => {
-      if (e) return rej(e);
-      res(user);
-    });
-  });
+  return server.exchange.security.getUser(username);
 };
