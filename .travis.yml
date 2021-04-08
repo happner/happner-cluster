@@ -8,8 +8,8 @@ branches:
     - master
 
 node_js:
+  - "15"
   - "12"
-  - "10"
 
 script: "npm run-script test-cover"
 
