@@ -79,7 +79,9 @@ describe(test.testName(__filename, 3), function() {
           method: 'unknownMethod'
         });
       } catch (e) {
-        expect(e.message).to.be('unknown exchange method: unknownMethod');
+        expect(e.message).to.be(
+          'invalid endpoint options: [prereleaseComponent.unknownMethod] method does not exist on the api'
+        );
         expect(emitted).to.eql({ topic: 'MESH_2:remoteComponent:brokeredMethod1' });
         return;
       }
@@ -335,7 +337,9 @@ describe(test.testName(__filename, 3), function() {
         })
         .catch(e => {
           //expect a failure - wrong version
-          expect(e.message).to.be('unknown exchange method: brokeredMethod1');
+          expect(e.message).to.be(
+            'invalid endpoint options: [prereleaseComponentNotFound.brokeredMethod1] method does not exist on the api'
+          );
           expect(reachedEnd).to.be(true);
           done();
         });
@@ -394,7 +398,7 @@ describe(test.testName(__filename, 3), function() {
         .catch(e => {
           //expect a failure - wrong version
           expect(e.message).to.be(
-            'invalid endpoint options: unknownComponent component does not exist on the api'
+            'invalid endpoint options: [unknownComponent] component does not exist on the api'
           );
           done();
         });

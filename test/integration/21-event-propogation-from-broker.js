@@ -198,7 +198,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       .then(client => {
         client.data.on('_data/data/brokered/event', handler);
         test1Server.exchange.data.set('/brokered/event', { data: 'data1' }, {});
-        return delay(4000);
+        return delay(5000);
       })
       .then(() => {
         sinon.assert.calledOnce(handler);
