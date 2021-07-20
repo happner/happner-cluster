@@ -204,6 +204,10 @@
 10.2.0 2021-03-31
 -----------------
   - SMC-1808: user permissions
+
+10.3.0 2021-07-20
+-----------------
+  - SMC-1810: nested permissions in get and on
   
 
 
