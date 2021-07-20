@@ -53,7 +53,6 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       })
       .then(function(client) {
         thisClient = client;
-        //first test our broker components methods are directly callable
         return thisClient.exchange.breakingComponent.happyMethod();
       })
       .then(function(result) {
