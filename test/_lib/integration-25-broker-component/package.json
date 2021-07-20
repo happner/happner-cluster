@@ -1,0 +1,17 @@
+{
+  "name": "broker-component",
+  "version": "1.0.1",
+  "happner": {
+    "dependencies": {
+      "$broker": {
+        "breakingComponent": {
+          "version": "1.0.0",
+          "methods": {
+            "breakingMethod": {},
+            "happyMethod": {}
+          }
+        }
+      }
+    }
+  }
+}
