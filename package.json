@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run lint && mocha -- silence.js test/unit test/integration && mocha test/functional --recursive",
-    "test-cover": "nyc _mocha -- silence.js test/unit test/integration",
+    "test-cover": "nyc --reporter=lcov --reporter=text-summary mocha -- silence.js test/unit test/integration",
     "release": "rm -rf node_modules && rm -f package-lock.json && npm install && npm run test-cover",
     "lint": "eslint '**/*.js'",
     "lint-fix": "eslint '**/*.js' --fix"
