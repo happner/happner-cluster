@@ -5,6 +5,7 @@ var expect = require('expect.js');
 var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
+const delay = require('await-delay');
 
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
@@ -123,40 +124,26 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   });
 
   context('exchange', function() {
-    it('uses happner-client to mount all $happn components', function(done) {
+    it('uses happner-client to mount all $happn components', async () => {
       // ... and apply models from each component's
       //     package.json happner dependency declaration
       // ... and round robbin second call to second remote component
 
+      await delay(5000); //wait for discovery
+
       var results = {};
 
-      localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1', function(
-        e,
-        result
-      ) {
-        if (e) return done(e);
+      results[
+        await localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1')
+      ] = 1;
 
-        results[result] = 1;
+      results[
+        await localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1')
+      ] = 1;
 
-        localInstance.exchange.localComponent1.callDependency(
-          'remoteComponent3',
-          'method1',
-          function(e, result) {
-            if (e) return done(e);
-
-            results[result] = 1;
-
-            try {
-              expect(results).to.eql({
-                'MESH_2:component3:method1': 1,
-                'MESH_3:component3:method1': 1
-              });
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }
-        );
+      expect(results).to.eql({
+        'MESH_2:component3:method1': 1,
+        'MESH_3:component3:method1': 1
       });
     });
 

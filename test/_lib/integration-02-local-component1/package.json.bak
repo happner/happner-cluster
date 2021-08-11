@@ -16,8 +16,7 @@
           "methods": {
             "method1": {},
             "method2": {}
-          },
-          "discoverMethods": true
+          }
         },
         "remoteComponent4": {
           "version": "^2.0.0",
