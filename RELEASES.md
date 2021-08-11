@@ -205,14 +205,18 @@
 -----------------
   - SMC-1808: user permissions
 
-10.3.0 2021-07-20
+10.3.0 2021-07-20 [DEPRECATED - PRERELEASE happner-2]
 -----------------
   - SMC-1810: nested permissions in get and on
 
+10.3.1 2021-08-11
+-----------------
+  - SMC-1810: fixed dependencies
+  
 10.4.0 2021-08-11
 -----------------
   - SMC-3689: added $call override for peer dependencies and discoverMethods for peer dependency configurations in happner-client
   - SMC-3646: updated github actions
-  
+
 
 
