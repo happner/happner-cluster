@@ -13,10 +13,6 @@
         },
         "remoteComponent3": {
           "version": "^2.0.0",
-          "methods": {
-            "method1": {},
-            "method2": {}
-          },
           "discoverMethods": true
         },
         "remoteComponent4": {
