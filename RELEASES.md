@@ -209,9 +209,9 @@
 -----------------
   - SMC-1810: nested permissions in get and on
 
-10.4.0 .4.0 2021-08-11
+10.4.0 2021-08-11
 -----------------
-  - SMC-3689: added $call override for peer dependencies and discoverMethods for peer dependency configurations
+  - SMC-3689: added $call override for peer dependencies and discoverMethods for peer dependency configurations in happner-client
   
 
 
