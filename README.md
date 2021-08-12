@@ -130,7 +130,7 @@ Component1.prototype.method = function ($happner, callback) {
         'remote-component': {
           version: '^1.0.0', // will only use matching versions from
                              // elsewhefre in the cluster
-          methods: { // list of methods desired on the remote compnoent
+          methods: { // list of methods desired on the remote compnoent - these will not be discovered and will need to be statically defined
             method1: {},
             method2: {}
           }
@@ -138,10 +138,34 @@ Component1.prototype.method = function ($happner, callback) {
         'remote-component2': {
           version: '~1.0.0'
           // no methods, only interested in events
+        },
+        'remote-component3': {
+          version: '~1.0.0'
+          discoverMethods: true //this special switch will result method discovery for the component
         }
       }
     }
   }
+}
+
+// NB: if method discovery is switched on, inside your component method - where $happn is passed in be aware that the methods may only be available after startup - as the mesh description of the arriving peer on the cluster is used to generate the method api for the discovered component, this means that the declarative approach using $call with $happn should be used to ensure the api does not break, ie:
+
+//dont do this
+await $happn.exchange['remote-component3'].discoveredMethod(arg1, arg2);
+
+
+//rather do this, if the method is not around you can at least handle the method missing error
+try {
+  await $happn.exchange.$call({
+    component: 'remote-component3',
+    method: 'discoveredMethod',
+    arguments: [arg1, arg2]
+  });
+} catch (e) {
+  if (e.message === 'invalid endpoint options: [remote-component3.discoveredMethod] method does not exist on the api') {
+    methodMissingHandler();
+  }
+  throw e;
 }
 ```
 

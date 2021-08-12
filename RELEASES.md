@@ -217,6 +217,7 @@
 -----------------
   - SMC-3689: added $call override for peer dependencies and discoverMethods for peer dependency configurations in happner-client
   - SMC-3646: updated github actions
+  - SMC-3459: added happner-2 dependencies for anonymous access
 
 
 
