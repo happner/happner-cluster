@@ -203,7 +203,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       restClient
         .postJson(`http://localhost:${port}/rest/method/${component}/${method}`, operation, options)
         .on('complete', function(result) {
-          if (result.error) return reject(new Error(result.error));
+          if (result.error) return reject(new Error(result.error.message));
           expect(result.data).to.eql(expectedResponse);
           resolve();
         });

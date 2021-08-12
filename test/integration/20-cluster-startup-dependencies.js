@@ -13,9 +13,9 @@ describe(helpers.test.testName(__filename, 3), function() {
   it('starts up a cluster with no interdependencies, happy path, we ensure we can start and teardown the cluster', async () => {
     const cluster = helpers.cluster.create();
 
-    await cluster.member.start(helpers.configuration.construct(20, 0), 1000);
-    await cluster.member.start(helpers.configuration.construct(20, 1), 1000);
-    await cluster.member.start(helpers.configuration.construct(20, 4), 2000);
+    await cluster.member.start(helpers.configuration.construct(20, 0), 2000);
+    await cluster.member.start(helpers.configuration.construct(20, 1), 2000);
+    await cluster.member.start(helpers.configuration.construct(20, 4), 3000);
     await cluster.member.start(helpers.configuration.construct(20, 5), 5000);
 
     const client = await helpers.client.create(username, password, 55001);

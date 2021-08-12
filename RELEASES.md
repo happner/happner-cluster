@@ -204,6 +204,13 @@
 10.2.0 2021-03-31
 -----------------
   - SMC-1808: user permissions
-  
+
+10.3.0 2021-07-20 [DEPRECATED - PRERELEASE happner-2]
+-----------------
+  - SMC-1810: nested permissions in get and on
+
+10.3.1 2021-08-11
+-----------------
+  - SMC-1810: fixed dependencies
 
 

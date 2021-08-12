@@ -10,8 +10,10 @@ module.exports = class Cluster extends Helper {
     this.member = {
       start: async (configuration, wait) => {
         HappnerCluster.create(configuration, (e, instance) => {
-          // eslint-disable-next-line no-console
-          if (e) console.warn('ERROR STARTING TEST INSTANCE: ' + e.message);
+          if (e) {
+            // eslint-disable-next-line no-console
+            console.warn('ERROR STARTING TEST INSTANCE: ' + e.message);
+          }
           this.events.data.push({
             key: 'member-started',
             value: instance._mesh.config.name

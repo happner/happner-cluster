@@ -1,11 +1,11 @@
 {
   "name": "happner-cluster",
-  "version": "10.2.0",
+  "version": "10.3.1",
   "description": "Extends happner with clustering capabilities",
   "main": "index.js",
   "scripts": {
     "test": "npm run lint && mocha -- silence.js test/unit test/integration && mocha test/functional --recursive",
-    "test-cover": "nyc _mocha -- silence.js test/unit test/integration",
+    "test-cover": "nyc --reporter=lcov --reporter=text-summary mocha -- silence.js test/unit test/integration",
     "release": "rm -rf node_modules && rm -f package-lock.json && npm install && npm run test-cover",
     "lint": "eslint '**/*.js'",
     "lint-fix": "eslint '**/*.js' --fix"
@@ -43,9 +43,9 @@
   },
   "dependencies": {
     "bluebird": "^3.5.0",
-    "happn-cluster": "^10.1.1",
-    "happner-2": "^11.7.0",
-    "happner-client": "^11.2.1",
+    "happn-cluster": "^10.3.0",
+    "happner-2": "^11.10.0",
+    "happner-client": "^11.3.1",
     "hashring": "^3.2.0",
     "node-http-proxy": "^0.2.3",
     "semver": "^5.3.0"
