@@ -13,7 +13,6 @@ module.exports = class Cluster extends Helper {
           if (e) {
             // eslint-disable-next-line no-console
             console.warn('ERROR STARTING TEST INSTANCE: ' + e.message);
-            throw e;
           }
           this.events.data.push({
             key: 'member-started',
