@@ -5,12 +5,11 @@ const clearMongoCollection = require('../_lib/clear-mongo-collection');
 const users = require('../_lib/users');
 const client = require('../_lib/client');
 const test = require('../_lib/test-helper');
-const wait = require('await-delay');
 
 describe(test.testName(__filename, 3), function() {
   this.timeout(20000);
 
-  let servers, client1, client2, remoteServer;
+  let servers;
 
   function serverConfig(seq, minPeers) {
     var config = multiAuthConfig(seq, minPeers, true);
@@ -40,14 +39,8 @@ describe(test.testName(__filename, 3), function() {
     servers = [];
     servers.push(await HappnerCluster.create(serverConfig(1, 1)));
     servers.push(await HappnerCluster.create(serverConfig(2, 2)));
-    remoteServer = servers[0];
     await users.add(servers[0], testUser.username, testUser.password);
     await test.delay(5000);
-  });
-
-  after('stop clients', async () => {
-    if (client1) await client1.disconnect();
-    if (client2) await client2.disconnect();
   });
 
   after('stop cluster', function(done) {
@@ -69,6 +62,7 @@ describe(test.testName(__filename, 3), function() {
 
   it('we should fail to log in using happn3 auth with testUser2 (second auth user)', async () => {
     try {
+      // eslint-disable-next-line no-unused-vars
       let listenerClient = await client.create(
         testUser2.username,
         testUser2.password,
@@ -83,6 +77,7 @@ describe(test.testName(__filename, 3), function() {
 
   it('we should fail to log in using second auth with testUser (happn3 auth user)', async () => {
     try {
+      // eslint-disable-next-line no-unused-vars
       let listenerClient = await client.create(testUser.username, testUser.password, 55002); //Should default to second
       throw new Error("Shouldn't get here");
     } catch (e) {

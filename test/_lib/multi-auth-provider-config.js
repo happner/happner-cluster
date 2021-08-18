@@ -10,7 +10,7 @@ module.exports = function(
 ) {
   let clusterRequestTimeout = requestTimeout ? requestTimeout : 10 * 1000;
   let clusterResponseTimeout = responseTimeout ? responseTimeout : 20 * 1000;
-  const path = require('path')
+  const path = require('path');
 
   hosts = hosts ? hosts.split(',') : ['127.0.0.1:56001'];
   joinTimeout = joinTimeout || 300;
