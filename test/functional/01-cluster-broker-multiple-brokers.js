@@ -11,6 +11,7 @@ var users = require('../_lib/users');
 var testclient = require('../_lib/client');
 var path = require('path');
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
+const { delay } = require('../_lib/test-helper');
 
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(600000);
@@ -31,6 +32,12 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   });
 
   afterEach('stop cluster', stopAndCount);
+
+  // after('check unreleased handles', async () => {
+  //   console.log('delaying for unreleased handles check');
+  //   await delay(10000);
+  //   require('why-is-node-running')();
+  // });
 
   var adminUserDisconnectionsOnProcess = 0;
   var adminUserDisconnectionsOnProcessAfterLoginChurn = 0;
