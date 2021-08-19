@@ -55,7 +55,7 @@ describe(test.testName(__filename, 3), function() {
   });
 
   it('we should be able to log in using second auth with testUser2', async () => {
-    let listenerClient = await client.create(testUser2.username, testUser2.password, 55002); //Should default to second
+    let listenerClient = await client.create(testUser2.username, testUser2.password, 55002); //Should default to 'second' authProvider
     test.expect(listenerClient).to.be.ok();
     await listenerClient.disconnect();
   });
@@ -78,7 +78,7 @@ describe(test.testName(__filename, 3), function() {
   it('we should fail to log in using second auth with testUser (happn3 auth user)', async () => {
     try {
       // eslint-disable-next-line no-unused-vars
-      let listenerClient = await client.create(testUser.username, testUser.password, 55002); //Should default to second
+      let listenerClient = await client.create(testUser.username, testUser.password, 55002); //Should default to 'second' authProvider
       throw new Error("Shouldn't get here");
     } catch (e) {
       test.expect(e.toString()).to.be('AccessDenied: Invalid credentials');
