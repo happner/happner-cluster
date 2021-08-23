@@ -11,7 +11,6 @@ var users = require('../_lib/users');
 var testclient = require('../_lib/client');
 var path = require('path');
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
-const { delay } = require('../_lib/test-helper');
 
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(600000);
