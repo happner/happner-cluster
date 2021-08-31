@@ -49,7 +49,7 @@ describe(test.testName(__filename, 3), function() {
   });
 
   it('we should be able to log in using happn3 auth with testUser', async () => {
-    let listenerClient = await client.create(testUser.username, testUser.password, 55002, 'happn3');
+    let listenerClient = await client.create(testUser.username, testUser.password, 55002, 'happn');
     test.expect(listenerClient).to.be.ok();
     await listenerClient.disconnect();
   });
@@ -67,7 +67,7 @@ describe(test.testName(__filename, 3), function() {
         testUser2.username,
         testUser2.password,
         55002,
-        'happn3'
+        'happn'
       );
       throw new Error("Shouldn't get here");
     } catch (e) {

@@ -30,7 +30,6 @@ module.exports = function(
         security: {
           config: {
             authProviders: {
-              happn3: 'happn3-provider',
               second: path.resolve(__dirname, './workingAuth.js')
             },
             defaultAuthProvider: 'second',
