@@ -127,7 +127,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     it('uses happner-client to mount all $happn components', async () => {
       // ... and apply models from each component's
       //     package.json happner dependency declaration
-      // ... and round robbin second call to second remote component
+      // ... and round robin second call to second remote component
 
       await delay(5000); //wait for discovery
 
@@ -208,6 +208,49 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           done(e);
         }
       });
+    });
+
+    async function tryCallDependency(componentName, methodName) {
+      try {
+        await localInstance.exchange.localComponent1.callDependency(componentName, methodName);
+      } catch (e) {
+        if (e.message.indexOf('Not implemented') > -1) return false;
+        return e.message;
+      }
+      return true;
+    }
+
+    async function promiseStopCluster(servers) {
+      return new Promise((resolve, reject) => {
+        stopCluster(servers, e => {
+          if (e) return reject(e);
+          resolve();
+        });
+      });
+    }
+
+    it('dropped remote servers - not implemented message, re-implemented on connection', async () => {
+      await delay(5000); //wait for discovery
+      const outcomes = [];
+      outcomes.push(await tryCallDependency('remoteComponent5', 'method1'));
+      outcomes.push(await tryCallDependency('remoteComponent3', 'method1'));
+      expect(outcomes).to.eql([true, true]);
+      await promiseStopCluster(servers.splice(1, 2));
+      await delay(5000);
+      outcomes.push(await tryCallDependency('remoteComponent5', 'method1'));
+      outcomes.push(await tryCallDependency('remoteComponent3', 'method1'));
+      expect(outcomes).to.eql([true, true, false, false]);
+      servers = servers.concat(
+        await Promise.all([
+          HappnerCluster.create(remoteInstance1Config(2)),
+          HappnerCluster.create(remoteInstance2Config(3))
+        ])
+      );
+      await delay(5000); //wait for discvery
+      outcomes.push(await tryCallDependency('remoteComponent5', 'method1'));
+      outcomes.push(await tryCallDependency('remoteComponent3', 'method1'));
+      expect(outcomes).to.eql([true, true, false, false, true, true]);
+      await delay(5000);
     });
   });
 });

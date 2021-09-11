@@ -25,7 +25,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       servers = [];
       clearMongoCollection('mongodb://localhost', 'happn-cluster', function(e) {
         if (e) console.log(e);
-        done();
+        setTimeout(done, 2000);
       });
     });
   });
@@ -42,219 +42,6 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   var adminUserDisconnectionsOnProcessAfterLoginChurn = 0;
 
   context('exchange', function() {
-    it('we test brokered descriptions are ignored', function(done) {
-      const capturedLogs = [];
-      const intercept = require('intercept-stdout');
-      const unhook_intercept = intercept(function(txt) {
-        capturedLogs.push(txt);
-      });
-      var edgeInstance;
-      var thisClient;
-      var thisLocalClient;
-      var gotToFinalAttempt = false;
-
-      startEdge(1, 1)
-        .then(instance => {
-          edgeInstance = instance;
-          return new Promise((resolve, reject) => {
-            testclient
-              .create('username', 'password', 55001)
-              .then(() => {
-                reject(new Error('not meant to happen'));
-              })
-              .catch(e => {
-                if (e.message.indexOf('connect ECONNREFUSED') !== 0)
-                  return reject('unexpected error: ' + e.message);
-                users
-                  .add(edgeInstance[0], 'username', 'password')
-                  .then(() => {
-                    resolve();
-                  })
-                  .catch(reject);
-              });
-          });
-        })
-        .then(function() {
-          return startInternal(3, 3);
-        })
-        .then(function() {
-          return users.allowMethod(edgeInstance[0], 'username', 'brokerComponent', 'directMethod');
-        })
-        .then(function() {
-          return users.allowMethod(
-            edgeInstance[0],
-            'username',
-            'remoteComponent',
-            'brokeredMethod1'
-          );
-        })
-        .then(function() {
-          return users.allowMethod(
-            edgeInstance[0],
-            'username',
-            'remoteComponent1',
-            'brokeredMethod1'
-          );
-        })
-        .then(function() {
-          return users.allowEvent(edgeInstance[0], 'username', 'remoteComponent1', 'test/event');
-        })
-        .then(function() {
-          return users.allowMethod(edgeInstance[0], 'username', 'remoteComponent', 'attachToEvent');
-        })
-        .then(function() {
-          return new Promise(resolve => {
-            setTimeout(resolve, 5000);
-          });
-        })
-        .then(function() {
-          return testclient.create('username', 'password', 55003);
-        })
-        .then(function(client) {
-          thisLocalClient = client;
-          //first test our broker components methods are directly callable
-          return thisLocalClient.event.remoteComponent1.on('test/event');
-        })
-        .then(function() {
-          return thisLocalClient.exchange.remoteComponent.attachToEvent();
-        })
-        .then(function() {
-          thisLocalClient.disconnect();
-          return testclient.create('username', 'password', 55001);
-        })
-        .then(function(client) {
-          thisClient = client;
-          //first test our broker components methods are directly callable
-          return thisClient.exchange.brokerComponent.directMethod();
-        })
-        .then(function(result) {
-          expect(result).to.be('MESH_1:brokerComponent:directMethod');
-          //call an injected method
-
-          return thisClient.exchange.remoteComponent.brokeredMethod1();
-        })
-        .then(function(result) {
-          expect(result).to.be('MESH_3:remoteComponent:brokeredMethod1');
-          return thisClient.exchange.remoteComponent1.brokeredMethod1();
-        })
-        .then(function(result) {
-          expect(result).to.be('MESH_3:remoteComponent1:brokeredMethod1');
-          return users.denyMethod(
-            edgeInstance[0],
-            'username',
-            'remoteComponent',
-            'brokeredMethod1'
-          );
-        })
-        .then(function() {
-          return new Promise((resolve, reject) => {
-            //connect with a happner client - ensure we dont get an ignore description log
-            var happnerClient = new HappnerClient();
-            let api = happnerClient.construct({
-              remoteComponent1: {
-                version: '*',
-                methods: {
-                  brokeredMethod1: {}
-                }
-              }
-            });
-            happnerClient.connect(
-              null,
-              {
-                host: 'localhost',
-                port: 55001,
-                username: 'username',
-                password: 'password'
-              },
-              function(e) {
-                if (e) return reject(e);
-                api.exchange.remoteComponent1.brokeredMethod1(e => {
-                  if (e) return reject(e);
-                  happnerClient.disconnect(resolve);
-                });
-              }
-            );
-          });
-        })
-        .then(function() {
-          gotToFinalAttempt = true;
-          return thisClient.exchange.remoteComponent.brokeredMethod1();
-        })
-        .catch(function(e) {
-          expect(gotToFinalAttempt).to.be(true);
-          expect(e.toString()).to.be('AccessDenied: unauthorized');
-          unhook_intercept();
-
-          expect(
-            capturedLogs
-              .filter(txt => {
-                return txt.indexOf('ignoring brokered description for peer:') > -1;
-              })
-              .map(txt => {
-                return txt.split('ms MESH_')[1];
-              })
-              .sort()
-          ).to.eql([
-            '1 (HappnerClient) ignoring brokered description for peer: MESH_2\n',
-            '2 (HappnerClient) ignoring brokered description for peer: MESH_1\n',
-            '3 (HappnerClient) ignoring brokered description for peer: MESH_1\n',
-            '3 (HappnerClient) ignoring brokered description for peer: MESH_2\n',
-            '4 (HappnerClient) ignoring brokered description for peer: MESH_1\n',
-            '4 (HappnerClient) ignoring brokered description for peer: MESH_2\n'
-          ]);
-          process.env.LOG_LEVEL = previousLogLevel;
-          thisClient.disconnect();
-          setTimeout(done, 2000);
-        });
-    });
-
-    it('we tests brokered data events - client through internal', function(done) {
-      var thisLocalClient;
-      var edgeInstance;
-      var eventData = [];
-
-      startEdge(1, 1)
-        .then(instance => {
-          edgeInstance = instance;
-          return users.add(edgeInstance[0], 'username', 'password');
-        })
-        .then(function() {
-          return startInternal(3, 3);
-        })
-        .then(function() {
-          return users.allowDataPath(edgeInstance[0], 'username', 'test/event');
-        })
-        .then(function() {
-          return new Promise(resolve => {
-            setTimeout(resolve, 2000);
-          });
-        })
-        .then(function() {
-          return testclient.create('username', 'password', 55003);
-        })
-        .then(function(client) {
-          thisLocalClient = client;
-          //first test our broker components methods are directly callable
-          return thisLocalClient.data.on('test/event', data => {
-            eventData.push(data);
-          });
-        })
-        .then(function() {
-          return thisLocalClient.data.set('test/event', { test: 'data' });
-        })
-        .then(function() {
-          return new Promise(resolve => {
-            setTimeout(resolve, 2000);
-          });
-        })
-        .then(function() {
-          thisLocalClient.disconnect();
-          expect(eventData.length).to.be(1);
-          done();
-        })
-        .catch(done);
-    });
-
     it('tests brokered data events -  internal originator replicated to broker', function(done) {
       var internalClient, brokerClient, brokerClient1, processClient;
       var edgeInstance;
@@ -283,7 +70,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return linearStartStopProcess(
             'hosts=127.0.0.1:56001 port=55005 proxyport=57005 membershipport=56005 seed=false secure=true joinTimeout=300 membername=external-1',
             10,
-            2000
+            5000
           );
         })
         .then(function() {
@@ -383,12 +170,215 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           expect(internalEventData.length).to.be(2);
           expect(processEventData.length).to.be(2);
           stopAndCount(disconnects => {
-            expect(disconnects < 10).to.be(true);
+            expect(disconnects < 12).to.be(true);
             done();
           }, true);
         })
         .catch(done);
     });
+  });
+
+  it('we test brokered descriptions are ignored', function(done) {
+    const capturedLogs = [];
+    const intercept = require('intercept-stdout');
+    const unhook_intercept = intercept(function(txt) {
+      capturedLogs.push(txt);
+    });
+    var edgeInstance;
+    var thisClient;
+    var thisLocalClient;
+    var gotToFinalAttempt = false;
+
+    startEdge(1, 1)
+      .then(instance => {
+        edgeInstance = instance;
+        return new Promise((resolve, reject) => {
+          testclient
+            .create('username', 'password', 55001)
+            .then(() => {
+              reject(new Error('not meant to happen'));
+            })
+            .catch(e => {
+              if (e.message.indexOf('connect ECONNREFUSED') !== 0)
+                return reject('unexpected error: ' + e.message);
+              users
+                .add(edgeInstance[0], 'username', 'password')
+                .then(() => {
+                  resolve();
+                })
+                .catch(reject);
+            });
+        });
+      })
+      .then(function() {
+        return startInternal(3, 3);
+      })
+      .then(function() {
+        return users.allowMethod(edgeInstance[0], 'username', 'brokerComponent', 'directMethod');
+      })
+      .then(function() {
+        return users.allowMethod(edgeInstance[0], 'username', 'remoteComponent', 'brokeredMethod1');
+      })
+      .then(function() {
+        return users.allowMethod(
+          edgeInstance[0],
+          'username',
+          'remoteComponent1',
+          'brokeredMethod1'
+        );
+      })
+      .then(function() {
+        return users.allowEvent(edgeInstance[0], 'username', 'remoteComponent1', 'test/event');
+      })
+      .then(function() {
+        return users.allowMethod(edgeInstance[0], 'username', 'remoteComponent', 'attachToEvent');
+      })
+      .then(function() {
+        return new Promise(resolve => {
+          setTimeout(resolve, 5000);
+        });
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55003);
+      })
+      .then(function(client) {
+        thisLocalClient = client;
+        //first test our broker components methods are directly callable
+        return thisLocalClient.event.remoteComponent1.on('test/event');
+      })
+      .then(function() {
+        return thisLocalClient.exchange.remoteComponent.attachToEvent();
+      })
+      .then(function() {
+        thisLocalClient.disconnect();
+        return testclient.create('username', 'password', 55001);
+      })
+      .then(function(client) {
+        thisClient = client;
+        //first test our broker components methods are directly callable
+        return thisClient.exchange.brokerComponent.directMethod();
+      })
+      .then(function(result) {
+        expect(result).to.be('MESH_1:brokerComponent:directMethod');
+        //call an injected method
+
+        return thisClient.exchange.remoteComponent.brokeredMethod1();
+      })
+      .then(function(result) {
+        expect(result).to.be('MESH_3:remoteComponent:brokeredMethod1');
+        return thisClient.exchange.remoteComponent1.brokeredMethod1();
+      })
+      .then(function(result) {
+        expect(result).to.be('MESH_3:remoteComponent1:brokeredMethod1');
+        return users.denyMethod(edgeInstance[0], 'username', 'remoteComponent', 'brokeredMethod1');
+      })
+      .then(function() {
+        return new Promise((resolve, reject) => {
+          //connect with a happner client - ensure we dont get an ignore description log
+          var happnerClient = new HappnerClient();
+          let api = happnerClient.construct({
+            remoteComponent1: {
+              version: '*',
+              methods: {
+                brokeredMethod1: {}
+              }
+            }
+          });
+          happnerClient.connect(
+            null,
+            {
+              host: 'localhost',
+              port: 55001,
+              username: 'username',
+              password: 'password'
+            },
+            function(e) {
+              if (e) return reject(e);
+              api.exchange.remoteComponent1.brokeredMethod1(e => {
+                if (e) return reject(e);
+                happnerClient.disconnect(resolve);
+              });
+            }
+          );
+        });
+      })
+      .then(function() {
+        gotToFinalAttempt = true;
+        return thisClient.exchange.remoteComponent.brokeredMethod1();
+      })
+      .catch(function(e) {
+        expect(gotToFinalAttempt).to.be(true);
+        expect(e.toString()).to.be('AccessDenied: unauthorized');
+        unhook_intercept();
+
+        expect(
+          capturedLogs
+            .filter(txt => {
+              return txt.indexOf('ignoring brokered description for peer:') > -1;
+            })
+            .map(txt => {
+              return txt.split('ms MESH_')[1];
+            })
+            .sort()
+        ).to.eql([
+          '1 (HappnerClient) ignoring brokered description for peer: MESH_2\n',
+          '2 (HappnerClient) ignoring brokered description for peer: MESH_1\n',
+          '3 (HappnerClient) ignoring brokered description for peer: MESH_1\n',
+          '3 (HappnerClient) ignoring brokered description for peer: MESH_2\n',
+          '4 (HappnerClient) ignoring brokered description for peer: MESH_1\n',
+          '4 (HappnerClient) ignoring brokered description for peer: MESH_2\n'
+        ]);
+        process.env.LOG_LEVEL = previousLogLevel;
+        thisClient.disconnect();
+        setTimeout(done, 2000);
+      });
+  });
+
+  it('we tests brokered data events - client through internal', function(done) {
+    var thisLocalClient;
+    var edgeInstance;
+    var eventData = [];
+
+    startEdge(1, 1)
+      .then(instance => {
+        edgeInstance = instance;
+        return users.add(edgeInstance[0], 'username', 'password');
+      })
+      .then(function() {
+        return startInternal(3, 3);
+      })
+      .then(function() {
+        return users.allowDataPath(edgeInstance[0], 'username', 'test/event');
+      })
+      .then(function() {
+        return new Promise(resolve => {
+          setTimeout(resolve, 2000);
+        });
+      })
+      .then(function() {
+        return testclient.create('username', 'password', 55003);
+      })
+      .then(function(client) {
+        thisLocalClient = client;
+        //first test our broker components methods are directly callable
+        return thisLocalClient.data.on('test/event', data => {
+          eventData.push(data);
+        });
+      })
+      .then(function() {
+        return thisLocalClient.data.set('test/event', { test: 'data' });
+      })
+      .then(function() {
+        return new Promise(resolve => {
+          setTimeout(resolve, 2000);
+        });
+      })
+      .then(function() {
+        thisLocalClient.disconnect();
+        expect(eventData.length).to.be(1);
+        done();
+      })
+      .catch(done);
   });
 
   function localInstanceConfig(seq, sync, dynamic) {
