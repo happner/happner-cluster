@@ -52,7 +52,10 @@ describe('04 - Unit tests for cluster-plugin registering dependencies', () => {
     mesh._mesh.clusterClient.mount = sinon.fake();
     mesh._mesh.clusterClient.construct = sinon.fake();
     node.start(e => {
-      expect(e.toString()).to.eql("TypeError: Cannot read property 'exchange' of undefined"); //We expect this error because our mesh is not properly constructed
+      expect(
+        e.message === "Cannot read properties of undefined (reading 'exchange')" ||
+          e.message === "Cannot read property 'exchange' of undefined"
+      ).to.be(true); //We expect this error because our mesh is not properly constructed
       expect(mesh._mesh.clusterClient.construct.callCount).to.be(1);
       expect(mesh._mesh.config.brokered).to.be(true);
       expect(mesh._mesh.clusterClient.construct.calledWith({ component6: { version: '*' } })).to.be(
