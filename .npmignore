@@ -2,3 +2,5 @@
 example
 .travis.yml
 .vscode
+/test
+/test/*
