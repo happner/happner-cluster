@@ -18,7 +18,7 @@ describe(helpers.test.testName(__filename, 3), function() {
     await cluster.member.start(helpers.configuration.construct(20, 4), 3000);
     await cluster.member.start(helpers.configuration.construct(20, 5), 5000);
 
-    const client = await helpers.client.create(username, password, 55001);
+    const client = await helpers.client.create(username, password, 9501);
     const result = await client.exchange.component1.use();
     helpers.test.expect(result).to.be(1);
     await helpers.client.destroy(client);
@@ -37,7 +37,7 @@ describe(helpers.test.testName(__filename, 3), function() {
     await cluster.member.start(helpers.configuration.construct(20, 5), 2000);
     await helpers.test.delay(5000);
     //check member 2 (depending on member 4) is accessible
-    const client = await helpers.client.create(username, password, 55002);
+    const client = await helpers.client.create(username, password, 9502);
     const result = await client.exchange.component2.use();
     helpers.test.expect(result).to.be(2);
     //check everything started
@@ -85,7 +85,7 @@ describe(helpers.test.testName(__filename, 3), function() {
     //start member 4 up - this should make member 2 available
     await cluster.member.start(helpers.configuration.construct(20, 4), 5000);
 
-    const client = await helpers.client.create(username, password, 55002);
+    const client = await helpers.client.create(username, password, 9502);
     const result = await client.exchange.component2.use();
     helpers.test.expect(result).to.be(2);
     await helpers.client.destroy(client);
@@ -106,7 +106,7 @@ describe(helpers.test.testName(__filename, 3), function() {
     await helpers.test.delay(4000);
 
     //check member 2 (depending on member 4) is accessible
-    const client = await helpers.client.create(username, password, 55001);
+    const client = await helpers.client.create(username, password, 9501);
     await helpers.test.delay(4000);
     const result = await client.exchange.component2.use();
     helpers.test.expect(result).to.be(2);
@@ -126,12 +126,12 @@ describe(helpers.test.testName(__filename, 3), function() {
     await helpers.test.delay(2000);
 
     //check component2 (depending on member 4) is not accessible
-    let client = await helpers.client.create(username, password, 55001);
+    let client = await helpers.client.create(username, password, 9501);
     helpers.test.expect(client.exchange.component2).to.be(undefined);
     await helpers.client.destroy(client);
     await cluster.member.start(helpers.configuration.construct(20, 4), 5000);
 
-    client = await helpers.client.create(username, password, 55001);
+    client = await helpers.client.create(username, password, 9501);
     helpers.test.expect((await client.exchange.component2.is()).initialized).to.be(true);
     helpers.test.expect((await client.exchange.component2.is()).started).to.be(true);
     await helpers.client.destroy(client);
