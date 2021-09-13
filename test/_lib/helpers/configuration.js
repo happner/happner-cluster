@@ -32,14 +32,14 @@ module.exports = class Configuration extends require('./helper') {
   }
 
   base(index, secure = true, minPeers, hosts, joinTimeout, replicate) {
-    hosts = hosts || [`${this.address.self()}:56000`, `${this.address.self()}:56001`];
+    hosts = hosts || [`${this.address.self()}:9900`, `${this.address.self()}:9901`];
     joinTimeout = joinTimeout || 1000;
     replicate = replicate || ['*'];
 
     return {
       name: 'MESH_' + index,
       domain: 'DOMAIN_NAME',
-      port: 57000 + index,
+      port: 9900 + index,
       cluster: {
         requestTimeout: 10000,
         responseTimeout: 20000
