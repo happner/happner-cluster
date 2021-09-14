@@ -7,6 +7,8 @@ var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 const delay = require('await-delay');
 
+var clearMongoCollection = require('../_lib/clear-mongo-collection');
+
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(60000);
 
@@ -101,6 +103,12 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     };
     return config;
   }
+
+  before('clear mongo collection', function(done) {
+    clearMongoCollection('mongodb://localhost', 'happn-cluster', function() {
+      done();
+    });
+  });
 
   before('start cluster', function(done) {
     this.timeout(20000);
