@@ -6,6 +6,7 @@ var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 var minPeers = 1;
+const getSeq = require('../_lib/helpers/getSeq');
 
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
@@ -31,8 +32,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   beforeEach('start cluster', function(done) {
     this.timeout(20000);
-
-    Promise.all([HappnerCluster.create(localInstanceConfig(1))])
+    Promise.all([HappnerCluster.create(localInstanceConfig(getSeq.getFirst()))])
       .then(function(_servers) {
         servers = _servers;
         localInstance = servers[0];

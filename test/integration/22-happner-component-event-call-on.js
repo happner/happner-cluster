@@ -9,6 +9,7 @@ var users = require('../_lib/users');
 var testclient = require('../_lib/client');
 
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
+const getSeq = require('../_lib/helpers/getSeq');
 
 const test = require('../_lib/test-helper');
 //var log = require('why-is-node-running');
@@ -45,12 +46,12 @@ describe(test.testName(__filename, 3), function() {
         await test.delay(2000);
         await setUpSecurity(localInstance);
         await test.delay(2000);
-        thisClient = await testclient.create('username', 'password', 55001);
+        thisClient = await testclient.create('username', 'password', getSeq.getPort(1));
         const result1 = await thisClient.exchange.$call({
           component: 'brokerComponent',
           method: 'directMethod'
         });
-        test.expect(result1).to.be('MESH_1:brokerComponent:directMethod');
+        test.expect(result1).to.be(getSeq.getMeshName(1) + ':brokerComponent:directMethod');
         await thisClient.event.$on(
           {
             component: 'remoteComponent1',
@@ -64,7 +65,7 @@ describe(test.testName(__filename, 3), function() {
           component: 'remoteComponent1',
           method: 'brokeredMethod1'
         });
-        test.expect(result2).to.be('MESH_2:remoteComponent:brokeredMethod1');
+        test.expect(result2).to.be(getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1');
         await test.delay(2000);
 
         const result3 = await thisClient.exchange.$call({
@@ -72,7 +73,7 @@ describe(test.testName(__filename, 3), function() {
           method: 'brokeredMethod1'
         });
 
-        test.expect(result3).to.be('MESH_2:prereleaseComponent:brokeredMethod1');
+        test.expect(result3).to.be(getSeq.getMeshName(2) + ':prereleaseComponent:brokeredMethod1');
 
         await thisClient.exchange.$call({
           component: 'prereleaseComponent',
@@ -82,7 +83,9 @@ describe(test.testName(__filename, 3), function() {
         expect(e.message).to.be(
           'invalid endpoint options: [prereleaseComponent.unknownMethod] method does not exist on the api'
         );
-        expect(emitted).to.eql({ topic: 'MESH_2:remoteComponent:brokeredMethod1' });
+        expect(emitted).to.eql({
+          topic: getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1'
+        });
         return;
       }
       throw new Error('was not meant to happen');
@@ -95,12 +98,12 @@ describe(test.testName(__filename, 3), function() {
       await test.delay(2000);
       await setUpSecurity(localInstance);
       await test.delay(2000);
-      thisClient = await testclient.create('username', 'password', 55001);
+      thisClient = await testclient.create('username', 'password', getSeq.getPort(1));
       const result1 = await thisClient.exchange.$call({
         component: 'brokerComponent',
         method: 'directMethod'
       });
-      test.expect(result1).to.be('MESH_1:brokerComponent:directMethod');
+      test.expect(result1).to.be(getSeq.getMeshName(1) + ':brokerComponent:directMethod');
       await thisClient.event.$once(
         {
           component: 'remoteComponent1',
@@ -119,7 +122,9 @@ describe(test.testName(__filename, 3), function() {
         method: 'brokeredMethod1'
       });
       await test.delay(2000);
-      expect(emitted).to.eql([{ topic: 'MESH_2:remoteComponent:brokeredMethod1' }]);
+      expect(emitted).to.eql([
+        { topic: getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1' }
+      ]);
     });
 
     it('starts the cluster edge first, connects a client to the local instance, tests $off', async () => {
@@ -129,12 +134,12 @@ describe(test.testName(__filename, 3), function() {
       await test.delay(2000);
       await setUpSecurity(localInstance);
       await test.delay(2000);
-      thisClient = await testclient.create('username', 'password', 55001);
+      thisClient = await testclient.create('username', 'password', getSeq.getPort(1));
       const result1 = await thisClient.exchange.$call({
         component: 'brokerComponent',
         method: 'directMethod'
       });
-      test.expect(result1).to.be('MESH_1:brokerComponent:directMethod');
+      test.expect(result1).to.be(getSeq.getMeshName(1) + ':brokerComponent:directMethod');
       const id = await thisClient.event.$on(
         {
           component: 'remoteComponent1',
@@ -158,7 +163,9 @@ describe(test.testName(__filename, 3), function() {
         method: 'brokeredMethod1'
       });
       await test.delay(2000);
-      expect(emitted).to.eql([{ topic: 'MESH_2:remoteComponent:brokeredMethod1' }]);
+      expect(emitted).to.eql([
+        { topic: getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1' }
+      ]);
     });
 
     it('starts the cluster edge first, connects a client to the local instance, tests $offPath', async () => {
@@ -168,12 +175,12 @@ describe(test.testName(__filename, 3), function() {
       await test.delay(2000);
       await setUpSecurity(localInstance);
       await test.delay(2000);
-      thisClient = await testclient.create('username', 'password', 55001);
+      thisClient = await testclient.create('username', 'password', getSeq.getPort(1));
       const result1 = await thisClient.exchange.$call({
         component: 'brokerComponent',
         method: 'directMethod'
       });
-      test.expect(result1).to.be('MESH_1:brokerComponent:directMethod');
+      test.expect(result1).to.be(getSeq.getMeshName(1) + ':brokerComponent:directMethod');
       await thisClient.event.$on(
         {
           component: 'remoteComponent1',
@@ -207,8 +214,8 @@ describe(test.testName(__filename, 3), function() {
       });
       await test.delay(2000);
       expect(emitted).to.eql([
-        { topic: 'MESH_2:remoteComponent:brokeredMethod1' },
-        { topic: 'MESH_2:remoteComponent:brokeredMethod1' }
+        { topic: getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1' },
+        { topic: getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1' }
       ]);
     });
 
@@ -219,12 +226,12 @@ describe(test.testName(__filename, 3), function() {
       await test.delay(2000);
       await setUpSecurity(localInstance);
       await test.delay(2000);
-      thisClient = await testclient.create('username', 'password', 55001);
+      thisClient = await testclient.create('username', 'password', getSeq.getPort(1));
       const result1 = await thisClient.exchange.$call({
         component: 'brokerComponent',
         method: 'directMethod'
       });
-      test.expect(result1).to.be('MESH_1:brokerComponent:directMethod');
+      test.expect(result1).to.be(getSeq.getMeshName(1) + ':brokerComponent:directMethod');
       await thisClient.event.$on(
         {
           component: 'remoteComponent1',
@@ -254,10 +261,10 @@ describe(test.testName(__filename, 3), function() {
       });
       await test.delay(2000);
       expect(emitted).to.eql([
-        { topic: 'MESH_2:remoteComponent:brokeredMethod1' },
-        { topic: 'MESH_2:remoteComponent:brokeredMethod1' },
-        { topic: 'MESH_2:remoteComponent:brokeredMethod1' },
-        { topic: 'MESH_2:remoteComponent:brokeredMethod1' }
+        { topic: getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1' },
+        { topic: getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1' },
+        { topic: getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1' },
+        { topic: getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1' }
       ]);
     });
 
@@ -302,7 +309,7 @@ describe(test.testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           thisClient = client;
@@ -313,7 +320,7 @@ describe(test.testName(__filename, 3), function() {
           });
         })
         .then(function(result) {
-          expect(result).to.be('MESH_2:brokerComponent:directMethod');
+          expect(result).to.be(getSeq.getMeshName(2) + ':brokerComponent:directMethod');
           //call to good version of method
           return thisClient.exchange.$call({
             component: 'remoteComponent1',
@@ -385,7 +392,7 @@ describe(test.testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           thisClient = client;
@@ -415,10 +422,10 @@ describe(test.testName(__filename, 3), function() {
 
   function startClusterEdgeFirst() {
     return new Promise(function(resolve, reject) {
-      startEdge(1, 1)
+      startEdge(getSeq.getFirst(), 1)
         .then(function(server) {
           servers.push(server);
-          return startInternal(2, 2);
+          return startInternal(getSeq.getNext(), 2);
         })
         .then(function(server) {
           servers.push(server);
@@ -432,11 +439,11 @@ describe(test.testName(__filename, 3), function() {
 
   function startClusterInternalFirst() {
     return new Promise(function(resolve, reject) {
-      startInternal(1, 1)
+      startInternal(getSeq.getFirst(), 1)
         .then(function(server) {
           servers.push(server);
           localInstance = server;
-          return startEdge(2, 2);
+          return startEdge(getSeq.getNext(), 2);
         })
         .then(function(server) {
           servers.push(server);

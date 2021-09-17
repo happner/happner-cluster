@@ -1,20 +1,21 @@
 var HappnerCluster = require('../..');
-
+const getSeq = require('../_lib/helpers/getSeq');
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   var server;
   this.timeout(20000);
-
+  getSeq.getFirst();
   before('start server', function(done) {
     this.timeout(20000);
     HappnerCluster.create({
       name: 'NODE-01',
       domain: 'DOMAIN_NAME',
+      port: getSeq.getPort(1),
       happn: {
         services: {
           membership: {
             config: {
               seed: true,
-              hosts: ['localhost:56000']
+              hosts: ['localhost:' + getSeq.getSwimPort(1).toString()]
             }
           }
         }

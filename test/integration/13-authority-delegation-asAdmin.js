@@ -10,6 +10,7 @@ var users = require('../_lib/users');
 var testclient = require('../_lib/client');
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
+const getSeq = require('../_lib/helpers/getSeq');
 
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
@@ -56,16 +57,15 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   beforeEach('start cluster', function(done) {
     this.timeout(20000);
-
-    HappnerCluster.create(localInstanceConfig(1, 1)).then(function(local) {
+    HappnerCluster.create(localInstanceConfig(getSeq.getFirst(), 1)).then(function(local) {
       localInstance = local;
     });
 
     setTimeout(() => {
       Promise.all([
-        HappnerCluster.create(remoteInstanceConfig(2, 1)),
-        HappnerCluster.create(remoteInstanceConfig(3, 1)),
-        HappnerCluster.create(remoteInstanceConfig(4, 1))
+        HappnerCluster.create(remoteInstanceConfig(getSeq.getNext(), 1)),
+        HappnerCluster.create(remoteInstanceConfig(getSeq.getNext(), 1)),
+        HappnerCluster.create(remoteInstanceConfig(getSeq.getNext(), 1))
       ])
         .then(function(_servers) {
           servers = _servers;
@@ -94,7 +94,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     users
       .allowMethod(localInstance, 'username', 'localComponent1', 'localMethodToRemoteMethod')
       .then(function() {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(function(client) {
         let thisClient = client;
@@ -119,7 +119,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     users
       .allowMethod(localInstance, 'username', 'localComponent1', 'localMethodToRemoteMethod')
       .then(function() {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(function(client) {
         let thisClient = client;
@@ -145,7 +145,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(localInstance, 'username', 'remoteComponent2', 'method2');
       })
       .then(function() {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(function(client) {
         let thisClient = client;
@@ -173,7 +173,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(localInstance, 'username', 'remoteComponent2', 'method2');
       })
       .then(function() {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(function(client) {
         let thisClient = client;
@@ -196,7 +196,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     users
       .allowMethod(localInstance, 'username', 'localComponent1', 'localMethodToRemoteEvent')
       .then(function() {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(function(client) {
         let thisClient = client;
@@ -218,7 +218,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     users
       .allowMethod(localInstance, 'username', 'localComponent1', 'localMethodToRemoteEvent')
       .then(function() {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(function(client) {
         let thisClient = client;
@@ -240,7 +240,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(localInstance, 'username', 'remoteComponent2', 'method3');
       })
       .then(function() {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(function(client) {
         let thisClient = client;
@@ -268,7 +268,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(localInstance, 'username', 'remoteComponent2', 'method3');
       })
       .then(function() {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(function(client) {
         let thisClient = client;
@@ -291,7 +291,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     users
       .allowMethod(localInstance, 'username', 'localComponent1', 'localMethodToData')
       .then(function() {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(function(client) {
         thisClient = client;

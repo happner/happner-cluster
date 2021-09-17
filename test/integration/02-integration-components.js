@@ -6,10 +6,10 @@ var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 const delay = require('await-delay');
+var getSeq = require('../_lib/helpers/getSeq');
 
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
-
   var servers, localInstance;
 
   function localInstanceConfig(seq) {
@@ -106,9 +106,9 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     this.timeout(20000);
 
     Promise.all([
-      HappnerCluster.create(localInstanceConfig(1)),
-      HappnerCluster.create(remoteInstance1Config(2)),
-      HappnerCluster.create(remoteInstance2Config(3))
+      HappnerCluster.create(localInstanceConfig(getSeq.getFirst())),
+      HappnerCluster.create(remoteInstance1Config(getSeq.getNext())),
+      HappnerCluster.create(remoteInstance2Config(getSeq.getNext()))
     ])
       .then(function(_servers) {
         servers = _servers;
@@ -140,11 +140,10 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       results[
         await localInstance.exchange.localComponent1.callDependency('remoteComponent3', 'method1')
       ] = 1;
-
-      expect(results).to.eql({
-        'MESH_2:component3:method1': 1,
-        'MESH_3:component3:method1': 1
-      });
+      let expectedResults = {};
+      expectedResults[getSeq.getMeshName(2) + ':component3:method1'] = 1;
+      expectedResults[getSeq.getMeshName(3) + ':component3:method1'] = 1;
+      expect(results).to.eql(expectedResults);
     });
 
     it('overwrites local components that are wrong version', function(done) {
@@ -182,12 +181,15 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
       localInstance.exchange.localComponent2.listTestEvents(function(e, result) {
         if (e) return done(e);
-
+        let expectedResults = {};
+        expectedResults[
+          `/_events/DOMAIN_NAME/remoteComponent3/testevent/${getSeq.getMeshName(3)}`
+        ] = 1;
+        expectedResults[
+          `/_events/DOMAIN_NAME/remoteComponent3/testevent/${getSeq.getMeshName(2)}`
+        ] = 1;
         try {
-          expect(result).to.eql({
-            '/_events/DOMAIN_NAME/remoteComponent3/testevent/MESH_3': 1,
-            '/_events/DOMAIN_NAME/remoteComponent3/testevent/MESH_2': 1
-          });
+          expect(result).to.eql(expectedResults);
           done();
         } catch (e) {
           done(e);
@@ -198,11 +200,12 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     it('does not receive events from incompatible component versions', function(done) {
       localInstance.exchange.localComponent2.listTestCompatibleEvents(function(e, result) {
         if (e) return done(e);
-
+        let expectedResults = {};
+        expectedResults[
+          `/_events/DOMAIN_NAME/remoteComponent5/testevent/v2/${getSeq.getMeshName(3)}`
+        ] = 1;
         try {
-          expect(result).to.eql({
-            '/_events/DOMAIN_NAME/remoteComponent5/testevent/v2/MESH_3': 1
-          });
+          expect(result).to.eql(expectedResults);
           done();
         } catch (e) {
           done(e);

@@ -6,6 +6,7 @@ const users = require('../_lib/users');
 const testclient = require('../_lib/client');
 const clearMongoCollection = require('../_lib/clear-mongo-collection');
 const test = require('../_lib/test-helper');
+const getSeq = require('../_lib/helpers/getSeq');
 
 describe(test.testName(__filename, 3), function() {
   this.timeout(40000);
@@ -23,18 +24,18 @@ describe(test.testName(__filename, 3), function() {
 
   it('starts the cluster broker first, client connects and receives no further schema updates, when we flip-flop internal host', async () => {
     let schemaPublicationCount = 0;
-    let edgeInstance = await startEdge(1, 1);
-    let internalInstance = await startInternal(2, 2);
+    let edgeInstance = await startEdge(getSeq.getFirst(), 1);
+    let internalInstance = await startInternal(getSeq.getNext(), 2);
     await test.delay(5e3);
     await users.add(edgeInstance, 'username', 'password');
-    const client = await testclient.create('username', 'password', 55001);
+    const client = await testclient.create('username', 'password', getSeq.getPort(1));
     await client.data.on('/mesh/schema/description', () => {
       schemaPublicationCount++;
     });
     await internalInstance.stop({ reconnect: false });
     await test.delay(5e3);
     servers.pop(); //chuck the stopped server away
-    await startInternal(2, 2);
+    await startInternal(getSeq.getCurrent(), 2);
     await test.delay(5e3);
     test.expect(schemaPublicationCount).to.be(0);
   });

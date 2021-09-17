@@ -5,6 +5,7 @@ var expect = require('expect.js');
 var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
+const getSeq = require('../_lib/helpers/getSeq');
 
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
@@ -44,8 +45,8 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     this.timeout(20000);
 
     Promise.all([
-      HappnerCluster.create(localInstanceConfig(1)),
-      HappnerCluster.create(remoteInstanceConfig(2))
+      HappnerCluster.create(localInstanceConfig(getSeq.getFirst())),
+      HappnerCluster.create(remoteInstanceConfig(getSeq.getNext()))
     ])
       .then(function(_servers) {
         servers = _servers;

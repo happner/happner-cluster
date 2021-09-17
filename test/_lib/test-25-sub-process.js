@@ -3,14 +3,23 @@ const libDir = require('./lib-dir');
 const HappnerCluster = require('../..');
 const users = require('./users');
 let localInstance;
+const GetSeq = require('./helpers/getSeqClass');
+let getSeq;
+
+let inputArgs = process.argv.slice(2).map(num => parseInt(num));
+
 (async () => {
-  if (process.argv[2] === '2') {
-    await startInternal(2, 2);
+  if (inputArgs[0] === 2) {
+    getSeq = new GetSeq(inputArgs[1] + 1, inputArgs[1]);
+    let next = getSeq.getNext();
+    await startInternal(next, 2);
     await users.add(localInstance, 'username', 'password');
     await users.allowMethod(localInstance, 'username', 'breakingComponent', 'happyMethod');
     await users.allowMethod(localInstance, 'username', 'breakingComponent', 'breakingMethod');
   } else {
-    await startInternal(3, 2);
+    getSeq = new GetSeq(inputArgs[1] + inputArgs[0] - 1, inputArgs[1]);
+    let next = getSeq.getNext();
+    await startInternal(next, 2);
   }
 })();
 async function startInternal(id, clusterMin) {

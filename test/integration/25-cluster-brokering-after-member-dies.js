@@ -6,6 +6,7 @@ const baseConfig = require('../_lib/base-config');
 const stopCluster = require('../_lib/stop-cluster');
 const testclient = require('../_lib/client');
 
+const getSeq = require('../_lib/helpers/getSeq');
 const clearMongoCollection = require('../_lib/clear-mongo-collection');
 const { fork } = require('child_process');
 //var log = require('why-is-node-running');
@@ -23,6 +24,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       });
     });
   });
+  after('Move up getSeq sequence to account for subprocesses', done => {
+    getSeq.getNext();
+    getSeq.getNext();
+    done();
+  });
 
   after('stop cluster', function(done) {
     this.timeout(30000);
@@ -36,9 +42,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   it('starts the cluster internal first, connects a client to the local instance, and is able to access the remote component via the broker', function(done) {
     var thisClient;
     let child;
-    startEdge(1, 1)
+    let first = getSeq.getFirst();
+    startEdge(first, 1)
       .then(() => {
-        child = fork(libDir + 'test-25-sub-process.js', ['2']);
+        // getSeq.getNext();
+        child = fork(libDir + 'test-25-sub-process.js', ['2', getSeq.lookupFirst().toString()]);
         child.on('message', msg => {
           if (msg === 'kill') child.kill('SIGKILL');
         });
@@ -49,14 +57,14 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         });
       })
       .then(function() {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(function(client) {
         thisClient = client;
         return thisClient.exchange.breakingComponent.happyMethod();
       })
       .then(function(result) {
-        expect(result).to.be('MESH_2:brokenComponent:happyMethod');
+        expect(result).to.be(getSeq.getMeshName(2) + ':brokenComponent:happyMethod');
         return thisClient.exchange.breakingComponent.breakingMethod(1, 2);
       })
       .then(function(result) {
@@ -67,7 +75,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         expect(e).to.be('Request timed out');
       })
       .then(() => {
-        return fork(libDir + 'test-25-sub-process.js', ['3']);
+        return fork(libDir + 'test-25-sub-process.js', ['3', getSeq.lookupFirst().toString()]);
       })
       .then(function(forked) {
         child = forked;
@@ -79,7 +87,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return thisClient.exchange.breakingComponent.happyMethod();
       })
       .then(function(result) {
-        expect(result).to.be('MESH_3:brokenComponent:happyMethod');
+        expect(result).to.be(getSeq.getMeshName(3) + ':brokenComponent:happyMethod');
         return thisClient.exchange.breakingComponent.breakingMethod(1, 2);
       })
       .then(function(result) {
