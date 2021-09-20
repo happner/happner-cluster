@@ -220,5 +220,9 @@
   - SMC-3459: added happner-2 dependencies for anonymous access
   - SMC-3242: happn-3 update fixed onBehalfOf and nested permissions issue
 
+10.4.1 2021-09-20
+-----------------
+  - SMC-4161: happn-3 upgrade 11.13.4 
+
 
 
