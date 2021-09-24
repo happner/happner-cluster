@@ -224,9 +224,10 @@
 -----------------
   - SMC-4161: happn-3 upgrade 11.13.4 
 
-10.4.2 2021-09-21
+10.5.0 2021-09-21
 -----------------
-  - SMC-3989: intermittent test failures fixed 
+  - SMC-3989: intermittent test failures fixed
+  - SMC-4186: ability to switch event replication off via happner config 
 
 
 
