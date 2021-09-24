@@ -111,20 +111,14 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     });
   });
 
-  before('start cluster', function(done) {
+  before('start cluster', async () => {
     this.timeout(20000);
-
-    Promise.all([
+    servers = await Promise.all([
       HappnerCluster.create(localInstanceConfig(getSeq.getFirst())),
       HappnerCluster.create(remoteInstance1Config(getSeq.getNext())),
       HappnerCluster.create(remoteInstance2Config(getSeq.getNext()))
-    ])
-      .then(function(_servers) {
-        servers = _servers;
-        localInstance = servers[0];
-        done();
-      })
-      .catch(done);
+    ]);
+    localInstance = servers[0];
   });
 
   after('stop cluster', function(done) {
