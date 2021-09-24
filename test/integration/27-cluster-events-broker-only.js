@@ -13,7 +13,8 @@ const test = require('../_lib/test-helper');
 describe(test.testName(__filename, 3), function() {
   this.timeout(40000);
   let servers = [],
-    localInstance;
+    localInstance,
+    edgeInstance;
 
   beforeEach('clear mongo collection', function(done) {
     stopCluster(servers, function(e) {
@@ -37,7 +38,7 @@ describe(test.testName(__filename, 3), function() {
   it('internal first, connects a client to the local instance, and is able to access the remote component events via the broker, inter-cluster events on', async () => {
     await startClusterInternalFirst(false, false);
     await test.delay(4000);
-    await users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+    await users.allowMethod(localInstance, 'username', 'brokerComponent', 'getReceivedEvents');
     await users.allowMethod(localInstance, 'username', 'remoteComponent', 'postEvent');
     await users.allowMethod(localInstance, 'username', 'localComponent', 'postEvent');
     await users.allowMethod(localInstance, 'username', 'localComponent', 'getReceivedEvents');
@@ -54,14 +55,16 @@ describe(test.testName(__filename, 3), function() {
     test.expect(receivedEvents.length).to.be(1);
     const localComponentReceivedEvents = await client.exchange.localComponent.getReceivedEvents();
     const remoteComponentReceivedEvents = await client.exchange.remoteComponent.getReceivedEvents();
+    const brokerComponentReceivedEvents = await client.exchange.brokerComponent.getReceivedEvents();
     test.expect(localComponentReceivedEvents.length).to.be(1);
     test.expect(remoteComponentReceivedEvents.length).to.be(1);
+    test.expect(brokerComponentReceivedEvents.length).to.be(2);
   });
 
   it('internal first, connects a client to the local instance, and is able to access the remote component events via the broker, inter-cluster events off', async () => {
     await startClusterInternalFirst(false, true);
     await test.delay(4000);
-    await users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+    await users.allowMethod(localInstance, 'username', 'brokerComponent', 'getReceivedEvents');
     await users.allowMethod(localInstance, 'username', 'remoteComponent', 'postEvent');
     await users.allowMethod(localInstance, 'username', 'localComponent', 'postEvent');
     await users.allowMethod(localInstance, 'username', 'localComponent', 'getReceivedEvents');
@@ -78,14 +81,35 @@ describe(test.testName(__filename, 3), function() {
     test.expect(receivedEvents.length).to.be(1);
     const localComponentReceivedEvents = await client.exchange.localComponent.getReceivedEvents();
     const remoteComponentReceivedEvents = await client.exchange.remoteComponent.getReceivedEvents();
+    const brokerComponentReceivedEvents = await client.exchange.brokerComponent.getReceivedEvents();
     test.expect(localComponentReceivedEvents.length).to.be(1);
     test.expect(remoteComponentReceivedEvents.length).to.be(0);
+    test.expect(brokerComponentReceivedEvents.length).to.be(2);
+
+    // check to see that permissions propagation still works
+    // we revoke permission to localComponent.postEvent - using the edge instance
+    // we ensure that the revocation makes its way to the internal cluster member
+
+    const internalClient = await testclient.create('username', 'password', getSeq.getPort(1));
+    //this should work for now...
+    await internalClient.exchange.remoteComponent.postEvent();
+    // now deny the method on the edge instance
+    await users.denyMethod(edgeInstance, 'username', 'remoteComponent', 'postEvent');
+    await test.delay(4000);
+    let errorMessage;
+    try {
+      // this should fail
+      await internalClient.exchange.remoteComponent.postEvent();
+    } catch (e) {
+      errorMessage = e.message;
+    }
+    test.expect(errorMessage).to.be('unauthorized');
   });
 
   it('edge first, connects a client to the local instance, and is able to access the remote component events via the broker, inter-cluster events on', async () => {
     await startClusterEdgeFirst(false, false);
     await test.delay(4000);
-    await users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+    await users.allowMethod(localInstance, 'username', 'brokerComponent', 'getReceivedEvents');
     await users.allowMethod(localInstance, 'username', 'remoteComponent', 'postEvent');
     await users.allowMethod(localInstance, 'username', 'localComponent', 'postEvent');
     await users.allowMethod(localInstance, 'username', 'localComponent', 'getReceivedEvents');
@@ -102,14 +126,16 @@ describe(test.testName(__filename, 3), function() {
     test.expect(receivedEvents.length).to.be(1);
     const localComponentReceivedEvents = await client.exchange.localComponent.getReceivedEvents();
     const remoteComponentReceivedEvents = await client.exchange.remoteComponent.getReceivedEvents();
+    const brokerComponentReceivedEvents = await client.exchange.brokerComponent.getReceivedEvents();
     test.expect(localComponentReceivedEvents.length).to.be(1);
     test.expect(remoteComponentReceivedEvents.length).to.be(1);
+    test.expect(brokerComponentReceivedEvents.length).to.be(2);
   });
 
   it('edge first, connects a client to the local instance, and is able to access the remote component events via the broker, inter-cluster events off', async () => {
     await startClusterEdgeFirst(false, true);
     await test.delay(4000);
-    await users.allowMethod(localInstance, 'username', 'brokerComponent', 'directMethod');
+    await users.allowMethod(localInstance, 'username', 'brokerComponent', 'getReceivedEvents');
     await users.allowMethod(localInstance, 'username', 'remoteComponent', 'postEvent');
     await users.allowMethod(localInstance, 'username', 'localComponent', 'postEvent');
     await users.allowMethod(localInstance, 'username', 'localComponent', 'getReceivedEvents');
@@ -126,8 +152,10 @@ describe(test.testName(__filename, 3), function() {
     test.expect(receivedEvents.length).to.be(1);
     const localComponentReceivedEvents = await client.exchange.localComponent.getReceivedEvents();
     const remoteComponentReceivedEvents = await client.exchange.remoteComponent.getReceivedEvents();
+    const brokerComponentReceivedEvents = await client.exchange.brokerComponent.getReceivedEvents();
     test.expect(localComponentReceivedEvents.length).to.be(1);
     test.expect(remoteComponentReceivedEvents.length).to.be(0);
+    test.expect(brokerComponentReceivedEvents.length).to.be(2);
   });
 
   function localInstanceConfig(seq, sync, suppressInterClusterEvents = false) {
@@ -192,6 +220,7 @@ describe(test.testName(__filename, 3), function() {
         })
         .then(function(server) {
           servers.push(server);
+          edgeInstance = server;
           return users.add(localInstance, 'username', 'password');
         })
         .then(resolve)
@@ -208,6 +237,7 @@ describe(test.testName(__filename, 3), function() {
       startEdge(getSeq.getFirst(), 1, suppressInterClusterEventsLocal)
         .then(function(server) {
           servers.push(server);
+          edgeInstance = server;
           return startInternal(getSeq.getNext(), 2, suppressInterClusterEventsRemote);
         })
         .then(function(server) {

@@ -61,16 +61,12 @@ describe('01 - unit - cluster create', function() {
   it('defines replication path', function(done) {
     Happner.create = function(config) {
       expect(config.happn.services.orchestrator.config.replicate).to.eql([
-        '/_events/*',
-        '/_events/*/*',
-        '/_events/*/*/*',
-        '/_events/*/*/*/*',
-        '/_events/*/*/*/*/*',
-        '/_events/*/*/*/*/*/*',
-        '/_events/*/*/*/*/*/*/*',
-        '/_events/*/*/*/*/*/*/*/*',
-        '/_events/*/*/*/*/*/*/*/*/*',
-        '/_events/*/*/*/*/*/*/*/*/*/*'
+        '/_events/test-domain/*/*',
+        '/_events/test-domain/*/*/*',
+        '/_events/test-domain/*/*/*/*',
+        '/_events/test-domain/*/*/*/*/*',
+        '/_events/test-domain/*/*/*/*/*/*',
+        '/_events/test-domain/*/*/*/*/*/*/*'
       ]);
       return Promise.resolve({
         _mesh: {
@@ -89,7 +85,7 @@ describe('01 - unit - cluster create', function() {
       });
     };
 
-    HappnerCluster.create({});
+    HappnerCluster.create({ domain: 'test-domain' });
   });
 
   it('assigns private nedb datastore config if missing', function(done) {

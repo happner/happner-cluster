@@ -2,14 +2,16 @@ module.exports = Component;
 
 function Component() {}
 
-Component.prototype.start = function($happn, callback) {
-  callback();
+Component.prototype.start = async function($happn) {
+  this.receivedEvents = [];
+  await $happn.event.remoteComponent.on('/*/event', (data, meta) => {
+    this.receivedEvents.push({ data, meta });
+  });
+  await $happn.event.localComponent.on('/*/event', (data, meta) => {
+    this.receivedEvents.push({ data, meta });
+  });
 };
 
-Component.prototype.stop = function($happn, callback) {
-  callback();
-};
-
-Component.prototype.directMethod = function($happn, callback) {
-  callback(null, $happn.info.mesh.name + ':brokerComponent:directMethod');
+Component.prototype.getReceivedEvents = async function() {
+  return this.receivedEvents;
 };
