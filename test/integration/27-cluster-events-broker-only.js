@@ -9,7 +9,6 @@ const getSeq = require('../_lib/helpers/getSeq');
 const clearMongoCollection = require('../_lib/clear-mongo-collection');
 const test = require('../_lib/test-helper');
 
-//var log = require('why-is-node-running');
 describe(test.testName(__filename, 3), function() {
   this.timeout(40000);
   let servers = [],
