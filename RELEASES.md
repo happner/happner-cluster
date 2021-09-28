@@ -229,5 +229,11 @@
   - SMC-3989: intermittent test failures fixed
   - SMC-4186: ability to switch event replication off via happner config 
 
+10.5.1 2021-09-28
+-----------------
+  - happn-3 upgrades:
+  - fix: SMC-4209 - concurrency issue, user created logged on deleted, causes security directory update to fatal
+  - fix: SMC-4208 - merge insert now uses upsert, moved constants out of data service
+
 
 
