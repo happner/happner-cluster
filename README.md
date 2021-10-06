@@ -22,7 +22,7 @@ var HappnerCluster = require('happner-cluster');
 var config = {
 
   // name: 'UNIQUE_NAME', // allow default uniqie name
-  domain: 'DOMAIN_NAME', // same as other cluster nodes
+  domain: 'DOMAIN_NAME', // same as other cluster nodes, used for event replication - allows clusters to be segmented by domain
 
   cluster: {
     //  requestTimeout: 20 * 1000, // exchange timeouts
@@ -64,7 +64,22 @@ var config = {
       }
       membership: {
         // see membership sub-config in happn-cluster docs
-      }
+      },
+      orchestrator: {
+          config: {
+            minimumPeers: minPeers || 3, //minimum peers before stabilise
+            replicate: [
+              'my-custom-path/*'
+            ] //listen to all cluster events on this path, the following are also listened to by default:
+            // `/_events/${config.domain}/*/*`,
+            // `/_events/${config.domain}/*/*/*`,
+            // `/_events/${config.domain}/*/*/*/*`,
+            // `/_events/${config.domain}/*/*/*/*/*`,
+            // `/_events/${config.domain}/*/*/*/*/*/*`,
+            // `/_events/${config.domain}/*/*/*/*/*/*/*`
+            // NB: to not listen to any cluster events apart from security replication, set replicate: false
+          }
+        }
     }
   },
 
