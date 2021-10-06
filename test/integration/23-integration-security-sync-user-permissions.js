@@ -6,6 +6,7 @@ const clearMongoCollection = require('../_lib/clear-mongo-collection');
 const users = require('../_lib/user-permissions');
 const client = require('../_lib/client');
 const test = require('../_lib/test-helper');
+const getSeq = require('../_lib/helpers/getSeq');
 
 describe(test.testName(__filename, 3), function() {
   this.timeout(20000);
@@ -36,18 +37,18 @@ describe(test.testName(__filename, 3), function() {
 
   before('start cluster', async () => {
     servers = [];
-    servers.push(await HappnerCluster.create(serverConfig(1, 1)));
-    servers.push(await HappnerCluster.create(serverConfig(2, 2)));
+    servers.push(await HappnerCluster.create(serverConfig(getSeq.getFirst(), 1)));
+    servers.push(await HappnerCluster.create(serverConfig(getSeq.getNext(), 2)));
     await users.add(servers[0], 'username', 'password');
     await test.delay(5000);
   });
 
   before('start client1', async () => {
-    client1 = await client.create('username', 'password', 55001);
+    client1 = await client.create('username', 'password', getSeq.getPort(1));
   });
 
   before('start client2', async () => {
-    client2 = await client.create('username', 'password', 55002);
+    client2 = await client.create('username', 'password', getSeq.getPort(2));
   });
 
   after('stop clients', async () => {

@@ -7,7 +7,7 @@ var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 var users = require('../_lib/users');
 var testclient = require('../_lib/client');
-
+const getSeq = require('../_lib/helpers/getSeq');
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
@@ -156,11 +156,10 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       var thisClient;
       var edgeInstance;
       var internalInstance;
-
-      startEdge(1, 1)
+      startEdge(getSeq.getFirst(), 1)
         .then(function(instance) {
           edgeInstance = instance;
-          return startInternal(2, 2);
+          return startInternal(getSeq.getNext(), 2);
         })
         .then(function(instance) {
           internalInstance = instance;
@@ -175,21 +174,21 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return users.allowWebMethod(internalInstance, 'username', '/remoteComponent1/testJSON');
         })
         .then(function() {
-          return testclient.create('_ADMIN', 'happn', 55002);
+          return testclient.create('_ADMIN', 'happn', getSeq.getPort(2));
         })
         .then(function(adminClient) {
-          return testWebCall(adminClient, '/remoteComponent1/testJSON', 55002);
+          return testWebCall(adminClient, '/remoteComponent1/testJSON', getSeq.getPort(2));
         })
         .then(function(result) {
           expect(JSON.parse(result.body)).to.eql({
             test: 'data'
           });
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           thisClient = client;
           //first test our broker components methods are directly callable
-          return testWebCall(thisClient, '/remoteComponent1/testJSON', 55002);
+          return testWebCall(thisClient, '/remoteComponent1/testJSON', getSeq.getPort(2));
         })
         .then(function(result) {
           expect(JSON.parse(result.body)).to.eql({
@@ -204,11 +203,10 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       var thisClient;
       var edgeInstance;
       var internalInstance;
-
-      startEdge(1, 1)
+      startEdge(getSeq.getFirst(), 1)
         .then(function(instance) {
           edgeInstance = instance;
-          return startInternal(2, 2);
+          return startInternal(getSeq.getNext(), 2);
         })
         .then(function(instance) {
           internalInstance = instance;
@@ -223,21 +221,21 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return users.allowWebMethod(internalInstance, 'username', '/remoteComponent1/testJSON');
         })
         .then(function() {
-          return testclient.create('_ADMIN', 'happn', 55001);
+          return testclient.create('_ADMIN', 'happn', getSeq.getPort(1));
         })
         .then(function(adminClient) {
-          return testWebCall(adminClient, '/remoteComponent1/testJSON', 55001);
+          return testWebCall(adminClient, '/remoteComponent1/testJSON', getSeq.getPort(1));
         })
         .then(function(result) {
           expect(JSON.parse(result.body)).to.eql({
             test: 'data'
           });
-          return testclient.create('username', 'password', 55001);
+          return testclient.create('username', 'password', getSeq.getPort(1));
         })
         .then(function(client) {
           thisClient = client;
           //first test our broker components methods are directly callable
-          return testWebCall(thisClient, '/remoteComponent1/testJSON', 55001);
+          return testWebCall(thisClient, '/remoteComponent1/testJSON', getSeq.getPort(1));
         })
         .then(function(result) {
           expect(JSON.parse(result.body)).to.eql({
@@ -252,7 +250,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       let client = null;
       while (client == null) {
         let checkClient = await testclient.create(username, password, edgePort);
-        let response = await testWebCall(checkClient, '/remoteComponent1/testJSONSticky', 55001);
+        let response = await testWebCall(
+          checkClient,
+          '/remoteComponent1/testJSONSticky',
+          getSeq.getPort(1)
+        );
         if (response.body.toString().indexOf(`MESH_${meshId}`) > -1) client = checkClient;
         else await checkClient.disconnect();
       }
@@ -276,14 +278,14 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         results.push(result);
       };
 
-      startEdge(1, 1)
+      startEdge(getSeq.getFirst(), 1)
         .then(function(instance) {
           edgeInstance = instance;
-          return startInternal(2, 2);
+          return startInternal(getSeq.getNext(), 2);
         })
         .then(function(instance) {
           internalInstance1 = instance;
-          return startInternal(3, 3);
+          return startInternal(getSeq.getNext(), 3);
         })
         .then(function() {
           return new Promise(resolve => {
@@ -301,19 +303,37 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           );
         })
         .then(function() {
-          return getClientForMesh(2, 'username', 'password', 55001);
+          return getClientForMesh(
+            getSeq.lookupFirst() + 1,
+            'username',
+            'password',
+            getSeq.getPort(1)
+          );
         })
         .then(function(client) {
           thisClientMesh2 = client;
-          return getClientForMesh(3, 'username', 'password', 55001);
+          return getClientForMesh(
+            getSeq.lookupFirst() + 2,
+            'username',
+            'password',
+            getSeq.getPort(1)
+          );
         })
         .then(function(client) {
           thisClientMesh3 = client;
-          return testWebCall(thisClientMesh2, '/remoteComponent1/testJSONSticky', 55001);
+          return testWebCall(
+            thisClientMesh2,
+            '/remoteComponent1/testJSONSticky',
+            getSeq.getPort(1)
+          );
         })
         .then(function(response) {
           pushResults(response);
-          return testWebCall(thisClientMesh3, '/remoteComponent1/testJSONSticky', 55001);
+          return testWebCall(
+            thisClientMesh3,
+            '/remoteComponent1/testJSONSticky',
+            getSeq.getPort(1)
+          );
         })
         .then(function(response) {
           pushResults(response);
@@ -325,11 +345,19 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testWebCall(thisClientMesh2, '/remoteComponent1/testJSONSticky', 55001);
+          return testWebCall(
+            thisClientMesh2,
+            '/remoteComponent1/testJSONSticky',
+            getSeq.getPort(1)
+          );
         })
         .then(function(response) {
           pushResults(response);
-          return testWebCall(thisClientMesh3, '/remoteComponent1/testJSONSticky', 55001);
+          return testWebCall(
+            thisClientMesh3,
+            '/remoteComponent1/testJSONSticky',
+            getSeq.getPort(1)
+          );
         })
         .then(function(response) {
           pushResults(response);
@@ -339,23 +367,23 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
               {
                 statusCode: 200,
                 statusMessage: 'OK',
-                body: '{"ran_on":"MESH_2"}'
+                body: `{"ran_on":"${getSeq.getMeshName(2)}"}`
               },
               {
                 statusCode: 200,
                 statusMessage: 'OK',
-                body: '{"ran_on":"MESH_3"}'
+                body: `{"ran_on":"${getSeq.getMeshName(3)}"}`
               },
               // failover to MESH_3, because MESH_2 went offline
               {
                 statusCode: 200,
                 statusMessage: 'OK',
-                body: '{"ran_on":"MESH_3"}'
+                body: `{"ran_on":"${getSeq.getMeshName(3)}"}`
               },
               {
                 statusCode: 200,
                 statusMessage: 'OK',
-                body: '{"ran_on":"MESH_3"}'
+                body: `{"ran_on":"${getSeq.getMeshName(3)}"}`
               }
             ]
           );

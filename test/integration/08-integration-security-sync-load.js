@@ -9,6 +9,7 @@ var stopCluster = require('../_lib/stop-cluster');
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
 var users = require('../_lib/users');
 var client = require('../_lib/client');
+const getSeq = require('../_lib/helpers/getSeq');
 
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
@@ -60,14 +61,14 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   before('start cluster', function(done) {
     this.timeout(20000);
-    HappnerCluster.create(serverConfig(1, 1))
+    HappnerCluster.create(serverConfig(getSeq.getFirst(), 1))
       .then(function(server) {
         servers.push(server);
         return Promise.all([
-          HappnerCluster.create(serverConfig(2, 5)),
-          HappnerCluster.create(serverConfig(3, 5)),
-          HappnerCluster.create(serverConfig(4, 5)),
-          HappnerCluster.create(serverConfig(5, 5))
+          HappnerCluster.create(serverConfig(getSeq.getNext(), 5)),
+          HappnerCluster.create(serverConfig(getSeq.getNext(), 5)),
+          HappnerCluster.create(serverConfig(getSeq.getNext(), 5)),
+          HappnerCluster.create(serverConfig(getSeq.getNext(), 5))
         ]);
       })
       .then(function(_servers) {
@@ -116,7 +117,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     var promises = [];
     let username;
     for (username in userlist) {
-      port = 55000 + (++i % servers.length) + 1;
+      port = getSeq.getPort((++i % servers.length) + 1);
       promises.push(client.create(username, 'password', port));
     }
     Promise.all(promises)

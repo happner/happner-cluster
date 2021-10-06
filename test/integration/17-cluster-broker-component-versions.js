@@ -7,12 +7,12 @@ var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 var users = require('../_lib/users');
 var testclient = require('../_lib/client');
+const getSeq = require('../_lib/helpers/getSeq');
 
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(40000);
-
   var servers = [],
     localInstance;
 
@@ -89,11 +89,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   function startClusterInternalFirst() {
     return new Promise(function(resolve, reject) {
-      startInternal(1, 1)
+      startInternal(getSeq.getFirst(), 1)
         .then(function(server) {
           servers.push(server);
           localInstance = server;
-          return startEdge(2, 2);
+          return startEdge(getSeq.getNext(), 2);
         })
         .then(function(server) {
           servers.push(server);
@@ -154,7 +154,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           thisClient = client;
@@ -162,7 +162,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return thisClient.exchange.brokerComponent.directMethod();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_2:brokerComponent:directMethod');
+          expect(result).to.be(getSeq.getMeshName(2) + ':brokerComponent:directMethod');
           //call to good version of method
           return thisClient.exchange.remoteComponent1.brokeredMethod1();
         })
@@ -221,7 +221,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           thisClient = client;
@@ -229,7 +229,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return thisClient.exchange.brokerComponent.directMethod();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_2:brokerComponent:directMethod');
+          expect(result).to.be(getSeq.getMeshName(2) + ':brokerComponent:directMethod');
           //call to good version of method
           return thisClient.exchange.remoteComponent1.brokeredMethod1();
         })

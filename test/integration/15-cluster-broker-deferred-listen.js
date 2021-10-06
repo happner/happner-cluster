@@ -7,7 +7,7 @@ var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 var users = require('../_lib/users');
 var testclient = require('../_lib/client');
-
+const getSeq = require('../_lib/helpers/getSeq');
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
@@ -113,13 +113,12 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       var thisClient;
       var gotToFinalAttempt = false;
       var edgeInstance;
-
-      startEdge(1, 1)
+      startEdge(getSeq.getFirst(), 1)
         .then(instance => {
           edgeInstance = instance;
           return new Promise((resolve, reject) => {
             testclient
-              .create('username', 'password', 55001)
+              .create('username', 'password', getSeq.getPort(1))
               .then(() => {
                 reject(new Error('not meant to happen'));
               })
@@ -136,7 +135,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return startInternal(2, 2);
+          return startInternal(getSeq.getNext(), 2);
         })
         .then(function() {
           return users.allowMethod(edgeInstance, 'username', 'brokerComponent', 'directMethod');
@@ -153,7 +152,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55001);
+          return testclient.create('username', 'password', getSeq.getPort(1));
         })
         .then(function(client) {
           thisClient = client;
@@ -161,16 +160,16 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return thisClient.exchange.brokerComponent.directMethod();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_1:brokerComponent:directMethod');
+          expect(result).to.be(getSeq.getMeshName(1) + ':brokerComponent:directMethod');
           //call an injected method
           return thisClient.exchange.remoteComponent.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_2:remoteComponent:brokeredMethod1');
+          expect(result).to.be(getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1');
           return thisClient.exchange.remoteComponent1.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_2:remoteComponent1:brokeredMethod1');
+          expect(result).to.be(getSeq.getMeshName(2) + ':remoteComponent1:brokeredMethod1');
           return users.denyMethod(edgeInstance, 'username', 'remoteComponent', 'brokeredMethod1');
         })
         .then(function() {

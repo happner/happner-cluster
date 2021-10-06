@@ -1,4 +1,6 @@
+const PORT_CONSTANTS = require('./port-constants');
 const _ = require('lodash');
+const getSeq = require('./getSeq');
 module.exports = class Configuration extends require('./helper') {
   constructor() {
     super();
@@ -26,20 +28,25 @@ module.exports = class Configuration extends require('./helper') {
     return require(`../configurations/${test}/${index}`);
   }
 
-  construct(test, index, secure = true, minPeers, hosts, joinTimeout, replicate) {
-    const base = this.base(index, secure, minPeers, hosts, joinTimeout, replicate);
+  construct(test, extendedIndex, secure = true, minPeers, hosts, joinTimeout, replicate) {
+    let [seqIndex, index] = extendedIndex;
+    const base = this.base(index, seqIndex, secure, minPeers, hosts, joinTimeout, replicate);
     return _.defaultsDeep(base, this.get(test, index));
   }
 
-  base(index, secure = true, minPeers, hosts, joinTimeout, replicate) {
-    hosts = hosts || [`${this.address.self()}:56000`, `${this.address.self()}:56001`];
+  base(index, seqIndex, secure = true, minPeers, hosts, joinTimeout, replicate) {
+    let [first, portIndex] = seqIndex;
+    hosts = hosts || [
+      `${this.address.self()}:` + getSeq.getSwimPort(1).toString(),
+      `${this.address.self()}:` + getSeq.getSwimPort(2).toString()
+    ];
     joinTimeout = joinTimeout || 1000;
     replicate = replicate || ['*'];
 
     return {
       name: 'MESH_' + index,
       domain: 'DOMAIN_NAME',
-      port: 57000 + index,
+      port: PORT_CONSTANTS.HAPPN_BASE + portIndex,
       cluster: {
         requestTimeout: 10000,
         responseTimeout: 20000
@@ -60,8 +67,8 @@ module.exports = class Configuration extends require('./helper') {
           membership: {
             config: {
               host: `${this.address.self()}`,
-              port: 56000 + index,
-              seed: index === 0,
+              port: PORT_CONSTANTS.SWIM_BASE + portIndex,
+              seed: portIndex === first,
               seedWait: 1000,
               hosts,
               joinTimeout
@@ -69,7 +76,7 @@ module.exports = class Configuration extends require('./helper') {
           },
           proxy: {
             config: {
-              port: 55000 + index
+              port: PORT_CONSTANTS.PROXY_BASE + portIndex
             }
           },
           orchestrator: {
