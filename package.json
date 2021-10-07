@@ -28,7 +28,6 @@
     "eslint": "^6.8.0",
     "eslint-plugin-prettier": "^3.1.2",
     "expect.js": "^0.3.1",
-    "happn-service-mongo-2": "^4.0.0-prerelease-1",
     "intercept-stdout": "^0.1.2",
     "lodash": "^4.17.20",
     "mocha": "^3.5.0",
@@ -48,6 +47,7 @@
     "happner-client": "^11.5.2",
     "hashring": "^3.2.0",
     "node-http-proxy": "^0.2.3",
-    "semver": "^5.3.0"
+    "semver": "^5.3.0",
+    "happn-service-mongo-2": "^4.0.0"
   }
 }
