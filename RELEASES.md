@@ -233,6 +233,11 @@
 10.5.0 2021-09-28
 -----------------
   - SMC-3989: intermittent test failures fixed
-  - SMC-4186: ability to switch event replication off via happner config 
+  - SMC-4186: ability to switch event replication off via happner config
+
+11.0.0 2021-10-07
+-----------------
+  - SMC-3823: mongo version 4 driver, updated happn-cluster
+  - SMC-4309: removed persistMembers functionality
 
 
