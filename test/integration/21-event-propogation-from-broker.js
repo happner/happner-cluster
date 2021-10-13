@@ -197,9 +197,13 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(client => {
-        client.data.on('_data/data/brokered/event', handler);
-        test1Server.exchange.data.set('/brokered/event', { data: 'data1' }, {});
-        return delay(5000);
+        return client.data.on('_data/data/brokered/event', handler);
+      })
+      .then(() => {
+        return test1Server.exchange.data.set('/brokered/event', { data: 'data1' }, {});
+      })
+      .then(() => {
+        return delay(2500);
       })
       .then(() => {
         sinon.assert.calledOnce(handler);
