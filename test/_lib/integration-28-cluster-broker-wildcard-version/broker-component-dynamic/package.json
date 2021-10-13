@@ -5,19 +5,14 @@
     "dependencies": {
       "$broker": {
         "remoteComponent": {
-          "version": "^1.0.0"
+          "version": "^2.0.0"
         },
         "remoteComponent1": {
           "version": "^2.0.0",
           "methods": {
-            "brokeredMethod1": {}
+            "brokeredMethod1": {},
+            "brokeredEventEmitMethod": {}
           }
-        },
-        "prereleaseComponent": {
-          "version": "^3.0.0"
-        },
-        "prereleaseComponentNotFound": {
-          "version": "^4.0.0"
         }
       }
     }

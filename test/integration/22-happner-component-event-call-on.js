@@ -219,6 +219,33 @@ describe(test.testName(__filename, 3), function() {
       ]);
     });
 
+    it('starts the cluster edge first, connects a client to the local instance, tests inter-mesh $on', async () => {
+      let thisClient;
+      await startClusterEdgeFirst();
+      await test.delay(2000);
+      await setUpSecurity(localInstance);
+      await test.delay(2000);
+      thisClient = await testclient.create('username', 'password', getSeq.getPort(1));
+      const events = [];
+      await thisClient.event.$on(
+        {
+          component: 'brokerComponent',
+          path: '*'
+        },
+        data => {
+          events.push(data);
+        }
+      );
+
+      await test.delay(2000);
+      let result;
+      result = await thisClient.exchange.$call({
+        component: 'brokerComponent',
+        method: 'subscribeToRemoteAndGetEvent'
+      });
+      test.expect(result.length).to.be(1);
+    });
+
     it('starts the cluster edge first, connects a client to the local instance, tests $offPath - negative', async () => {
       let thisClient,
         emitted = [];
@@ -508,10 +535,17 @@ describe(test.testName(__filename, 3), function() {
   }
 
   async function setUpSecurity(instance) {
+    await users.allowMethod(
+      instance,
+      'username',
+      'brokerComponent',
+      'subscribeToRemoteAndGetEvent'
+    );
     await users.allowMethod(instance, 'username', 'brokerComponent', 'directMethod');
     await users.allowMethod(instance, 'username', 'remoteComponent', 'brokeredMethod1');
     await users.allowMethod(instance, 'username', 'remoteComponent1', 'brokeredMethod1');
     await users.allowEvent(instance, 'username', 'remoteComponent1', '*');
+    await users.allowEvent(instance, 'username', 'brokerComponent', '*');
     await users.allowMethod(instance, 'username', 'prereleaseComponent', 'brokeredMethod1');
     await users.allowMethod(instance, 'username', 'prereleaseComponentNotFound', 'brokeredMethod1');
     await users.allowMethod(instance, 'username', 'prereleaseComponentNotFound', 'brokeredMethod1');
