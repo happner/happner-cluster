@@ -240,4 +240,10 @@
   - SMC-3823: mongo version 4 driver, updated happn-cluster
   - SMC-4309: removed persistMembers functionality
 
+11.0.1 2021-10-13
+-----------------
+  - SMC-4349: update of happner-client - fix inter-mesh $on
+  - SMC-4311: brokered components with * version are sometimes not refreshing api - tests
+
+
 
