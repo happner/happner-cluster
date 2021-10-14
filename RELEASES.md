@@ -245,7 +245,7 @@
   - SMC-4349: update of happner-client - fix inter-mesh $on
   - SMC-4311: brokered components with * version are sometimes not refreshing api - tests
 
-11.0.1 2021-10-14
+11.0.2 2021-10-14
 -----------------
  - fix: SMC-4385 - happner-client update: remote method call timeouts now print call details (component, version, method)
- - fix: SMC-4387 - components without happner dependencies do not refresh exchange api when a peer arrives
+ - fix: SMC-4387 - components without happner dependencies do not refresh $happn exchange api when a peer arrives
