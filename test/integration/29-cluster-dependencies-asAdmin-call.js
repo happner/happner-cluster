@@ -50,11 +50,9 @@ describe(test.testName(__filename, 3), function() {
     test
       .expect(errorMessage)
       .to.be('invalid endpoint options: [remoteComponent] component does not exist on the api');
-    const internalInstance = await startInternal(getSeq.getNext(), 2);
+    await startInternal(getSeq.getNext(), 2);
     await test.delay(2000);
     await client.exchange.edgeComponent.callRemote();
-    servers.push(edgeInstance);
-    servers.push(internalInstance);
   });
 
   function localInstanceConfig(seq, sync) {
