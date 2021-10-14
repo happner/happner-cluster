@@ -41,11 +41,15 @@ describe(test.testName(__filename, 3), function() {
     await users.allowMethod(edgeInstance, 'username', 'edgeComponent', 'callRemote');
     await users.allowMethod(edgeInstance, 'username', 'remoteComponent', 'remoteMethod');
     const client = await testclient.create('username', 'password', getSeq.getPort(1));
+    let errorMessage;
     try {
       await client.exchange.edgeComponent.callRemote();
     } catch (e) {
-      console.log(e);
+      errorMessage = e.message;
     }
+    test
+      .expect(errorMessage)
+      .to.be('invalid endpoint options: [remoteComponent] component does not exist on the api');
     const internalInstance = await startInternal(getSeq.getNext(), 2);
     await test.delay(2000);
     await client.exchange.edgeComponent.callRemote();
