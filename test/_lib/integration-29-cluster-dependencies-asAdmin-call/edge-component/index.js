@@ -11,7 +11,7 @@ Component.prototype.stop = function($happn, callback) {
 };
 
 Component.prototype.callRemote = function($happn, callback) {
-  $happn.exchange
+  $happn.asAdmin.exchange
     .$call({
       component: 'remoteComponent',
       method: 'remoteMethod',
