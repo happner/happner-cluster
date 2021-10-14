@@ -1,6 +1,6 @@
 {
   "name": "happner-cluster",
-  "version": "11.0.1",
+  "version": "11.0.2-prerelease-1",
   "description": "Extends happner with clustering capabilities",
   "main": "index.js",
   "scripts": {
@@ -45,7 +45,7 @@
     "happn-cluster": "^11.0.0",
     "happn-service-mongo-2": "^4.0.0",
     "happner-2": "^11.12.2",
-    "happner-client": "^11.5.3",
+    "happner-client": "prerelease-11",
     "hashring": "^3.2.0",
     "node-http-proxy": "^0.2.3",
     "semver": "^5.3.0"
