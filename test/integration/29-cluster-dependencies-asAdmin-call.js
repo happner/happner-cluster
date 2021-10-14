@@ -13,7 +13,6 @@ const clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
 describe(test.testName(__filename, 3), function() {
   const servers = [];
-  let localInstance;
   this.timeout(120000);
 
   beforeEach('clear mongo collection', function(done) {
@@ -96,37 +95,5 @@ describe(test.testName(__filename, 3), function() {
     const server = await HappnerCluster.create(localInstanceConfig(id, clusterMin, dynamic));
     servers.push(server);
     return server;
-  }
-
-  function startClusterEdgeFirst(dynamic) {
-    return new Promise(function(resolve, reject) {
-      startEdge(getSeq.getFirst(), 1, dynamic)
-        .then(function() {
-          return startInternal(getSeq.getNext(), 2);
-        })
-        .then(function(server) {
-          localInstance = server;
-          return users.add(localInstance, 'username', 'password');
-        })
-        .then(resolve)
-        .catch(reject);
-    });
-  }
-
-  function startClusterInternalFirst(replicate) {
-    return new Promise(function(resolve, reject) {
-      startInternal(getSeq.getFirst(), 1, replicate)
-        .then(function(server) {
-          servers.push(server);
-          localInstance = server;
-          return startEdge(getSeq.getNext(), 2, replicate);
-        })
-        .then(function(server) {
-          servers.push(server);
-          return users.add(localInstance, 'username', 'password');
-        })
-        .then(resolve)
-        .catch(reject);
-    });
   }
 });
