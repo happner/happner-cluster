@@ -249,3 +249,11 @@
 -----------------
  - fix: SMC-4385 - happner-client update: remote method call timeouts now print call details (component, version, method)
  - fix: SMC-4387 - components without happner dependencies do not refresh $happn exchange api when a peer arrives
+
+11.0.3 2021-10-15
+-----------------
+  - dependency happner-2 updated:
+    - fix: SMC-3661 - removal of try catch callback anti-pattern
+    - fix: SMC-4349 - happner-client update, inter-mesh $on fails due to argument mismatch
+    - fix: SMC-4388 - updated mongo data provider, removed main from package.json
+    - test: SMC-4393 - test intercomponent $on and $call
