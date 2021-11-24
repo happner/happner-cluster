@@ -257,3 +257,10 @@
     - fix: SMC-4349 - happner-client update, inter-mesh $on fails due to argument mismatch
     - fix: SMC-4388 - updated mongo data provider, removed main from package.json
     - test: SMC-4393 - test intercomponent $on and $call
+
+11.1.0 2021-11-24
+-----------------
+  - fix: SMC-4512 -  data provider get action causes fatal when allowNestedPermissions switched on
+  - happn-3 upgrade:
+  - feature: SMC-2954 - Allows for configuration and use of multiple authentication providers.
+  - fix: SMC-4386 -  upsertMultiplePermissions will now allow for removing permissions/prohibitions as well as upserting permissions or prohibitions
