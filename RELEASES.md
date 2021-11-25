@@ -264,3 +264,8 @@
   - happn-3 upgrade:
   - feature: SMC-2954 - Allows for configuration and use of multiple authentication providers.
   - fix: SMC-4386 -  upsertMultiplePermissions will now allow for removing permissions/prohibitions as well as upserting permissions or prohibitions
+
+11.1.1 2021-11-25
+-----------------
+  - test: SMC-2954 - ensure multiple auth providers work with the cluster
+  
