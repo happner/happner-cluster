@@ -9,6 +9,7 @@ var stopCluster = require('../_lib/stop-cluster');
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
 var users = require('../_lib/users');
 var client = require('../_lib/client');
+const getSeq = require('../_lib/helpers/getSeq');
 
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
@@ -41,10 +42,10 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   before('start cluster', function(done) {
     this.timeout(20000);
-    HappnerCluster.create(serverConfig(1, 1))
+    HappnerCluster.create(serverConfig(getSeq.getFirst(), 1))
       .then(function(server) {
         servers.push(server);
-        return HappnerCluster.create(serverConfig(2, 2));
+        return HappnerCluster.create(serverConfig(getSeq.getNext(), 2));
       })
       .then(function(server) {
         servers.push(server);
@@ -59,7 +60,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   before('start client1', function(done) {
     client
-      .create('username', 'password', 55001)
+      .create('username', 'password', getSeq.getPort(1))
       .then(function(client) {
         client1 = client;
         done();
@@ -69,7 +70,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   before('start client2', function(done) {
     client
-      .create('username', 'password', 55002)
+      .create('username', 'password', getSeq.getPort(2))
       .then(function(client) {
         client2 = client;
         done();
@@ -437,7 +438,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         })
 
         .then(function() {
-          return performAction(55002, 'username1', 'component1', 'method1');
+          return performAction(getSeq.getPort(2), 'username1', 'component1', 'method1');
         })
 
         .then(function() {
@@ -450,7 +451,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
         .then(function() {
           return new Promise(function(resolve, reject) {
-            performAction(55002, 'username1', 'component1', 'method1')
+            performAction(getSeq.getPort(2), 'username1', 'component1', 'method1')
               .then(function() {
                 reject(new Error('missing AccessDeniedError 1'));
               })
@@ -504,7 +505,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         })
 
         .then(function() {
-          return performAction(55002, 'username2', 'component1', 'method1');
+          return performAction(getSeq.getPort(2), 'username2', 'component1', 'method1');
         })
 
         .then(function() {
@@ -517,7 +518,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
         .then(function() {
           return new Promise(function(resolve, reject) {
-            performAction(55002, 'username2', 'component1', 'method1')
+            performAction(getSeq.getPort(2), 'username2', 'component1', 'method1')
               .then(function() {
                 reject(new Error('missing AccessDeniedError 1'));
               })
@@ -571,7 +572,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         })
 
         .then(function() {
-          return performAction(55002, 'username3', 'component1', 'method1');
+          return performAction(getSeq.getPort(2), 'username3', 'component1', 'method1');
         })
 
         .then(function() {
@@ -584,7 +585,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
         .then(function() {
           return new Promise(function(resolve, reject) {
-            performAction(55002, 'username3', 'component1', 'method1')
+            performAction(getSeq.getPort(2), 'username3', 'component1', 'method1')
               .then(function() {
                 reject(new Error('missing AccessDeniedError 1'));
               })

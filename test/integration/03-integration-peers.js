@@ -6,10 +6,10 @@ var unique = require('array-unique');
 var libDir = require('../_lib/lib-dir');
 var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
+var getSeq = require('../_lib/helpers/getSeq');
 
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(20000);
-
   var servers, localInstance;
 
   function localInstanceConfig(seq) {
@@ -44,12 +44,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   beforeEach('start cluster', function(done) {
     this.timeout(20000);
-
     Promise.all([
-      HappnerCluster.create(localInstanceConfig(1)),
-      HappnerCluster.create(remoteInstanceConfig(2)),
-      HappnerCluster.create(remoteInstanceConfig(3)),
-      HappnerCluster.create(remoteInstanceConfig(4))
+      HappnerCluster.create(localInstanceConfig(getSeq.getFirst())),
+      HappnerCluster.create(remoteInstanceConfig(getSeq.getNext())),
+      HappnerCluster.create(remoteInstanceConfig(getSeq.getNext())),
+      HappnerCluster.create(remoteInstanceConfig(getSeq.getLast()))
     ])
       .then(function(_servers) {
         servers = _servers;
@@ -76,11 +75,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     ])
       .then(function(replies) {
         var list = unique(replies).sort();
-        expect(list).to.eql([
-          'MESH_2:component3:method1',
-          'MESH_3:component3:method1',
-          'MESH_4:component3:method1'
-        ]);
+        expect(list).to.eql([2, 3, 4].map(num => getSeq.getMeshName(num) + ':component3:method1'));
       })
       .then(function() {
         var server = servers.pop();
@@ -100,7 +95,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       })
       .then(function(replies) {
         var list = unique(replies).sort();
-        expect(list).to.eql(['MESH_2:component3:method1', 'MESH_3:component3:method1']);
+        expect(list).to.eql([2, 3].map(num => getSeq.getMeshName(num) + ':component3:method1'));
         done();
       })
       .catch(done);
@@ -118,14 +113,12 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     ])
       .then(function(replies) {
         var list = unique(replies).sort();
-        expect(list).to.eql([
-          'MESH_2:component3:method1',
-          'MESH_3:component3:method1',
-          'MESH_4:component3:method1'
-        ]);
+        expect(list).to.eql(
+          [2, 3, 4].map(num => getSeq.getMeshName(num) + ':component3:method1').sort()
+        );
       })
       .then(function() {
-        return HappnerCluster.create(remoteInstanceConfig(5));
+        return HappnerCluster.create(remoteInstanceConfig(getSeq.getLast()));
       })
       .then(function(server) {
         servers.push(server);
@@ -146,12 +139,9 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       })
       .then(function(replies) {
         var list = unique(replies).sort();
-        expect(list).to.eql([
-          'MESH_2:component3:method1',
-          'MESH_3:component3:method1',
-          'MESH_4:component3:method1',
-          'MESH_5:component3:method1'
-        ]);
+        expect(list).to.eql(
+          [2, 3, 4, 5].map(num => getSeq.getMeshName(num) + ':component3:method1').sort()
+        );
         done();
       })
       .catch(done);

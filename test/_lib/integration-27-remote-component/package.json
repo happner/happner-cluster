@@ -1,0 +1,13 @@
+{
+  "name": "remote-component",
+  "version": "2.2.0",
+  "happner": {
+    "dependencies": {
+      "remoteComponent": {
+        "localComponent": {
+          "version": "*"
+        }
+      }
+    }
+  }
+}

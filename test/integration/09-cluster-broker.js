@@ -7,12 +7,13 @@ var baseConfig = require('../_lib/base-config');
 var stopCluster = require('../_lib/stop-cluster');
 var users = require('../_lib/users');
 var testclient = require('../_lib/client');
+const getSeq = require('../_lib/helpers/getSeq');
 
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
+
 //var log = require('why-is-node-running');
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(40000);
-
   var servers = [],
     localInstance;
 
@@ -112,11 +113,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   function startClusterInternalFirst(replicate) {
     return new Promise(function(resolve, reject) {
-      startInternal(1, 1, replicate)
+      startInternal(getSeq.getFirst(), 1, replicate)
         .then(function(server) {
           servers.push(server);
           localInstance = server;
-          return startEdge(2, 2, replicate);
+          return startEdge(getSeq.getNext(), 2, replicate);
         })
         .then(function(server) {
           servers.push(server);
@@ -129,10 +130,10 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   function startClusterEdgeFirst() {
     return new Promise(function(resolve, reject) {
-      startEdge(1, 1)
+      startEdge(getSeq.getFirst(), 1)
         .then(function(server) {
           servers.push(server);
-          return startInternal(2, 2);
+          return startInternal(getSeq.getNext(), 2);
         })
         .then(function(server) {
           servers.push(server);
@@ -172,17 +173,17 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           thisClient = client;
           return testRestCall(
             thisClient.data.session.token,
-            55002,
+            getSeq.getPort(2),
             'remoteComponent1',
             'brokeredMethod1',
             null,
-            'MESH_1:remoteComponent1:brokeredMethod1:true'
+            getSeq.getMeshName(1) + ':remoteComponent1:brokeredMethod1:true'
           );
         })
         .then(done);
@@ -235,7 +236,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           thisClient = client;
@@ -243,16 +244,16 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return thisClient.exchange.brokerComponent.directMethod();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_2:brokerComponent:directMethod');
+          expect(result).to.be(getSeq.getMeshName(2) + ':brokerComponent:directMethod');
           //call an injected method
           return thisClient.exchange.remoteComponent.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_1:remoteComponent:brokeredMethod1');
+          expect(result).to.be(getSeq.getMeshName(1) + ':remoteComponent:brokeredMethod1');
           return thisClient.exchange.remoteComponent1.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod1');
+          expect(result).to.be(getSeq.getMeshName(1) + ':remoteComponent1:brokeredMethod1');
           setTimeout(done, 2000);
         })
         .catch(done);
@@ -279,7 +280,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           );
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           thisClient = client;
@@ -287,16 +288,16 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return thisClient.exchange.brokerComponent.directMethod();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_2:brokerComponent:directMethod');
+          expect(result).to.be(getSeq.getMeshName(2) + ':brokerComponent:directMethod');
           //call an injected method
           return thisClient.exchange.remoteComponent.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_1:remoteComponent:brokeredMethod1');
+          expect(result).to.be(getSeq.getMeshName(1) + ':remoteComponent:brokeredMethod1');
           return thisClient.exchange.remoteComponent1.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod1');
+          expect(result).to.be(getSeq.getMeshName(1) + ':remoteComponent1:brokeredMethod1');
           return users.denyMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
         })
         .then(function() {
@@ -324,17 +325,17 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55001);
+          return testclient.create('username', 'password', getSeq.getPort(1));
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
           client.exchange.brokerComponent.directMethod(function(e, result) {
             expect(e).to.be(null);
-            expect(result).to.be('MESH_1:brokerComponent:directMethod');
+            expect(result).to.be(getSeq.getMeshName(1) + ':brokerComponent:directMethod');
             //call an injected method
             client.exchange.remoteComponent.brokeredMethod1(function(e, result) {
               expect(e).to.be(null);
-              expect(result).to.be('MESH_2:remoteComponent:brokeredMethod1');
+              expect(result).to.be(getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1');
               setTimeout(done, 2000);
             });
           });
@@ -356,12 +357,12 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55001);
+          return testclient.create('username', 'password', getSeq.getPort(1));
         })
         .then(function(client) {
           client.exchange.remoteComponent.brokeredMethod3('test', function(e, result) {
             expect(e).to.be(null);
-            expect(result).to.be('MESH_2:remoteComponent:brokeredMethod3:test');
+            expect(result).to.be(getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod3:test');
             setTimeout(done, 2000);
           });
         })
@@ -387,19 +388,19 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return users.allowEvent(localInstance, 'username', 'remoteComponent', '/brokered/event');
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
           client.exchange.brokerComponent.directMethod(function(e, result) {
             expect(e).to.be(null);
-            expect(result).to.be('MESH_2:brokerComponent:directMethod');
+            expect(result).to.be(getSeq.getMeshName(2) + ':brokerComponent:directMethod');
 
             client.event.remoteComponent.on(
               '/brokered/event',
               function(data) {
                 expect(data).to.eql({
-                  brokered: { event: { data: { from: 'MESH_1' } } }
+                  brokered: { event: { data: { from: getSeq.getMeshName(1) } } }
                 });
                 setTimeout(done, 2000);
               },
@@ -407,7 +408,9 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
                 expect(e).to.be(null);
                 client.exchange.remoteComponent.brokeredEventEmitMethod(function(e, result) {
                   expect(e).to.be(null);
-                  expect(result).to.be('MESH_1:remoteComponent:brokeredEventEmitMethod');
+                  expect(result).to.be(
+                    getSeq.getMeshName(1) + ':remoteComponent:brokeredEventEmitMethod'
+                  );
                 });
               }
             );
@@ -422,11 +425,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       let edgeClient, internalClient;
       startClusterInternalFirst(['/test/**'])
         .then(function() {
-          return testclient.create('_ADMIN', 'happn', 55002);
+          return testclient.create('_ADMIN', 'happn', getSeq.getPort(2));
         })
         .then(function(client) {
           edgeClient = client;
-          return testclient.create('_ADMIN', 'happn', 55001);
+          return testclient.create('_ADMIN', 'happn', getSeq.getPort(1));
         })
         .then(function(client) {
           internalClient = client;
@@ -443,11 +446,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
       let edgeClient, internalClient;
       startClusterInternalFirst()
         .then(function() {
-          return testclient.create('_ADMIN', 'happn', 55002);
+          return testclient.create('_ADMIN', 'happn', getSeq.getPort(2));
         })
         .then(function(client) {
           edgeClient = client;
-          return testclient.create('_ADMIN', 'happn', 55001);
+          return testclient.create('_ADMIN', 'happn', getSeq.getPort(1));
         })
         .then(function(client) {
           internalClient = client;
@@ -463,7 +466,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   context('errors', function() {
     it('ensures an error is raised if we are injecting internal components with duplicate names', function(done) {
-      HappnerCluster.create(errorInstanceConfigDuplicateBrokered(1, 1))
+      HappnerCluster.create(errorInstanceConfigDuplicateBrokered(getSeq.getFirst(), 1))
         .then(function() {
           done(new Error('unexpected success'));
         })
@@ -486,7 +489,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           );
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
@@ -509,7 +512,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           );
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
@@ -534,7 +537,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           );
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
@@ -555,7 +558,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
         })
         .then(function() {
-          return testclient.create('username', 'password', 55001);
+          return testclient.create('username', 'password', getSeq.getPort(1));
         })
         .then(function(client) {
           return client.exchange.remoteComponent.brokeredMethod1();

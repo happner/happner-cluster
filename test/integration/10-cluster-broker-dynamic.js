@@ -9,6 +9,7 @@ const stopCluster = require('../_lib/stop-cluster');
 const users = require('../_lib/users');
 const testclient = require('../_lib/client');
 const delay = require('await-delay');
+const getSeq = require('../_lib/helpers/getSeq');
 
 const clearMongoCollection = require('../_lib/clear-mongo-collection');
 //var log = require('why-is-node-running');
@@ -62,7 +63,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           thisClient = client;
@@ -70,15 +71,15 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return thisClient.exchange.brokerComponent.directMethod();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_2:brokerComponent:directMethod');
+          expect(result).to.be(getSeq.getMeshName(2) + ':brokerComponent:directMethod');
           return thisClient.exchange.remoteComponent1.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod1');
+          expect(result).to.be(getSeq.getMeshName(1) + ':remoteComponent1:brokeredMethod1');
           return thisClient.exchange.remoteComponent.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_1:remoteComponent:brokeredMethod1');
+          expect(result).to.be(getSeq.getMeshName(1) + ':remoteComponent:brokeredMethod1');
           setTimeout(done, 2000);
         })
         .catch(done);
@@ -105,7 +106,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           );
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           thisClient = client;
@@ -113,23 +114,23 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return thisClient.exchange.brokerComponent.directMethod();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_2:brokerComponent:directMethod');
+          expect(result).to.be(getSeq.getMeshName(2) + ':brokerComponent:directMethod');
           //call an injected method
           return thisClient.exchange.remoteComponent.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_1:remoteComponent:brokeredMethod1');
+          expect(result).to.be(getSeq.getMeshName(1) + ':remoteComponent:brokeredMethod1');
           return thisClient.exchange.remoteComponent1.brokeredMethod1();
         })
         .then(function(result) {
-          expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod1');
+          expect(result).to.be(getSeq.getMeshName(1) + ':remoteComponent1:brokeredMethod1');
           return testRestCall(
             thisClient.data.session.token,
-            55002,
+            getSeq.getPort(2),
             'remoteComponent1',
             'brokeredMethod1',
             null,
-            'MESH_1:remoteComponent1:brokeredMethod1:true'
+            getSeq.getMeshName(1) + ':remoteComponent1:brokeredMethod1:true'
           );
         })
         .then(function() {
@@ -160,17 +161,17 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55001);
+          return testclient.create('username', 'password', getSeq.getPort(1));
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
           client.exchange.brokerComponent.directMethod(function(e, result) {
             expect(e).to.be(null);
-            expect(result).to.be('MESH_1:brokerComponent:directMethod');
+            expect(result).to.be(getSeq.getMeshName(1) + ':brokerComponent:directMethod');
             //call an injected method
             client.exchange.remoteComponent.brokeredMethod1(function(e, result) {
               expect(e).to.be(null);
-              expect(result).to.be('MESH_2:remoteComponent:brokeredMethod1');
+              expect(result).to.be(getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod1');
               setTimeout(done, 2000);
             });
           });
@@ -192,12 +193,12 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55001);
+          return testclient.create('username', 'password', getSeq.getPort(1));
         })
         .then(function(client) {
           client.exchange.remoteComponent.brokeredMethod3('test', function(e, result) {
             expect(e).to.be(null);
-            expect(result).to.be('MESH_2:remoteComponent:brokeredMethod3:test');
+            expect(result).to.be(getSeq.getMeshName(2) + ':remoteComponent:brokeredMethod3:test');
             setTimeout(done, 2000);
           });
         })
@@ -226,12 +227,14 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55001);
+          return testclient.create('username', 'password', getSeq.getPort(1));
         })
         .then(function(client) {
           client.exchange.remoteComponent1.brokeredMethod3('test', function(e, result) {
             expect(e).to.be(null);
-            expect(result).to.be('MESH_2:remoteComponent1:brokeredMethod3:test:username');
+            expect(result).to.be(
+              getSeq.getMeshName(2) + ':remoteComponent1:brokeredMethod3:test:username'
+            );
             setTimeout(done, 2000);
           });
         })
@@ -260,12 +263,14 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55001);
+          return testclient.create('username', 'password', getSeq.getPort(1));
         })
         .then(function(client) {
           client.exchange.remoteComponent1.brokeredMethod3('test', function(e, result) {
             expect(e).to.be(null);
-            expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod3:test:username');
+            expect(result).to.be(
+              getSeq.getMeshName(1) + ':remoteComponent1:brokeredMethod3:test:username'
+            );
             setTimeout(done, 2000);
           });
         })
@@ -296,14 +301,16 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           testClient = client;
           return testClient.exchange.remoteComponent1.brokeredMethod3('test');
         })
         .then(function(result) {
-          expect(result).to.be('MESH_1:remoteComponent1:brokeredMethod3:test:username');
+          expect(result).to.be(
+            getSeq.getMeshName(1) + ':remoteComponent1:brokeredMethod3:test:username'
+          );
           return new Promise((resolve, reject) => {
             localInstance.stop(e => {
               if (e) return reject(e);
@@ -345,7 +352,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           });
         })
         .then(function() {
-          return testclient.create('username', 'password', 55001);
+          return testclient.create('username', 'password', getSeq.getPort(1));
         })
         .then(function(client) {
           testClient = client;
@@ -390,14 +397,14 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           results.push(result);
           expect(results).to.eql([
             //round robin happening
-            'MESH_2:remoteComponent1:brokeredMethod3:test:username',
-            'MESH_3:remoteComponent1:brokeredMethod3:test:username',
-            'MESH_2:remoteComponent1:brokeredMethod3:test:username',
-            'MESH_3:remoteComponent1:brokeredMethod3:test:username',
+            getSeq.getMeshName(2) + ':remoteComponent1:brokeredMethod3:test:username',
+            getSeq.getMeshName(3) + ':remoteComponent1:brokeredMethod3:test:username',
+            getSeq.getMeshName(2) + ':remoteComponent1:brokeredMethod3:test:username',
+            getSeq.getMeshName(3) + ':remoteComponent1:brokeredMethod3:test:username',
             //now only mesh 3 is up, so it handles all method calls
-            'MESH_3:remoteComponent1:brokeredMethod3:test:username',
-            'MESH_3:remoteComponent1:brokeredMethod3:test:username',
-            'MESH_3:remoteComponent1:brokeredMethod3:test:username'
+            getSeq.getMeshName(3) + ':remoteComponent1:brokeredMethod3:test:username',
+            getSeq.getMeshName(3) + ':remoteComponent1:brokeredMethod3:test:username',
+            getSeq.getMeshName(3) + ':remoteComponent1:brokeredMethod3:test:username'
           ]);
           done();
         })
@@ -412,11 +419,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return Promise.delay(5000);
         })
         .then(function() {
-          expect(getInjectedElements('MESH_1').length).to.be(4);
-          expect(getInjectedElements('MESH_1')[0].meshName != null).to.be(true);
-          expect(getInjectedElements('MESH_1')[1].meshName != null).to.be(true);
-          expect(getInjectedElements('MESH_1')[2].meshName != null).to.be(true);
-          expect(getInjectedElements('MESH_1')[3].meshName != null).to.be(true);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '').length).to.be(4);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '')[0].meshName != null).to.be(true);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '')[1].meshName != null).to.be(true);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '')[2].meshName != null).to.be(true);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '')[3].meshName != null).to.be(true);
           return stopServer(servers[1]);
         })
         .then(() => {
@@ -424,9 +431,9 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         })
         .then(function() {
           //we check injected components is 1
-          expect(getInjectedElements('MESH_1').length).to.be(2);
-          expect(getInjectedElements('MESH_1')[0].meshName != null).to.be(true);
-          expect(getInjectedElements('MESH_1')[1].meshName != null).to.be(true);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '').length).to.be(2);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '')[0].meshName != null).to.be(true);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '')[1].meshName != null).to.be(true);
           return stopServer(servers[2]);
         })
         .then(() => {
@@ -434,20 +441,20 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         })
         .then(function() {
           //we check injected components is still 1 and injected component meshName is null
-          expect(getInjectedElements('MESH_1').length).to.be(2);
-          expect(getInjectedElements('MESH_1')[0].meshName == null).to.be(true);
-          expect(getInjectedElements('MESH_1')[1].meshName == null).to.be(true);
-          return startInternal(2, 2);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '').length).to.be(2);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '')[0].meshName == null).to.be(true);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '')[1].meshName == null).to.be(true);
+          return startInternal(getSeq.getNext(), 2);
         })
         .then(() => {
           return Promise.delay(5000);
         })
         .then(function() {
           //we check injected components is still 1 and injected component meshName is null
-          expect(getInjectedElements('MESH_1').length).to.be(2);
-          expect(getInjectedElements('MESH_1')[0].meshName != null).to.be(true);
-          expect(getInjectedElements('MESH_1')[1].meshName != null).to.be(true);
-          return startInternal(3, 3);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '').length).to.be(2);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '')[0].meshName != null).to.be(true);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '')[1].meshName != null).to.be(true);
+          return startInternal(getSeq.getNext(), 3);
         })
         .then(() => {
           return Promise.delay(5000);
@@ -455,9 +462,9 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         .then(function() {
           //we check injected components is 2
           //we check injected components is still 1 and injected component meshName is null
-          expect(getInjectedElements('MESH_1').length).to.be(4);
-          expect(getInjectedElements('MESH_1')[0].meshName != null).to.be(true);
-          expect(getInjectedElements('MESH_1')[1].meshName != null).to.be(true);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '').length).to.be(4);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '')[0].meshName != null).to.be(true);
+          expect(getInjectedElements(getSeq.getMeshName(1) + '')[1].meshName != null).to.be(true);
           done();
         })
         .catch(done);
@@ -482,19 +489,19 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return users.allowEvent(localInstance, 'username', 'remoteComponent', '/brokered/event');
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
           client.exchange.brokerComponent.directMethod(function(e, result) {
             expect(e).to.be(null);
-            expect(result).to.be('MESH_2:brokerComponent:directMethod');
+            expect(result).to.be(getSeq.getMeshName(2) + ':brokerComponent:directMethod');
 
             client.event.remoteComponent.on(
               '/brokered/event',
               function(data) {
                 expect(data).to.eql({
-                  brokered: { event: { data: { from: 'MESH_1' } } }
+                  brokered: { event: { data: { from: getSeq.getMeshName(1) + '' } } }
                 });
                 setTimeout(done, 2000);
               },
@@ -502,7 +509,9 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
                 expect(e).to.be(null);
                 client.exchange.remoteComponent.brokeredEventEmitMethod(function(e, result) {
                   expect(e).to.be(null);
-                  expect(result).to.be('MESH_1:remoteComponent:brokeredEventEmitMethod');
+                  expect(result).to.be(
+                    getSeq.getMeshName(1) + ':remoteComponent:brokeredEventEmitMethod'
+                  );
                 });
               }
             );
@@ -532,7 +541,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return users.allowEvent(localInstance, 'username', 'remoteComponent1', 'test/*');
         })
         .then(function() {
-          return connectHappnerClient('username', 'password', 55001);
+          return connectHappnerClient('username', 'password', getSeq.getPort(1));
         })
         .then(function(client) {
           return testHappnerClient(client);
@@ -545,7 +554,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   });
   context('errors', function() {
     it('ensures an error is raised if we are injecting internal components with duplicate names', function(done) {
-      HappnerCluster.create(errorInstanceConfigDuplicateBrokered(1, 1))
+      HappnerCluster.create(errorInstanceConfigDuplicateBrokered(getSeq.getFirst(), 1))
         .then(function() {
           done(new Error('unexpected success'));
         })
@@ -568,7 +577,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           );
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
@@ -591,7 +600,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           );
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
@@ -616,7 +625,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           );
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           //first test our broker components methods are directly callable
@@ -637,7 +646,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           return users.allowMethod(localInstance, 'username', 'remoteComponent', 'brokeredMethod1');
         })
         .then(function() {
-          return testclient.create('username', 'password', 55001);
+          return testclient.create('username', 'password', getSeq.getPort(1));
         })
         .then(function(client) {
           return client.exchange.remoteComponent.brokeredMethod1();
@@ -664,17 +673,17 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           );
         })
         .then(function() {
-          return testclient.create('username', 'password', 55002);
+          return testclient.create('username', 'password', getSeq.getPort(2));
         })
         .then(function(client) {
           thisClient = client;
           return testRestCall(
             thisClient.data.session.token,
-            55002,
+            getSeq.getPort(2),
             'remoteComponent1',
             'brokeredMethod1',
             null,
-            'MESH_1:remoteComponent1:brokeredMethod1:true'
+            getSeq.getMeshName(1) + ':remoteComponent1:brokeredMethod1:true'
           );
         })
         .then(done);
@@ -740,7 +749,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
           api.happner.event.remoteComponent1.on('test/*', () => {
             resolve(client);
           });
-          return testWebCall(api, '/remoteComponent1/testJSON', 55001);
+          return testWebCall(api, '/remoteComponent1/testJSON', getSeq.getPort(1));
         })
         .then(result => {
           expect(JSON.parse(result.body)).to.eql({
@@ -887,13 +896,13 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   function startClusterEdgeFirstHighAvailable(dynamic) {
     return new Promise(function(resolve, reject) {
-      startEdge(1, 1, dynamic)
+      startEdge(getSeq.getFirst(), 1, dynamic)
         .then(function() {
-          return startInternal(2, 2);
+          return startInternal(getSeq.getNext(), 2);
         })
         .then(function(server) {
           localInstance = server;
-          return startInternal(3, 3);
+          return startInternal(getSeq.getNext(), 3);
         })
         .then(function() {
           return users.add(localInstance, 'username', 'password');
@@ -905,10 +914,10 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   function startClusterInternalFirst(dynamic) {
     return new Promise(function(resolve, reject) {
-      startInternal(1, 1)
+      startInternal(getSeq.getFirst(), 1)
         .then(function(server) {
           localInstance = server;
-          return startEdge(2, 2, dynamic);
+          return startEdge(getSeq.getNext(), 2, dynamic);
         })
         .then(function() {
           return users.add(localInstance, 'username', 'password');
@@ -922,9 +931,9 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   function startClusterEdgeFirst(dynamic) {
     return new Promise(function(resolve, reject) {
-      startEdge(1, 1, dynamic)
+      startEdge(getSeq.getFirst(), 1, dynamic)
         .then(function() {
-          return startInternal(2, 2);
+          return startInternal(getSeq.getNext(), 2);
         })
         .then(function(server) {
           localInstance = server;

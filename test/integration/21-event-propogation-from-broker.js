@@ -9,6 +9,7 @@ var users = require('../_lib/users');
 var testclient = require('../_lib/client');
 var delay = require('await-delay');
 var clearMongoCollection = require('../_lib/clear-mongo-collection');
+const getSeq = require('../_lib/helpers/getSeq');
 
 describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   this.timeout(40000);
@@ -107,15 +108,15 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   function startClusterInternalFirst(replicate) {
     return new Promise(function(resolve, reject) {
-      startInternal(1, 1, replicate)
+      startInternal(getSeq.getFirst(), 1, replicate)
         .then(function(server) {
           servers.push(server);
           localInstance = server;
-          return startEdge(2, 2, replicate);
+          return startEdge(getSeq.getNext(), 2, replicate);
         })
         .then(function(server) {
           servers.push(server);
-          return startBlank(3, 3, replicate);
+          return startBlank(getSeq.getNext(), 3, replicate);
         })
         .then(function(server) {
           servers.push(server);
@@ -128,15 +129,15 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   function startClusterNoDataInBroker(replicate) {
     return new Promise(function(resolve, reject) {
-      startInternal(1, 1, replicate)
+      startInternal(getSeq.getFirst(), 1, replicate)
         .then(function(server) {
           servers.push(server);
           localInstance = server;
-          return startEdgeNoData(2, 2, replicate);
+          return startEdgeNoData(getSeq.getNext(), 2, replicate);
         })
         .then(function(server) {
           servers.push(server);
-          return startBlank(3, 3, replicate);
+          return startBlank(getSeq.getNext(), 3, replicate);
         })
         .then(function(server) {
           servers.push(server);
@@ -149,10 +150,10 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
 
   function startClusterEdgeFirst() {
     return new Promise(function(resolve, reject) {
-      startEdge(1, 1)
+      startEdge(getSeq.getFirst(), 1)
         .then(function(server) {
           servers.push(server);
-          return startInternal(2, 2);
+          return startInternal(getSeq.getNext(), 2);
         })
         .then(function(server) {
           servers.push(server);
@@ -176,7 +177,7 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
   it('1. connects a client to the blank instance,checks data events', function(done) {
     let test1Server;
     let handler = sinon.stub();
-    startBlank(1, 1)
+    startBlank(getSeq.getFirst(), 1)
       .then(server => {
         servers.push(server);
         test1Server = server;
@@ -193,12 +194,16 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(test1Server, 'username', 'data', 'set');
       })
       .then(() => {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(client => {
-        client.data.on('_data/data/brokered/event', handler);
-        test1Server.exchange.data.set('/brokered/event', { data: 'data1' }, {});
-        return delay(5000);
+        return client.data.on('_data/data/brokered/event', handler);
+      })
+      .then(() => {
+        return test1Server.exchange.data.set('/brokered/event', { data: 'data1' }, {});
+      })
+      .then(() => {
+        return delay(2500);
       })
       .then(() => {
         sinon.assert.calledOnce(handler);
@@ -214,11 +219,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     let client1handler2 = sinon.stub();
     let client2handler1 = sinon.stub();
     let client2handler2 = sinon.stub();
-    startBlank(1, 1)
+    startBlank(getSeq.getFirst(), 1)
       .then(server => {
         servers.push(server);
         test2Server1 = server;
-        return startBlank(2, 2);
+        return startBlank(getSeq.getNext(), 2);
       })
       .then(server => {
         servers.push(server);
@@ -240,27 +245,27 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(test2Server2, 'username', 'data', 'set');
       })
       .then(() => {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(client => {
         test2Client1 = client;
-        return testclient.create('username', 'password', 55002);
+        return testclient.create('username', 'password', getSeq.getPort(2));
       })
-      .then(client => {
+      .then(async client => {
         test2Client2 = client;
-        test2Client1.data.on('/_data/data/test/event1', client1handler1);
-        test2Client2.data.on('/_data/data/test/event1', client2handler1);
-        test2Server1.exchange.data.set('test/event1', { data: 'data1' }, {});
+        await test2Client1.data.on('/_data/data/test/event1', client1handler1);
+        await test2Client2.data.on('/_data/data/test/event1', client2handler1);
+        await test2Server1.exchange.data.set('test/event1', { data: 'data1' }, {});
         return delay(4000);
       })
       .then(() => {
         sinon.assert.calledOnce(client1handler1);
         sinon.assert.notCalled(client2handler1);
       })
-      .then(() => {
-        test2Client1.data.on('/_data/data/test/event2', client1handler2);
-        test2Client2.data.on('/_data/data/test/event2', client2handler2);
-        test2Server2.exchange.data.set('test/event2', { data: 'data2' }, {});
+      .then(async () => {
+        await test2Client1.data.on('_data/data/test/event2', client1handler2);
+        await test2Client2.data.on('_data/data/test/event2', client2handler2);
+        await test2Server2.exchange.data.set('test/event2', { data: 'data2' }, {});
         return delay(4000);
       })
       .then(() => {
@@ -278,11 +283,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
     let client1handler2 = sinon.stub();
     let client2handler1 = sinon.stub();
     let client2handler2 = sinon.stub();
-    startBlank(1, 1)
+    startBlank(getSeq.getFirst(), 1)
       .then(server => {
         servers.push(server);
         test3Server1 = server;
-        return startBlank(2, 2);
+        return startBlank(getSeq.getNext(), 2);
       })
       .then(server => {
         servers.push(server);
@@ -304,11 +309,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(test3Server2, 'username', 'data', 'set');
       })
       .then(() => {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(client => {
         test3Client1 = client;
-        return testclient.create('username', 'password', 55002);
+        return testclient.create('username', 'password', getSeq.getPort(2));
       })
       .then(client => {
         test3Client2 = client;
@@ -358,11 +363,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(brokerServer, 'username', 'data', 'set');
       })
       .then(() => {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(client => {
         remoteClient = client;
-        return testclient.create('username', 'password', 55002);
+        return testclient.create('username', 'password', getSeq.getPort(2));
       })
       .then(client => {
         brokerClient = client;
@@ -411,11 +416,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(brokerServer, 'username', 'data', 'set');
       })
       .then(() => {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(client => {
         remoteClient = client;
-        return testclient.create('username', 'password', 55002);
+        return testclient.create('username', 'password', getSeq.getPort(2));
       })
       .then(client => {
         brokerClient = client;
@@ -464,11 +469,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(brokerServer, 'username', 'data', 'set');
       })
       .then(() => {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(client => {
         remoteClient = client;
-        return testclient.create('username', 'password', 55002);
+        return testclient.create('username', 'password', getSeq.getPort(2));
       })
       .then(client => {
         brokerClient = client;
@@ -517,11 +522,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(brokerServer, 'username', 'data', 'set');
       })
       .then(() => {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(client => {
         remoteClient = client;
-        return testclient.create('username', 'password', 55002);
+        return testclient.create('username', 'password', getSeq.getPort(2));
       })
       .then(client => {
         brokerClient = client;
@@ -570,11 +575,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(brokerServer, 'username', 'data', 'set');
       })
       .then(() => {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(client => {
         remoteClient = client;
-        return testclient.create('username', 'password', 55002);
+        return testclient.create('username', 'password', getSeq.getPort(2));
       })
       .then(client => {
         brokerClient = client;
@@ -616,11 +621,11 @@ describe(require('../_lib/test-helper').testName(__filename, 3), function() {
         return users.allowMethod(brokerServer, 'username', 'data', 'set');
       })
       .then(() => {
-        return testclient.create('username', 'password', 55001);
+        return testclient.create('username', 'password', getSeq.getPort(1));
       })
       .then(client => {
         remoteClient = client;
-        return testclient.create('username', 'password', 55002);
+        return testclient.create('username', 'password', getSeq.getPort(2));
       })
       .then(client => {
         brokerClient = client;

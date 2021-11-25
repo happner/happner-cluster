@@ -212,5 +212,55 @@
 10.3.1 2021-08-11
 -----------------
   - SMC-1810: fixed dependencies
+  
+10.4.0 2021-08-27
+-----------------
+  - SMC-3689: added $call override for peer dependencies and discoverMethods for peer dependency configurations in happner-client
+  - SMC-3646: updated github actions
+  - SMC-3459: added happner-2 dependencies for anonymous access
+  - SMC-3242: happn-3 update fixed onBehalfOf and nested permissions issue
 
+10.4.1 2021-09-20
+-----------------
+  - SMC-4161: happn-3 upgrade 11.13.4
 
+10.4.2 2021-09-28
+-----------------
+  - happn-3 upgrades:
+  - fix: SMC-4209 - concurrency issue, user created logged on deleted, causes security directory update to fatal
+  - fix: SMC-4208 - merge insert now uses upsert, moved constants out of data service
+
+10.5.0 2021-09-28
+-----------------
+  - SMC-3989: intermittent test failures fixed
+  - SMC-4186: ability to switch event replication off via happner config
+
+11.0.0 2021-10-07
+-----------------
+  - SMC-3823: mongo version 4 driver, updated happn-cluster
+  - SMC-4309: removed persistMembers functionality
+
+11.0.1 2021-10-13
+-----------------
+  - SMC-4349: update of happner-client - fix inter-mesh $on
+  - SMC-4311: brokered components with * version are sometimes not refreshing api - tests
+
+11.0.2 2021-10-14
+-----------------
+ - fix: SMC-4385 - happner-client update: remote method call timeouts now print call details (component, version, method)
+ - fix: SMC-4387 - components without happner dependencies do not refresh $happn exchange api when a peer arrives
+
+11.0.3 2021-10-15
+-----------------
+  - dependency happner-2 updated:
+    - fix: SMC-3661 - removal of try catch callback anti-pattern
+    - fix: SMC-4349 - happner-client update, inter-mesh $on fails due to argument mismatch
+    - fix: SMC-4388 - updated mongo data provider, removed main from package.json
+    - test: SMC-4393 - test intercomponent $on and $call
+
+11.1.0 2021-11-24
+-----------------
+  - fix: SMC-4512 -  data provider get action causes fatal when allowNestedPermissions switched on
+  - happn-3 upgrade:
+  - feature: SMC-2954 - Allows for configuration and use of multiple authentication providers.
+  - fix: SMC-4386 -  upsertMultiplePermissions will now allow for removing permissions/prohibitions as well as upserting permissions or prohibitions
