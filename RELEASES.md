@@ -268,4 +268,8 @@
 11.1.1 2021-11-25
 -----------------
   - test: SMC-2954 - ensure multiple auth providers work with the cluster
+
+11.2.0 2021-12-02
+-----------------
+  - SMC-734: removed bitcore-lib and encrypted payloads
   
