@@ -272,4 +272,8 @@
 11.2.0 2021-12-02
 -----------------
   - SMC-734: removed bitcore-lib and encrypted payloads
+
+11.2.1 2021-12-04
+-----------------
+  - SMC-4466: light-client failure fix, updated dependencies
   
