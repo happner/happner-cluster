@@ -276,4 +276,8 @@
 11.2.1 2021-12-04
 -----------------
   - SMC-4466: light-client failure fix, updated dependencies
+
+11.2.2 2021-12-05
+-----------------
+  - SMC-4749: rest request failure - component method not found
   

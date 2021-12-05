@@ -1,6 +1,6 @@
 {
   "name": "happner-cluster",
-  "version": "11.2.1",
+  "version": "11.2.2",
   "description": "Extends happner with clustering capabilities",
   "main": "index.js",
   "scripts": {
@@ -24,6 +24,8 @@
     "array-unique": "^0.3.2",
     "async": "^1.5.2",
     "await-delay": "^1.0.0",
+    "axios": "^0.24.0",
+    "callsites": "^3.1.0",
     "coveralls": "^3.0.6",
     "eslint": "^6.8.0",
     "eslint-plugin-prettier": "^3.1.2",
@@ -44,7 +46,7 @@
     "bluebird": "^3.5.0",
     "happn-cluster": "^11.2.1",
     "happn-service-mongo-2": "^4.0.1",
-    "happner-2": "^11.14.1",
+    "happner-2": "^11.14.2",
     "happner-client": "^11.6.1",
     "hashring": "^3.2.0",
     "node-http-proxy": "^0.2.3",

@@ -1,0 +1,17 @@
+{
+  "name": "broker-component",
+  "version": "1.0.0",
+  "happner": {
+    "dependencies": {
+      "$broker": {
+        "component1": {
+          "version": "^1.0.0",
+          "discoverMethods": true
+        },
+        "component2": {
+          "version": "^1.0.0"
+        }
+      }
+    }
+  }
+}
