@@ -280,4 +280,10 @@
 11.2.2 2021-12-05
 -----------------
   - SMC-4749: rest request failure - component method not found
+
+11.2.3 2021-12-06
+-----------------
+  - SMC-4749: rest request failure - component method not found, logging mount methods
+  - SMC-4749: rest request failure - component method not found, logging component member
+
   
