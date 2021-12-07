@@ -12,12 +12,14 @@ require('../_lib/test-helper').describe(test => {
   after('disconnects the test.clients', disconnectClients);
 
   it('can construct the edge for rest requests after a delayed internal node start', async () => {
+    await test.delay(3000);
     test.expect(await checkHappnerMethodAvailable()).to.be(false);
     test.expect(await checkRestMethodAvailable()).to.be(false);
     await startInternal2();
-    await test.delay(5000);
+    await test.delay(3000);
     test.expect(await checkHappnerMethodAvailable()).to.be(true);
     test.expect(await checkRestMethodAvailable()).to.be(true);
+    await checkRestDescribe();
   });
 
   async function startEdge() {
@@ -28,18 +30,18 @@ require('../_lib/test-helper').describe(test => {
   }
 
   async function startInternal1() {
-    servers.push(await test.HappnerCluster.create(remoteInstanceConfig1(test.getSeq.getNext(), 2)));
+    servers.push(await test.HappnerCluster.create(remoteInstanceConfig1(test.getSeq.getNext(), 1)));
     return servers[1];
   }
 
   async function startInternal2() {
-    servers.push(await test.HappnerCluster.create(remoteInstanceConfig2(test.getSeq.getNext(), 3)));
+    servers.push(await test.HappnerCluster.create(remoteInstanceConfig2(test.getSeq.getNext(), 2)));
     return servers[2];
   }
 
   async function checkHappnerMethodAvailable() {
     try {
-      await happnerClient.exchange.component2.method();
+      await happnerClient.exchange['component-2'].method();
     } catch (e) {
       return false;
     }
@@ -49,13 +51,30 @@ require('../_lib/test-helper').describe(test => {
   async function checkRestMethodAvailable() {
     try {
       await test.axios.post(
-        `http://127.0.0.1:${clientPort}/rest/method/component2/method?happn_token=${happnerClient.token}`,
+        `http://127.0.0.1:${clientPort}/rest/method/component-2/method?happn_token=${happnerClient.token}`,
         {
           parameters: {
             opts: { number: 1 }
           }
         }
       );
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
+
+  async function checkRestDescribe() {
+    try {
+      const result = await test.axios.post(
+        `http://127.0.0.1:${clientPort}/rest/describe?happn_token=${happnerClient.token}`,
+        {
+          parameters: {
+            opts: { number: 1 }
+          }
+        }
+      );
+      test.expect(result.data['/component-2/method']).to.not.eql(null);
     } catch (e) {
       return false;
     }
@@ -131,12 +150,12 @@ require('../_lib/test-helper').describe(test => {
       false
     );
     config.modules = {
-      component2: {
+      'component-2': {
         path: libDir + 'internal-2-component'
       }
     };
     config.components = {
-      component2: {
+      'component-2': {
         startMethod: 'start',
         stopMethod: 'stop'
       }

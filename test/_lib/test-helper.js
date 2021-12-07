@@ -20,6 +20,8 @@ const TestHelper = {
     const partsArray = fileName.split(path.sep);
     return partsArray.slice(partsArray.length - depth).join('/');
   },
+  // eslint-disable-next-line no-console
+  log: console.log,
   expect: require('expect.js'),
   delay: require('await-delay'),
   path: require('path'),

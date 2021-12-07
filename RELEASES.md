@@ -286,4 +286,7 @@
   - SMC-4749: rest request failure - component method not found, logging mount methods
   - SMC-4749: rest request failure - component method not found, logging component member
 
+11.2.4 2021-12-07
+-----------------
+  - SMC-4749: latest happner-2 and happner-client, wrap cluster plugin decorates rest component
   
