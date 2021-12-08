@@ -292,6 +292,11 @@ describe('02 - unit - brokerage component', function() {
         return new Promise(resolve => {
           resolve();
         });
+      },
+      _mesh: {
+        config: {
+          name: 'test'
+        }
       }
     };
 

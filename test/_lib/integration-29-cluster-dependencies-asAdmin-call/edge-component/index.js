@@ -2,11 +2,11 @@ module.exports = Component;
 
 function Component() {}
 
-Component.prototype.start = function($happn, callback) {
+Component.prototype.start = function(callback) {
   callback();
 };
 
-Component.prototype.stop = function($happn, callback) {
+Component.prototype.stop = function(callback) {
   callback();
 };
 

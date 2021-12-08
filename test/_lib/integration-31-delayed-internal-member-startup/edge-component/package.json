@@ -9,7 +9,8 @@
           "discoverMethods": true
         },
         "component-2": {
-          "version": "^8.0.0"
+          "version": "*",
+          "discoverMethods": true
         }
       }
     }

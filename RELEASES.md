@@ -289,4 +289,8 @@
 11.2.4 2021-12-07
 -----------------
   - SMC-4749: latest happner-2 and happner-client, wrap cluster plugin decorates rest component
+
+11.2.5 2021-12-08
+-----------------
+  - SMC-4749: brokerage does not consider local placeholders as met dependencies
   

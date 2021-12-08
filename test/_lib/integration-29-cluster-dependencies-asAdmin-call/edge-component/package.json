@@ -1,4 +1,14 @@
 {
   "name": "broker-component",
-  "version": "1.0.1"
+  "version": "1.0.1",
+  "happner": {
+    "dependencies": {
+      "$broker": {
+        "remoteComponent": {
+          "version": "*",
+          "discoverMethods": true
+        }
+      }
+    }
+  }
 }
