@@ -251,11 +251,14 @@ describe('02 - unit - brokerage component', function() {
     var mockClient = {
       on: function() {}
     };
-
+    let count = 0;
     var mockLogger = {
       info: function(msg) {
-        expect('element re-injected: test').to.be(msg);
-        done();
+        count++;
+        if (count === 2) {
+          expect('remote dependency satisfied: remote-mesh.test').to.be(msg);
+          done();
+        }
       },
       error: function() {
         done(arguments[0]);
@@ -302,6 +305,7 @@ describe('02 - unit - brokerage component', function() {
 
     brokerage.__handlePeerArrived({
       componentName: 'test',
+      meshName: 'remote-mesh',
       description: {}
     });
   });
