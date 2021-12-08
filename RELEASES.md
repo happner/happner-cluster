@@ -293,4 +293,8 @@
 11.2.5 2021-12-08
 -----------------
   - SMC-4749: brokerage does not consider local placeholders as met dependencies
+
+11.2.6 2021-12-08
+-----------------
+  - SMC-4749: upped happner-2 dependency, additional logging on brokerage
   
