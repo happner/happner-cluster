@@ -24,6 +24,7 @@ require('../_lib/test-helper').describe(test => {
 
   async function startEdge() {
     const config = localInstanceConfig(test.getSeq.getFirst(), 1);
+    config.cluster.dependenciesSatisfiedDeferListen = true;
     clientPort = config.port;
     servers.push(await test.HappnerCluster.create(config));
     return servers[0];
