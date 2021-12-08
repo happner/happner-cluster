@@ -49,7 +49,9 @@ describe(test.testName(__filename, 3), function() {
     }
     test
       .expect(errorMessage)
-      .to.be('invalid endpoint options: [remoteComponent] component does not exist on the api');
+      .to.be(
+        'invalid endpoint options: [remoteComponent.remoteMethod] method does not exist on the api'
+      );
     await startInternal(getSeq.getNext(), 2);
     await test.delay(2000);
     await client.exchange.edgeComponent.callRemote();
@@ -57,6 +59,7 @@ describe(test.testName(__filename, 3), function() {
 
   function localInstanceConfig(seq, sync) {
     var config = baseConfig(seq, sync, true);
+    //config.cluster.dependenciesSatisfiedDeferListen = true;
     config.modules = {
       edgeComponent: {
         path: libDir + 'edge-component'
