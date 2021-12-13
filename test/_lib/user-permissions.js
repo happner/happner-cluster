@@ -1,10 +1,11 @@
 var async = require('async');
 
-module.exports.add = function(server, username, password, permissions) {
+module.exports.add = function(server, username, password, permissions, custom_data) {
   var user = {
     username: username,
     password: password,
-    permissions: permissions || {}
+    permissions: permissions || {},
+    custom_data: custom_data || {}
   };
   return server.exchange.security.addUser(user);
 };
