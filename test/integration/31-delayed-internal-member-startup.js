@@ -81,10 +81,6 @@ require('../_lib/test-helper').describe(test => {
 
   async function checkRestDescribe() {
     try {
-      //getCurrentValues
-      // https://smc.fieldpop.io/rest/method/fieldpop-api/getCurrentValues?happn-token=7932b2e116b076a54f452848eaabd5857f61bd957fe8a218faf216f24c9885bb
-      // https://smc.fieldpop.io/rest/describe?happn-token=7932b2e116b076a54f452848eaabd5857f61bd957fe8a218faf216f24c9885bb
-      //7932b2e116b076a54f452848eaabd5857f61bd957fe8a218faf216f24c9885bb
       const result = await test.axios.post(
         `http://127.0.0.1:${clientPort}/rest/describe?happn_token=${happnerClient.token}`,
         {
