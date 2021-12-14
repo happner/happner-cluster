@@ -3,7 +3,8 @@ require('../_lib/test-helper').describe(test => {
   const libDir = `${require('../_lib/lib-dir')}integration-31-delayed-internal-member-startup${
     test.path.sep
   }`;
-  let happnerClient, clientPort;
+  let meshClientHelper = require('../_lib/client');
+  let happnerClient, clientPort, meshClient;
 
   before('starts the edge', startEdge);
   before('starts internal 1', startInternal1);
@@ -20,11 +21,15 @@ require('../_lib/test-helper').describe(test => {
     test.expect(await checkHappnerMethodAvailable()).to.be(true);
     test.expect(await checkRestMethodAvailable()).to.be(true);
     await checkRestDescribe();
+
+    await connectMeshClient();
+    await checkHappnerMethodCallback();
   });
 
   async function startEdge() {
     const config = localInstanceConfig(test.getSeq.getFirst(), 1);
     config.cluster.dependenciesSatisfiedDeferListen = true;
+    config.authorityDelegationOn = true;
     clientPort = config.port;
     servers.push(await test.HappnerCluster.create(config));
     return servers[0];
@@ -38,6 +43,15 @@ require('../_lib/test-helper').describe(test => {
   async function startInternal2() {
     servers.push(await test.HappnerCluster.create(remoteInstanceConfig2(test.getSeq.getNext(), 2)));
     return servers[2];
+  }
+
+  async function checkHappnerMethodCallback() {
+    return new Promise((resolve, reject) => {
+      meshClient.exchange['component-2'].method((e, result) => {
+        if (e) reject(e);
+        resolve(result);
+      });
+    });
   }
 
   async function checkHappnerMethodAvailable() {
@@ -86,6 +100,10 @@ require('../_lib/test-helper').describe(test => {
     happnerClient = await test.client.create('_ADMIN', 'happn', clientPort);
   }
 
+  async function connectMeshClient() {
+    meshClient = await meshClientHelper.create('_ADMIN', 'happn', clientPort);
+  }
+
   async function disconnectClients() {
     if (happnerClient) await happnerClient.disconnect();
   }
@@ -125,6 +143,7 @@ require('../_lib/test-helper').describe(test => {
       undefined,
       false
     );
+    config.authorityDelegationOn = true;
     config.modules = {
       component1: {
         path: libDir + 'internal-1-component'
@@ -150,6 +169,7 @@ require('../_lib/test-helper').describe(test => {
       undefined,
       false
     );
+    config.authorityDelegationOn = true;
     config.modules = {
       'component-2': {
         path: libDir + 'internal-2-component'

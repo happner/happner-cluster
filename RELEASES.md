@@ -297,4 +297,8 @@
 11.2.6 2021-12-08
 -----------------
   - SMC-4749: upped happner-2 dependency, additional logging on brokerage
+
+11.2.7 2021-12-08
+-----------------
+  - SMC-4848: upped happner-2 dependency, issue with null or undefined arguments and promisify
   
