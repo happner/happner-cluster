@@ -301,4 +301,8 @@
 11.2.7 2021-12-08
 -----------------
   - SMC-4848: upped happner-2 dependency, issue with null or undefined arguments and promisify
+
+11.3.0 2022-01-04
+-----------------
+  - SMC-4550: security lookup tables
   

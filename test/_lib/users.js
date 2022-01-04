@@ -2,6 +2,7 @@ var Promise = require('bluebird');
 var async = require('async');
 
 module.exports.add = function(server, username, password, permissions) {
+  // try {
   var user = {
     username: username,
     password: password
