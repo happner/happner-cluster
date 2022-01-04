@@ -1,6 +1,6 @@
 {
   "name": "happner-cluster",
-  "version": "11.2.7",
+  "version": "11.3.0",
   "description": "Extends happner with clustering capabilities",
   "main": "index.js",
   "scripts": {
