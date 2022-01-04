@@ -5,8 +5,7 @@ module.exports.add = function(server, username, password, permissions) {
   // try {
   var user = {
     username: username,
-    password: password,
-    custom_data
+    password: password
   };
 
   var group = {
