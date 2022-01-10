@@ -26,7 +26,13 @@ jobs:
 
     - run: npm install
 
-    - run: npm run-script test-cover
+    - name: run coverage
+      uses: nick-invision/retry@v2
+      with:
+        timeout_minutes: 60
+        max_attempts: 3
+        retry_on: error
+        command: npm run test-cover
     
     - name: Coveralls
       uses: coverallsapp/github-action@master

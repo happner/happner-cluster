@@ -305,4 +305,10 @@
 11.3.0 2022-01-04
 -----------------
   - SMC-4550: security lookup tables
+
+11.3.1 2022-01-10
+-----------------
+  - SMC-4938: lookup tables fail for rest request
+  - SMC-4550: upgraded happn-cluster for lookup tables
+
   
