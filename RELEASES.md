@@ -309,9 +309,6 @@
 11.3.1 2022-01-10
 -----------------
   - SMC-4938: lookup tables fail for rest request
-
-11.3.2 2022-01-10
------------------
-  - SMC-4938: lookup tables fail for rest request
   - SMC-4550: upgraded happn-cluster for lookup tables
+
   
