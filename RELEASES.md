@@ -311,4 +311,9 @@
   - SMC-4938: lookup tables fail for rest request
   - SMC-4550: upgraded happn-cluster for lookup tables
 
+11.4.0 2022-01-19
+-----------------
+  - SMC-4933: $happn.isAuthorized(user)
+
+
   
