@@ -60,6 +60,7 @@ describe(test.testName(__filename, 3), function() {
   });
 
   it('can fetch data if lookup tables and permissions are configured correctly (Lookup table and permission upserted on server[0], client on server[1]', async () => {
+    let data;
     let testTable = {
       name: 'STANDARD_ABC',
       paths: [
@@ -80,15 +81,16 @@ describe(test.testName(__filename, 3), function() {
     await servers[0].exchange.security.upsertLookupPermission('LOOKUP_TABLES_GRP', permission1);
 
     try {
-      let data = await testClient.data.get('/_data/historianStore/SPECIAL_DEVICE_ID_1');
-      if (data) throw new Error('Test Error : Should not be authorized');
+      await testClient.data.get('/_data/historianStore/SPECIAL_DEVICE_ID_1');
+      throw new Error('Test Error : Should not be authorized');
     } catch (e) {
       test.expect(e.toString()).to.be('AccessDenied: unauthorized');
     }
 
     await servers[0].exchange.security.linkGroup(savedGroup, savedUser);
     await test.delay(1000);
-    await testClient.data.get('/_data/historianStore/SPECIAL_DEVICE_ID_1');
+    data = await testClient.data.get('/_data/historianStore/SPECIAL_DEVICE_ID_1');
+    test.expect(data).to.be.ok();
 
     await servers[0].exchange.security.removeLookupPath(
       'STANDARD_ABC',

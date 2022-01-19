@@ -8,7 +8,7 @@ const test = require('../_lib/test-helper');
 const getSeq = require('../_lib/helpers/getSeq');
 
 describe(test.testName(__filename, 3), function() {
-  this.timeout(20000);
+  this.timeout(120e3);
 
   let servers, testClient, savedUser, savedGroup;
 
@@ -32,7 +32,8 @@ describe(test.testName(__filename, 3), function() {
     };
     config.happn.services.replicator = {
       config: {
-        securityChangesetReplicateInterval: 10 // 100 per second
+        securityChangesetReplicateInterval: 500, // 2 per second
+        meshName: config.name
       }
     };
     return config;
@@ -93,7 +94,7 @@ describe(test.testName(__filename, 3), function() {
           await testClient.data.get('/_data/historianStore/SPECIAL_DEVICE_ID_1');
         })
       )
-      .to.be('AccessDenied: unauthorized');
+      .to.be('unauthorized');
 
     test
       .expect(
