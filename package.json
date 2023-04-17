@@ -44,10 +44,10 @@
   },
   "dependencies": {
     "bluebird": "^3.5.0",
-    "happn-cluster": "^11.3.3",
+    "happn-cluster": "^12.3.2",
     "happn-service-mongo-2": "^4.0.1",
-    "happner-2": "^11.16.1",
-    "happner-client": "^11.6.7",
+    "happner-2": "^12.8.1",
+    "happner-client": "^12.6.1",
     "hashring": "^3.2.0",
     "node-http-proxy": "^0.2.3",
     "semver": "^5.3.0"
